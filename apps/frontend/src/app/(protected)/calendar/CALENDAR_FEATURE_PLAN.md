@@ -74,7 +74,7 @@ This page will likely be a mix of Server and Client Components. The main calenda
         *   Start Date & Time (datetime picker - consider a library or styled native inputs)
         *   End Date & Time (datetime picker)
         *   All-day toggle (`components/ui/Toggle.tsx`)
-        *   Target Native Calendar (dropdown (`components/ui/Dropdown.tsx`) listing user's connected native calendars where event can be created - e.g., "Google: Personal", "Outlook: Work"). Data from `GET /api/integrations/accounts?writable=true` or similar.
+        *   Target Native Calendar (dropdown (`components/ui/Dropdown.tsx`) listing user's connected native calendars where event can be created - e.g., "Google: Personal", "Outlook: Work"). Data from `GET /api/calendars/targetable`.
         *   Description (textarea)
         *   Location (text input)
     *   **[ ] Time Zone Handling:** Times entered are assumed to be in the user's local time zone. Convert to UTC before sending to backend.
@@ -116,7 +116,7 @@ This page will likely be a mix of Server and Client Components. The main calenda
 *   `GET /api/events/{eventId}` (Fetch single event details - might not be needed if all data is in the list view)
 *   `PUT /api/events/{eventId}` (Update event)
 *   `DELETE /api/events/{eventId}` (Delete event)
-*   `GET /api/integrations/accounts?writable=true` (To populate "Target Native Calendar" dropdown)
+*   `GET /api/calendars/targetable` (To populate "Target Native Calendar" dropdown, replacing old `/api/integrations/accounts?writable=true`)
 *   `GET /api/user/settings/calendars-visibility` (To get/set calendar visibility toggles)
 *   `PUT /api/user/settings/calendars-visibility`
 

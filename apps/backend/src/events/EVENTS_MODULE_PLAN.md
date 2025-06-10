@@ -3,7 +3,7 @@
 This plan outlines the development tasks for the Events module.
 
 ## Phase 1: Setup & Core Infrastructure
-- [ ] TODO: Define `CalendarEvent` schema in `schema.prisma` (e.g., `id`, `userId`, `connectedAccountId`, `platformEventId` (unique per platform account), `title`, `description`, `startTime`, `endTime`, `isAllDay`, `location`, `sourcePlatform`, `privacy` (e.g., public, private), `recurrenceRule` (string, e.g., RRULE), `nativeReminderInfo` (JSON or structured), `lastSyncedFromPlatformAt`).
+- [ ] TODO: Define `CalendarEvent` schema in `schema.prisma` (e.g., `id`, `userId`, `connectedAccountId`, `nativeCalendarId` (ID of the calendar on the source platform), `platformEventId` (unique per platform account for the event itself), `title`, `description`, `startTime`, `endTime`, `isAllDay`, `location`, `sourcePlatform`, `privacy` (e.g., public, private), `recurrenceRule` (string, e.g., RRULE), `nativeReminderInfo` (JSON or structured), `lastSyncedFromPlatformAt`).
 - [ ] TODO: Create `EventsService` and `EventsController`.
 - [ ] TODO: Define DTOs for event management (e.g., `CreateEventDto`, `UpdateEventDto`, `EventResponseDto`, `EventQueryDto`) with validation. Include fields for FRD 3.4.1.
 - [ ] TODO: Ensure `EventsService` can use `PrismaService` and services from `CalendarsModule` and `AccountsModule`.
@@ -13,7 +13,7 @@ This plan outlines the development tasks for the Events module.
 ### Core Scheduling Functionalities (Unified View & Event Management)
 - [ ] TODO: `EventsService.createEvent()`:
     - Validate input DTO (FRD 3.4.1).
-    - Determine target native calendar via `AccountsService` (user must select one of their connected native calendars).
+    - Determine target native calendar. The frontend will provide the `nativeCalendarId` of the target calendar, selected by the user from a list provided by `CalendarsModule`'s `/calendars/targetable` endpoint.
     - Call appropriate service in `CalendarsModule` (e.g., `GoogleCalendarService.createEvent()`).
     - Store UniCal's representation of the event in Prisma, linking to `ConnectedAccount` and `User`.
 - [ ] TODO: `EventsService.getEventsForUser()`:

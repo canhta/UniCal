@@ -156,7 +156,7 @@ Functional requirements for the initial product, implemented via a phased strate
 
 *   **FR3.7.1 Create Event (Initial Product):**
     *   **User Story:** As a user, I want to create an event in UCS, select a target native calendar, and have it sync.
-    *   **Solution:** Event creation modal: Title, Start/End, All-day, Target Calendar (dropdown of connected native calendars), Description, Location (all plain text). UCS sends to selected native calendar API.
+    *   **Solution:** Event creation modal: Title, Start/End, All-day, Target Calendar (dropdown of connected native calendars where the user has write access, populated by an API endpoint like `/calendars/targetable`), Description, Location (all plain text). UCS sends to selected native calendar API via the backend `EventsModule` which coordinates with the `CalendarsModule`.
     *   **Acceptance Criteria:** Create event with core details, select target. Event created on native platform. Appears in UCS view. Error handling.
 
 *   **FR3.7.2 Read Event Details (Initial Product):** (Covered by FR3.3.4)
@@ -176,8 +176,8 @@ Functional requirements for the initial product, implemented via a phased strate
 
 *   **FR3.7.5 Recurring Events (Initial Product - Basic Sync & Display):**
     *   **User Story:** As a user, I want to see recurring events and sync single instance changes.
-    *   **Solution:** Read/display recurring events. Sync single instance edits as exceptions. Rely on native calendar recurrence handling.
-    *   **Acceptance Criteria:** Recurring events displayed. Single instance edits/deletes sync if API supports. (Creating/editing rules from UCS is post-initial product).
+    *   **Solution:** Read/display recurring events from native platforms. Sync single instance edits (modifications or deletions) as exceptions. UCS will rely on the native calendar's recurrence handling capabilities. For example, if a user modifies a single occurrence of a recurring event in UCS, UCS will instruct the native platform to update that specific instance.
+    *   **Acceptance Criteria:** Recurring events are displayed correctly as individual occurrences within the selected view. Single instance edits (changing time/details) and deletions made in UCS are reflected in the native calendar and vice-versa. (Creating new recurring series or editing recurrence rules from UCS is post-initial product).
 
 ### 3.8. Two-Way Synchronization (Initial Product)
 
@@ -204,9 +204,9 @@ Functional requirements for the initial product, implemented via a phased strate
 ### 3.9. Privacy Controls (Initial Product - Basic Indication)
 
 *   **FR3.9.1 Event-Level Privacy Indication:**
-    *   **User Story:** As a user, I want UCS to acknowledge an event's "private" status from the native calendar.
-    *   **Solution:** Read native privacy flag. Store with event data. User sees own private events. No change to privacy from UCS in initial product.
-    *   **Acceptance Criteria:** UCS reads/stores privacy. User sees own private events.
+    *   **User Story:** As a user, I want UCS to acknowledge an event\'s "private" status from the native calendar and display it appropriately.
+    *   **Solution:** UCS will read the native privacy flag (e.g., "private", "public", "confidential") from events synced from Google Calendar or Outlook Calendar. This information will be stored with the event data in UCS. When displaying event details (e.g., in a modal or expanded view), UCS will show a visual indicator (e.g., a lock icon or text like "Private Event") if the event is marked as private on its native platform. Users will always see their own private events. UCS will not allow changing an event\'s privacy settings in the initial product; it only reflects the native setting.
+    *   **Acceptance Criteria:** UCS reads and stores the privacy status from native calendar events. Private events are clearly indicated as such in the UCS interface when viewed by their owner.
 
 *   **FR3.9.2 Control over Shared Availability:** (Moved to Post-Initial Product)
 
@@ -215,9 +215,9 @@ Functional requirements for the initial product, implemented via a phased strate
 ### 3.11. Notifications (Initial Product - Basic)
 
 *   **FR3.11.1 Event Reminders (Initial Product - Passthrough/Display):**
-    *   **User Story:** As a user, I want to see reminders set on my native calendar events.
-    *   **Solution:** Fetch/display reminder info from native events in UCS event details modal (text only). UCS does not trigger its own reminders.
-    *   **Acceptance Criteria:** Native reminder info displayed. UCS doesn't create/trigger duplicate reminders.
+    *   **User Story:** As a user, I want to see reminders that were set on my native calendar events when I view event details in UCS.
+    *   **Solution:** UCS will fetch reminder information (e.g., "15 minutes before, popup" or "1 day before, email") associated with events from the native calendars (Google, Outlook). This information will be displayed in a read-only format within the event details modal in UCS (e.g., as text like "Reminder: 15 minutes before via native platform"). UCS itself will not trigger these reminders or create new reminders in the initial product. The native platform remains responsible for sending the actual reminder notifications.
+    *   **Acceptance Criteria:** Reminder information set on native calendar events is visible within the UCS event details view. UCS does not create, modify, or trigger its own duplicate reminders for these events.
 
 *   **FR3.11.2 Booking Notifications:** (Moved to Post-Initial Product)
 
