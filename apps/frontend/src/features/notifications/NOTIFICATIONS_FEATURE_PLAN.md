@@ -40,7 +40,7 @@ This feature will consume data from the backend `NotificationsModule`.
     *   Link to relevant pages if a notification is actionable (e.g., a sync error notification could link to the Integrations page).
 *   **[ ] Data Fetching for Panel:**
     *   Fetch a list of all (or recent unread) notifications: `GET /notifications`.
-    *   API for marking as read: `POST /notifications/{id}/read` or `POST /notifications/mark-all-read`.
+    *   API for marking as read: `PATCH /notifications` (body: `{ ids: ["id1", "id2"], isRead: true }`).
 *   **[ ] Real-time Updates (Optional Enhancement):**
     *   Consider WebSocket integration to push new notifications to the client in real-time, updating the unread count and panel.
 *   **[ ] Toast/Snackbar Notifications:**
@@ -50,11 +50,11 @@ This feature will consume data from the backend `NotificationsModule`.
 ## 5. API Endpoints & Data (Frontend Perspective)
 
 *   **Needs (Phase 1):**
-    *   Endpoint to fetch contextual notifications: `GET /notifications?userId=<userId>&context=integrations` (or notifications embedded in other responses).
+    *   Endpoint to fetch contextual notifications: `GET /notifications?context=integrations` (Backend will infer `userId` from auth token).
     *   Notification data: `id`, `message`, `type`, `timestamp`, `isRead`, `link` (optional, for actionability).
 *   **Needs (Phase 2):**
-    *   Endpoint to fetch all/recent user notifications: `GET /notifications?userId=<userId>&status=unread`.
-    *   Endpoint to mark notification(s) as read: `POST /notifications/read` (body: `{ ids: ["id1", "id2"] }`).
+    *   Endpoint to fetch all/recent user notifications: `GET /notifications?status=unread` (Backend will infer `userId`).
+    *   Endpoint to mark notification(s) as read/unread: `PATCH /notifications` (body: `{ ids: ["id1", "id2"], isRead: true }`).
 
 ## 6. State Management
 

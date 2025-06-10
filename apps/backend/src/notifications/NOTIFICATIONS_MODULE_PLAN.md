@@ -66,7 +66,15 @@ This module will likely need to integrate with a User service (to get user prefe
 ## 5. API Endpoints (Illustrative - Primarily for internal use or future in-app display)
 
 *   `GET /notifications`: Get notifications for the authenticated user.
-*   `POST /notifications/{id}/read`: Mark a notification as read.
+    *   Supports optional query parameters:
+        *   `context?: string` (e.g., 'integrations', 'account') - to filter notifications by a specific area of the application.
+        *   `status?: 'read' | 'unread' | 'all'` (defaults to 'unread' or 'all' depending on use case) - to filter by read status.
+        *   `limit?: number` - to limit the number of notifications returned.
+        *   `offset?: number` or `cursor?: string` - for pagination.
+*   `POST /notifications/{id}/read`: Mark a specific notification as read. (Consider changing to PATCH for consistency, or deprecating in favor of the bulk endpoint).
+*   `PATCH /notifications`: Bulk update notifications.
+    *   Request Body: `{ ids: string[], isRead: boolean }`
+    *   Allows marking multiple notifications as read or unread.
 
 ## 6. Security Considerations
 
