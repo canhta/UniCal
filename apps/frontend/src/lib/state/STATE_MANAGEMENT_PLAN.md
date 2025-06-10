@@ -1,1 +1,137 @@
-# State Management Plan (Phase 4)\n\nThis plan outlines the strategy for state management in the UniCal frontend application.\n\n## Core Principles\n*   **Minimize Global State:** Prefer React Context for localized state or simple prop drilling where appropriate. Use a global state manager only when truly necessary for state shared across distant parts of the component tree or for complex state logic.\n*   **Simplicity:** Choose a library that is relatively simple to understand and use, with good performance characteristics.\n*   **Developer Experience:** The chosen solution should integrate well with Next.js (App Router) and TypeScript.\n*   **SSR Compatibility:** If global state needs to be initialized or accessed server-side (less common for client-interactive state, but possible for user preferences), the solution should have clear patterns for this.\n\n## Evaluation of Need (Phase 1-3 Observation)\nDuring the initial phases, we will primarily rely on:\n*   **React `useState`, `useReducer`:** For component-local state.\n*   **React Context:** For state that needs to be shared between a few closely related components (e.g., theme, simple user preferences not managed by Auth0).\n*   **Auth0 `UserProvider` and `useUser`:** For authentication state and user profile information.\n*   **URL State:** For state that should be bookmarkable and shareable (e.g., current calendar view, selected date - can be managed via Next.js Router).\n*   **Data Fetching Libraries (SWR/TanStack Query - React Query):** These libraries manage server state (cached API responses) effectively and often reduce the need for putting API data into a global client-side store.\n\n**A dedicated global state manager will be considered if:**\n1.  Prop drilling becomes overly complex for genuinely global client-side state (e.g., complex UI theme settings, application-wide notification queue, persistent user interface preferences not tied to API).\n2.  Managing shared client-side state that is frequently updated from various unrelated components becomes difficult with Context alone.\n3.  Complex client-side caching or derived state logic is needed that isn\'t well-handled by data fetching libraries.\n\n## Potential Candidates (If Global State Manager is Deemed Necessary in Phase 4)\n\n*   **Zustand:**\n    *   **Pros:** Simple, unopinionated, small bundle size, uses hooks. Easy to integrate with React. Less boilerplate than Redux.\n    *   **Cons:** Less structured than Redux, which can be a con for very large applications or teams needing more enforced patterns.\n*   **Jotai:**\n    *   **Pros:** Atomic state management (similar to Recoil), very flexible, good for fine-grained state updates. Integrates well with React Suspense.\n    *   **Cons:** Different mental model (atoms) which might have a learning curve. Might be overkill if only a few global states are needed.\n*   **React Context with `useReducer` (Scaled):**\n    *   **Pros:** Built-into React, no extra libraries. Can be scaled with multiple contexts for different domains of state.\n    *   **Cons:** Can lead to performance issues if context values change frequently and cause re-renders of large subtrees. Provider nesting can become cumbersome.\n*   **Redux Toolkit (RTK):**\n    *   **Pros:** Well-established, powerful, good devtools, opinionated structure (which can be a pro). RTK Query is excellent for data fetching if not using SWR/React Query separately.\n    *   **Cons:** Can be perceived as boilerplate-heavy even with RTK. Larger bundle size compared to Zustand/Jotai.\n\n**Decision for Initial Recommendation (if needed): Zustand**\nIf a global state manager is needed, Zustand is often a good starting point due to its simplicity and small footprint, aligning well with the desire to keep things lean.\n\n## Phase 4: Implementation (If a Global State Manager is Chosen)\n\n1.  **[ ] Final Decision:** Based on experiences in Phases 1-3, make a final decision on whether a global state manager is needed and which one to use.\n2.  **[ ] Installation & Setup:**\n    *   Install the chosen library (e.g., `npm install zustand`).\n    *   Create a directory for stores (e.g., `apps/frontend/src/lib/state/stores/` or `apps/frontend/src/stores/`).\n3.  **[ ] Define Initial Stores/Atoms:**\n    *   Identify the specific pieces of global state to manage.\ Examples might include:\n        *   **UI State Store:** e.g., `isSidebarOpen`, `activeModal`, global loading indicators not tied to specific API calls.\n        *   **User Preferences Store (Client-Side):** e.g., calendar view preferences if not solely managed by API, theme preferences.\n        *   **Notifications Store:** A queue for displaying global toast notifications.\n    *   Example Zustand store (`apps/frontend/src/lib/state/stores/uiStore.ts`):\n        ```typescript\n        import { create } from \'zustand\';\n\n        interface UIState {\n          isMobileMenuOpen: boolean;\n          toggleMobileMenu: () => void;\n          // other UI states\n        }\n\n        export const useUIStore = create<UIState>((set) => ({\n          isMobileMenuOpen: false,\n          toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),\n        }));\n        ```\n4.  **[ ] Integration with Components:**\n    *   Use the provided hooks (e.g., `useUIStore()`) in components to access and update global state.\n5.  **[ ] SSR Considerations (If applicable for the chosen state):**\n    *   Most client-side UI state doesn\'t need SSR. However, if initializing a store server-side (e.g., from user settings fetched on the server to avoid flicker), follow the library\'s specific patterns for Next.js SSR/App Router.\n    *   Zustand example for SSR usually involves initializing the store on the server and passing initial state to the client, or creating the store instance within a Request context if using Pages Router (less relevant for App Router focus).\n6.  **[ ] Devtools Integration:**\n    *   If the chosen library supports Redux DevTools (like Zustand and RTK), configure it for easier debugging.\n7.  **[ ] Refactor Existing Code (If Necessary):**\n    *   If React Context was used as a temporary solution for state that is now better managed globally, refactor those parts.\n\n## Data Fetching State (SWR / TanStack Query - React Query)\n\n*   **This is separate from client-side global state.**\n*   **[ ] Decision & Setup (During API Client & Feature Implementation - Phases 2-3):**\n    *   Decide between SWR or TanStack Query (React Query) for managing server state (API data, caching, revalidation, mutations).\n    *   Integrate the chosen library with the `API_CLIENT_PLAN.md`.\n    *   Wrap API calls in custom hooks provided by these libraries.\n    *   Example with SWR:\n        ```typescript\n        // apps/frontend/src/lib/hooks/useEvents.ts\n        import useSWR from \'swr\';\n        import apiClient from \'@/lib/api/client\'; // Your API client\n        import { CalendarEvent } from \'@/lib/api/types\'; // Your types\n\n        const fetcher = (url: string) => apiClient<CalendarEvent[]>(url);\n\n        export function useEvents(startDate?: string, endDate?: string) {\n          const queryString = new URLSearchParams();\n          if (startDate) queryString.append(\'start_date\', startDate);\n          if (endDate) queryString.append(\'end_date\', endDate);\n          \n          const { data, error, isLoading, mutate } = useSWR(\n            `/api/events?${queryString.toString()}`,\n            fetcher\n          );\n\n          return {\n            events: data,\n            isLoading,\n            isError: error,\n            mutateEvents: mutate,\n          };\n        }\n        ```\n\n## Conclusion\n\nThis plan advocates for a cautious approach to global state, prioritizing simpler React features and data-fetching libraries first. A global state manager like Zustand will be adopted in Phase 4 only if clear needs arise that are not adequately addressed by other means. Server state (API data) will be managed by a dedicated data-fetching library (SWR or TanStack Query).\n
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/lib/state/STATE_MANAGEMENT_PLAN.md -->
+# State Management Plan
+
+This plan outlines the strategy for state management in the UniCal frontend application.
+
+## Core Principles
+*   **Minimize Global State:** Prefer React Context for localized state or simple prop drilling where appropriate. Use a global state manager only when truly necessary for state shared across distant parts of the component tree or for complex state logic.
+*   **Simplicity & Performance:** Choose a library that is simple, performant, and has a small bundle size.
+*   **Developer Experience:** The chosen solution should integrate well with Next.js (App Router) and TypeScript, offering good devtools support.
+*   **SSR Compatibility:** Ensure clear patterns for server-side rendering or initialization if global state needs to be accessed or hydrated on the server.
+*   **Clear Separation:** Distinguish clearly between client-side UI state and server cache state.
+
+## State Categories
+
+### 1. Server Cache State (Remote State)
+*   **Description:** Data fetched from the backend API, including user data, calendar events, integration settings, etc. This state is asynchronous and needs mechanisms for fetching, caching, revalidation, and mutation.
+*   **Chosen Solution:** **TanStack Query (React Query)**
+    *   **Reasoning:** Robust features for managing server state, including caching, automatic refetching, optimistic updates, and excellent devtools. It significantly simplifies data fetching logic and reduces the need to store API data in global client stores.
+    *   **Integration:**
+        *   Will be set up as per `SETUP_PLAN.md` and used in conjunction with the API client defined in `API_CLIENT_PLAN.md`.
+        *   A global `QueryClientProvider` will be added to `app/layout.tsx`.
+        *   Custom hooks (e.g., `useEvents`, `useUserSettings`) will encapsulate TanStack Query logic for specific data types.
+*   **Tasks:**
+    *   [ ] **Install TanStack Query:** `npm install @tanstack/react-query @tanstack/react-query-devtools`
+    *   [ ] **Setup `QueryClientProvider`:** In `app/layout.tsx` (or a dedicated client component provider).
+        ```tsx
+        // Example: components/providers/ReactQueryProvider.tsx
+        'use client';
+        import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+        import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+        import React from 'react';
+
+        export default function ReactQueryProvider({ children }: { children: React.ReactNode }) {
+          const [queryClient] = React.useState(() => new QueryClient({
+            defaultOptions: {
+              queries: {
+                staleTime: 1000 * 60 * 5, // 5 minutes
+                refetchOnWindowFocus: false, // Optional: adjust as needed
+              },
+            },
+          }));
+
+          return (
+            <QueryClientProvider client={queryClient}>
+              {children}
+              <ReactQueryDevtools initialIsOpen={false} />
+            </QueryClientProvider>
+          );
+        }
+
+        // Then use <ReactQueryProvider> in app/layout.tsx
+        ```
+    *   [ ] Define custom hooks for API interactions (e.g., `useEvents`, `useUserIntegrations`).
+
+### 2. Global Client State (UI State)
+*   **Description:** State that is purely client-side, often related to UI, and needs to be shared across multiple, potentially distant, components. Examples: mobile menu open/close state, current theme (if user-selectable), global notification messages.
+*   **Chosen Solution:** **Zustand**
+    *   **Reasoning:** Simple API, small bundle size, good performance, and easy integration with React hooks. It avoids the complexity of Redux for scenarios where a lighter solution is sufficient.
+*   **Tasks:**
+    *   [ ] **Install Zustand:** `npm install zustand` (if not already done as per `SETUP_PLAN.md`).
+    *   [ ] **Create Stores Directory:** `apps/frontend/src/lib/state/stores/`
+    *   [ ] **Define Initial Stores:**
+        *   **`uiStore.ts`:** For general UI state.
+            ```typescript
+            // apps/frontend/src/lib/state/stores/uiStore.ts
+            import { create } from 'zustand';
+
+            interface UIState {
+              isMobileMenuOpen: boolean;
+              openMobileMenu: () => void;
+              closeMobileMenu: () => void;
+              toggleMobileMenu: () => void;
+              // Add other global UI states here, e.g., active modal, global loading indicators
+            }
+
+            export const useUIStore = create<UIState>((set) => ({
+              isMobileMenuOpen: false,
+              openMobileMenu: () => set({ isMobileMenuOpen: true }),
+              closeMobileMenu: () => set({ isMobileMenuOpen: false }),
+              toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
+            }));
+            ```
+        *   **(Optional) `notificationStore.ts`:** For managing a queue of global notifications/toasts.
+    *   [ ] **Integrate with Components:** Use hooks like `useUIStore()` in components (e.g., Navbar for mobile menu).
+
+### 3. Local Component State
+*   **Description:** State confined to a single component or a small group of closely related components.
+*   **Chosen Solution:** **React `useState`, `useReducer`**
+    *   **Reasoning:** Built-in React features, perfectly suited for local state management without adding external dependencies.
+*   **Usage:** Standard React practice.
+
+### 4. URL State
+*   **Description:** State managed via URL query parameters or path segments, making it shareable and bookmarkable. Examples: active filters, current page in pagination, selected date in a calendar.
+*   **Chosen Solution:** **Next.js App Router (`useRouter`, `useSearchParams`, `usePathname`)**
+    *   **Reasoning:** Built-in Next.js capabilities for managing URL-based state.
+*   **Usage:** Use Next.js routing hooks to read and update URL state.
+
+### 5. Authentication State
+*   **Description:** User authentication status and profile information.
+*   **Chosen Solution:** **`@auth0/nextjs-auth0` (`UserProvider`, `useUser`, `getSession`)**
+    *   **Reasoning:** Dedicated library for authentication, handles session management and provides user context.
+*   **Usage:** As per Auth0 SDK documentation and `SETUP_PLAN.md`.
+
+## Devtools
+*   **TanStack Query Devtools:** Will be integrated for inspecting query cache, statuses, and data.
+*   **Redux Devtools (for Zustand):** Zustand can be connected to Redux Devtools via its middleware for easier debugging of global client state.
+    *   [ ] **Setup Zustand with Redux Devtools:**
+        ```typescript
+        // Example in a store like uiStore.ts
+        import { create } from 'zustand';
+        import { devtools } from 'zustand/middleware';
+
+        interface UIState { /* ... */ }
+
+        export const useUIStore = create<UIState>()(
+          devtools(
+            (set) => ({
+              // ... store definition
+              isMobileMenuOpen: false,
+              openMobileMenu: () => set({ isMobileMenuOpen: true }, false, 'openMobileMenu'),
+              closeMobileMenu: () => set({ isMobileMenuOpen: false }, false, 'closeMobileMenu'),
+              toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen }), false, 'toggleMobileMenu'),
+            }),
+            { name: 'UIStore' } // Name for the devtools
+          )
+        );
+        ```
+
+## Conclusion
+The state management strategy is layered:
+1.  **TanStack Query** for server state.
+2.  **Zustand** for global client-side UI state.
+3.  **React local state** for component-specific needs.
+4.  **Next.js Router** for URL-driven state.
+5.  **Auth0 SDK** for authentication state.
+
+This approach aims for a balance of power, simplicity, and performance, using specialized tools for each category of state.

@@ -7,14 +7,16 @@ This document outlines the initial setup steps for the UniCal frontend applicati
 *   **Framework:** Next.js 15 (App Router)
 *   **Styling:** Tailwind CSS
 *   **UI Components:** @headlessui/react
-*   **Calendar:** @event-calendar/core
+*   **Calendar:** @event-calendar/core (includes interaction features like drag/drop, resize)
 *   **Authentication:** @auth0/nextjs-auth0
+*   **Data Fetching & Server State Management:** TanStack Query (React Query)
+*   **Client-Side Global State (Optional, if needed beyond React Query):** Zustand
 *   **Language:** TypeScript
 *   **Package Manager:** npm (as per existing `package.json`)
 
 ## Phase 1: Project Initialization & Next.js 15 Setup
 
-*   [ ] **Next.js Project Structure:** (Already initialized with App Router)
+*   [x] **Next.js Project Structure:** (Already initialized with App Router)
     *   Confirm standard Next.js App Router project structure (`app`, `public`, `next.config.ts`, etc.).
 *   [ ] **Environment Variables:**
     *   Create `.env.local` for local development environment variables.
@@ -30,10 +32,10 @@ This document outlines the initial setup steps for the UniCal frontend applicati
 
 ## Phase 2: UI Framework & Styling
 
-*   [ ] **Tailwind CSS Setup:** (Partially exists via `postcss.config.mjs` and `globals.css`)
-    *   Install Tailwind CSS: `npm install -D tailwindcss postcss autoprefixer` (if not already fully installed)
-    *   Initialize Tailwind CSS: `npx tailwindcss init -p` (if `tailwind.config.ts` or `.js` is missing)
-    *   Configure `tailwind.config.ts`:
+*   [~] **Tailwind CSS Setup:** (Partially exists via `postcss.config.mjs` and `globals.css`)
+    *   Verify Tailwind CSS installation: `npm ls tailwindcss postcss autoprefixer`
+    *   Ensure `tailwind.config.ts` (or `.js`) is present and configured. If not: `npx tailwindcss init -p`
+    *   Configure `tailwind.config.ts` (or create if missing):
         *   Set up `content` paths to include all relevant files (`./app/**/*.{js,ts,jsx,tsx,mdx}`, `./components/**/*.{js,ts,jsx,tsx,mdx}`).
         *   Define custom theme (colors, fonts, spacing) as per design requirements.
     *   Import Tailwind directives in `app/globals.css`:
@@ -106,8 +108,8 @@ This document outlines the initial setup steps for the UniCal frontend applicati
 
 ## Phase 4: Calendar Integration (@event-calendar/core)
 
-*   [ ] **Install @event-calendar/core and Plugins:**
-    *   `npm install @event-calendar/core`.
+*   [ ] **Install @event-calendar/core:**
+    *   `npm install @event-calendar/core` (This includes interaction plugins).
 *   [ ] **Peer Dependencies:**
     *   Check for and install any peer dependencies (e.g., a date library if not using native Date objects extensively).
 *   [ ] **Basic Calendar Component:**
@@ -116,21 +118,22 @@ This document outlines the initial setup steps for the UniCal frontend applicati
     *   Style the calendar using Tailwind CSS or custom CSS. The library is designed to be themeable.
 *   [ ] **Data Fetching for Events:**
     *   Plan how events will be fetched from the backend API.
-    *   Implement functions to fetch events based on the current view/date range.
-    *   Consider using React Server Components for initial data load or SWR/React Query for client-side fetching and caching.
+    *   Implement functions to fetch events based on the current view/date range using TanStack Query (React Query) for robust client-side fetching, caching, and background updates, especially for dynamic interactions (changing dates, views).
+    *   React Server Components can be used for the initial data load of the page structure surrounding the calendar.
 *   [ ] **Event Handling:**
-    *   Implement handlers for event clicks, date clicks, event drops/resizes (if using `@event-calendar/interaction`).
+    *   Implement handlers for event clicks, date clicks, event drops/resizes (functionality provided by `@event-calendar/core`).
 *   [ ] **State Management for Calendar:**
     *   Manage calendar view state (current date, view type).
     *   Manage event data state.
 
 ## Phase 5: State Management
 
-*   [ ] **Evaluate Need for Global State Manager:**
-    *   For complex global state beyond user authentication and simple UI state, consider libraries like Zustand, Jotai, or Recoil. React Context and `useState`/`useReducer` might be sufficient for many cases.
-*   [ ] **If Needed, Setup Chosen Library:**
-    *   Install and configure the chosen state management library.
-    *   Define initial stores/atoms for global application state (e.g., user preferences, notifications).
+*   [ ] **Evaluate Need for Additional Global Client State Manager:**
+    *   TanStack Query (React Query) will handle server state (API data, caching, mutations).
+    *   For purely client-side global state (e.g., UI preferences, notifications not tied to server data, theme settings), evaluate if React Context with `useState`/`useReducer` is sufficient.
+*   [ ] **If Complex Client State Needed, Setup Zustand:**
+    *   Install and configure Zustand: `npm install zustand`.
+    *   Define stores for specific global client-side application state.
 
 ## Phase 6: API Communication with Backend
 
@@ -143,9 +146,9 @@ This document outlines the initial setup steps for the UniCal frontend applicati
     *   **Client Components:** Use `useEffect` with `fetch`, or libraries like SWR/TanStack Query (React Query) for client-side data fetching, caching, and mutations.
     *   **Route Handlers:** Create API routes within Next.js (`app/api/...`) to proxy requests to the backend or handle specific frontend-backend interactions if needed.
 *   [ ] **Authenticated API Requests:**
-    *   When making requests to protected backend endpoints, include the Auth0 access token.
-    *   Use `getAccessToken` from `@auth0/nextjs-auth0` (available in Route Handlers and server-side contexts) to retrieve the token.
-    *   For client-side requests from Client Components, you might need a Route Handler to securely attach the token.
+    *   When making requests to protected backend endpoints, include the Auth0 access token in the `Authorization` header (e.g., `Authorization: Bearer <token>`).
+    *   The `@auth0/nextjs-auth0` SDK will provide mechanisms to obtain this access token (e.g., via `getAccessToken` on the server-side or a hook/context value on the client-side).
+    *   The API client/service should be configured to retrieve and attach this token to relevant requests.
 
 ## Phase 7: Core Components & Pages
 
@@ -164,12 +167,14 @@ This document outlines the initial setup steps for the UniCal frontend applicati
 
 ## Phase 8: Linting & Formatting
 
-*   [ ] **ESLint & Prettier Setup:** (Partially exists via `eslint.config.mjs`)
-    *   Ensure ESLint rules are configured for Next.js, React, and TypeScript best practices (`eslint-config-next`).
+*   [~] **ESLint & Prettier Setup:** (Partially exists via `eslint.config.mjs`)
+    *   Ensure ESLint rules are configured for Next.js, React, and TypeScript best practices (`eslint-config-next`). Verify/install `eslint-config-prettier` to prevent conflicts.
     *   Integrate Prettier for consistent code formatting.
     *   Add/verify npm scripts in `package.json` for linting and formatting (e.g., `lint`, `format`).
-*   [ ] **Husky & lint-staged (Optional):**
+*   [ ] **Husky & lint-staged (Recommended):**
     *   Set up pre-commit hooks to automatically lint and format staged files.
+      *   `npm install -D husky lint-staged`
+      *   Configure husky and lint-staged in `package.json` or dedicated config files.
 
 ## Phase 9: Testing Setup
 

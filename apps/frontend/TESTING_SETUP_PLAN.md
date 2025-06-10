@@ -135,6 +135,7 @@ This plan outlines the setup for testing the UniCal frontend application, coveri
     *   Focus on testing component behavior from a user's perspective.
     *   Query elements by accessible roles, text, labels, etc.
     *   Simulate user interactions with `@testing-library/user-event`.
+    *   Consider how to test interactions with calendar components, such as event dragging or resizing, which are part of `@event-calendar/core`.
     *   Example for `Button.tsx`:
         ```tsx
         // apps/frontend/src/components/ui/Button.test.tsx
