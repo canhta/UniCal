@@ -30,44 +30,39 @@ This document outlines the initial setup steps for the UniCal backend applicatio
 
 ## Phase 2: Database Setup (Prisma & PostgreSQL)
 
-*   [ ] **Install Prisma CLI:**
+*   [X] **Install Prisma CLI:**
     *   `npm install prisma --save-dev`
-*   [ ] **Initialize Prisma:**
+*   [X] **Initialize Prisma:**
     *   `npx prisma init --datasource-provider postgresql`
-    *   This creates `prisma/schema.prisma` and updates `.env` with `DATABASE_URL`.
-*   [ ] **Configure `DATABASE_URL`:**
-    *   Ensure `DATABASE_URL` in `.env` points to a valid PostgreSQL instance (local or cloud-hosted).
-    *   Example: `DATABASE_URL="postgresql://user:password@host:port/database?schema=public"`
+*   [X] **Configure `DATABASE_URL`:**
+    *   Ensure `DATABASE_URL` in `.env` points to a valid PostgreSQL instance.
 *   [ ] **Define Initial Schemas:**
-    *   Start defining core schemas in `prisma/schema.prisma` based on module plans (e.g., `User`, `ConnectedAccount`, `CalendarEvent`).
-    *   Refer to `USER_MODULE_PLAN.md`, `ACCOUNTS_MODULE_PLAN.md`, `EVENTS_MODULE_PLAN.md`.
-*   [ ] **Generate Prisma Client:**
+    *   Start defining core schemas in `prisma/schema.prisma` based on module plans (e.g., `User`, `ConnectedAccount`, `CalendarEvent`, `UserCalendarSetting`, `Calendar`, `Event`).
+    *   Refer to `USER_MODULE_PLAN.md`, `ACCOUNTS_MODULE_PLAN.md`, `EVENTS_MODULE_PLAN.md`, `CALENDARS_MODULE_PLAN.md`.
+*   [X] **Generate Prisma Client:**
     *   `npx prisma generate` (after schema changes)
-*   [ ] **Create Prisma Service:**
+*   [X] **Create Prisma Service:**
     *   Create a `PrismaService` (e.g., `src/prisma/prisma.service.ts`) that extends `PrismaClient` and implements `OnModuleInit`.
     *   Provide this service globally or in modules that need database access.
 *   [ ] **Initial Migration:**
     *   `npx prisma migrate dev --name initial_setup`
-    *   This creates the initial database schema based on `schema.prisma`.
-*   [ ] **Docker Setup for PostgreSQL (Optional but Recommended for Dev):**
+*   [X] **Docker Setup for PostgreSQL (Optional but Recommended for Dev):**
     *   Update `docker-compose.yml` at the project root to include a PostgreSQL service.
-    *   Ensure it configures default user, password, and database.
 
 ## Phase 3: Redis Integration
 
 *   [ ] **Install Redis Client Libraries:**
     *   `npm install cache-manager cache-manager-redis-store` (for caching)
-    *   `npm install bull @nestjs/bull` (for job queues, if using Bull)
+    *   `npm install bullmq @nestjs/bullmq` (for job queues - using bullmq as it is more modern than bull)
     *   Alternatively, `npm install ioredis` for direct Redis interaction.
 *   [ ] **Configure Redis Connection:**
     *   Add `REDIS_HOST` and `REDIS_PORT` (or `REDIS_URL`) to `.env`.
 *   [ ] **Implement Caching Service (Optional - for specific use cases):**
     *   Use `@nestjs/cache-manager` and `cache-manager-redis-store` to set up Redis as a cache store.
-    *   Implement caching interceptors or use `CacheModule` directly in services.
-*   [ ] **Implement Job Queue (BullMQ/Bull - for SyncModule):**
-    *   Configure `BullModule` in `app.module.ts` or relevant feature modules (e.g., `SyncModule`).
+*   [ ] **Implement Job Queue (BullMQ - for SyncModule):**
+    *   Configure `BullModule` (from `@nestjs/bullmq`) in `app.module.ts` or relevant feature modules (e.g., `SyncModule`).
     *   Define queues, producers, and consumers as per `SYNC_MODULE_PLAN.md`.
-*   [ ] **Docker Setup for Redis (Optional but Recommended for Dev):**
+*   [X] **Docker Setup for Redis (Optional but Recommended for Dev):**
     *   Update `docker-compose.yml` to include a Redis service.
 
 ## Phase 4: API Documentation (Swagger)
@@ -84,9 +79,9 @@ This document outlines the initial setup steps for the UniCal backend applicatio
 ## Phase 5: Core Services & Utilities
 
 *   [ ] **Encryption Service:**
-    *   Create `EncryptionService` (e.g., `src/encryption/encryption.service.ts`).
-    *   Use Node.js `crypto` module or a library like `bcrypt` (for hashing) and `aes-256-gcm` (for encryption).
-    *   Store encryption keys securely (e.g., via `ConfigService` from environment variables).
+    *   Create `EncryptionService` (e.g., `src/common/encryption/encryption.service.ts`).
+    *   Use Node.js `crypto` module: `aes-256-gcm` for encryption/decryption. **(Avoid bcrypt for general encryption; it's for hashing).**
+    *   Store `ENCRYPTION_KEY` (32 bytes, hex-encoded) securely via `ConfigService` from environment variables.
     *   This will be used by `AccountsModule` and potentially `AuthModule`.
 *   [ ] **Global Pipes for Validation:**
     *   Enable `ValidationPipe` globally in `main.ts` to automatically validate incoming request DTOs using `class-validator` and `class-transformer`.

@@ -42,13 +42,17 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 1.  **`UserModule` (Simplified - `USER_MODULE_PLAN.md`):** User creation (email, default role), find by email.
 2.  **`AuthModule` (Simplified - `AUTH_MODULE_PLAN.md`):** Simplified login service (email -> JWT). `POST /auth/simple-login`. JWT strategy & `JwtAuthGuard`.
 ---
-**Single Sign-On (SSO) Implementation**
-*Goal: Google & Microsoft SSO.*
+**Single Sign-On (SSO) Implementation & Account Connection**
+*Goal: Google & Microsoft SSO for user login, and ability to connect external calendar accounts.*
 
-1.  **`AuthModule` (SSO Extension - `AUTH_MODULE_PLAN.md`):** OAuth 2.0/OpenID Connect integration. SSO Callbacks, user provisioning/linking. Update `User` model for SSO IDs if needed.
-2.  **`CalendarPlatformModule` (OAuth Setup - `CALENDAR_PLATFORM_MODULE_PLAN.md`):** OAuth client logic for Google/Microsoft (auth aspects for SSO).
-3.  **`EncryptionService` (`COMMON_UTILS_PLAN.md` or direct):** Implement encryption/decryption for tokens.
-4.  **Configuration:** Add Google/Microsoft client IDs/secrets, redirect URIs, `TOKEN_ENCRYPTION_KEY` to `.env` and `ConfigService`.
+1.  **`AuthModule` (SSO Login Extension - `AUTH_MODULE_PLAN.md`):** OAuth 2.0/OpenID Connect integration for *user authentication*. SSO Callbacks (`/auth/google/callback`, etc.), user provisioning/linking. Updates `User` model for `emailVerified` based on provider.
+2.  **`AccountsModule` (Account Connection - `ACCOUNTS_MODULE_PLAN.md`):**
+    *   Handles OAuth 2.0 flow for *connecting external calendar accounts* (`/accounts/connect/google`, `/accounts/connect/google/callback`, etc.).
+    *   Uses `CalendarPlatformModule` for underlying OAuth client logic and API interactions with Google/Microsoft.
+    *   Securely stores external provider tokens (access, refresh) in `ConnectedAccount` using `EncryptionService`.
+3.  **`CalendarPlatformModule` (OAuth Client Logic - `CALENDAR_PLATFORM_MODULE_PLAN.md`):** Provides services to `AccountsModule` for OAuth token exchange and refreshing external provider tokens.
+4.  **`EncryptionService` (`COMMON_UTILS_PLAN.md` or direct):** Implement encryption/decryption for external tokens.
+5.  **Configuration:** Add Google/Microsoft client IDs/secrets, redirect URIs (for both auth and accounts flows), `TOKEN_ENCRYPTION_KEY` to `.env` and `ConfigService`.
 ---
 **Core Scheduling Functionalities**
 *Goal: Calendar connectivity, unified view, event management, two-way sync.*

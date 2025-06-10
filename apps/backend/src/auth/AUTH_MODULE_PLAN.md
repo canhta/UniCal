@@ -32,33 +32,38 @@ This plan outlines the development tasks for the Auth module, responsible for us
 
 *Prerequisites: `UserModule` can find/create users. `AccountsModule` is ready for OAuth token exchange and storage. `EncryptionService` is available.*
 
-*   [ ] **Configuration:**
+*   [X] **Configuration:**
     *   Add Google/Microsoft OAuth client IDs, secrets, and callback URLs to `.env` and `ConfigService`. **(These secrets should be managed by `ConfigService` and potentially encrypted if stored outside `.env` in a config file, though `.env` is typical for these).**
-*   [ ] **Google OAuth Strategy:**
+*   [X] **Google OAuth Strategy:**
     *   Implement `GoogleStrategy` (using `passport-google-oauth20`).
     *   `validate()` method:
-        *   Receive Google profile.
-        *   Call `UserService.findByEmail()` or `UserService.create()` to provision/link user.
-        *   Call `AccountsService.createOrUpdateAccount()` to store Google tokens (encrypted using `EncryptionService`) and profile info.
+        *   Receive Google profile (email, name, avatar).
+        *   Call `UserService.findOrCreateUser({ email: profile.email, name: profile.displayName, avatarUrl: profile.photos[0].value, emailVerified: profile.emails[0].verified })` to provision/link user. Mark `emailVerified` based on provider data.
+        *   Call `AccountsService.createOrUpdateAccount()` to store Google tokens (access_token, refresh_token from Google, encrypted using `EncryptionService`) and profile info (e.g., Google ID).
         *   Return UniCal user object.
-*   [ ] **Microsoft OAuth Strategy:**
+*   [X] **Microsoft OAuth Strategy:**
     *   Implement `MicrosoftStrategy` (using a suitable Passport strategy e.g., `passport-microsoft`).
-    *   `validate()` method: Similar to Google\'s, for Microsoft accounts. **(Ensure `EncryptionService` is used for external tokens here too).**
-*   [ ] **Controller Endpoints for SSO:**
-    *   `GET /auth/google`: Redirect to Google for authentication. **(Responsibility: Initiates external OAuth flow).**
+    *   `validate()` method: Similar to Google\'s, for Microsoft accounts. Ensure `emailVerified` is set based on provider data. **(Ensure `EncryptionService` is used for external tokens here too).**
+*   [X] **Controller Endpoints for SSO:**
+    *   `GET /auth/google/connect`: Redirect to Google for authentication. **(Responsibility: Initiates external OAuth flow).** Ensure `prompt: 'consent'` and `access_type: 'offline'` are used if refresh tokens are needed consistently.
     *   `GET /auth/google/callback`: Handles Google callback.
-        *   Calls `AuthService.generateTokens()` for the validated/provisioned user.
-        *   Redirects user to frontend with tokens (or frontend handles token reception).
-    *   `GET /auth/microsoft`: Redirect to Microsoft for authentication. **(Responsibility: Initiates external OAuth flow).**
+        *   Passport strategy (`GoogleStrategy`) will invoke its `validate()` method.
+        *   Upon successful validation by the strategy, the user object is attached to `req.user`.
+        *   Call `AuthService.generateTokens(req.user)` for the validated/provisioned user.
+        *   Redirect user to frontend with tokens (e.g., `https://<frontend_url>/auth/callback?accessToken=...&refreshToken=...`) or set HttpOnly cookies.
+    *   `GET /auth/microsoft/connect`: Redirect to Microsoft for authentication. **(Responsibility: Initiates external OAuth flow).** Ensure appropriate scopes for profile and offline_access.
     *   `GET /auth/microsoft/callback`: Handles Microsoft callback. Similar to Google\'s.
-*   [ ] **Refresh Token Logic:**
-    *   `AuthService.refreshToken(refreshToken)`: Validate refresh token, issue new access token. **(This refers to UniCal's own JWT refresh tokens).**
-    *   `AuthController.refresh()`: (`POST /auth/refresh`) Endpoint for token refresh.
+*   [X] **Refresh Token Logic (UniCal JWTs):**
+    *   `AuthService.refreshToken(refreshToken)`: Validate UniCal refresh token, issue new access token. **(This refers to UniCal's own JWT refresh tokens).**
+    *   `AuthController.refresh()`: (`POST /auth/refresh`) Endpoint for token refresh. Uses `JwtRefreshAuthGuard`.
     *   Implement `JwtRefreshStrategy`.
-*   [ ] **Logout Logic:**
+*   [X] **Logout Logic:**
     *   `AuthController.logout()`: (`POST /auth/logout`)
-        *   Invalidate refresh token (e.g., by storing it in a denylist or database table until it expires).
-        *   Client-side should discard tokens.
+        *   Accepts refresh token in the request body.
+        *   Invalidate the provided refresh token (e.g., by storing it in a denylist or database table like `RevokedRefreshTokens` until it expires).
+        *   Client-side should discard tokens (access and refresh).
+        *   Consider clearing HttpOnly cookies if used for tokens.
+    *   **Note:** Access tokens are short-lived and stateless; direct invalidation is complex. Rely on expiry and refresh token invalidation.
 
 ## Phase 3: Full Email/Password Authentication (Aligns with Backend AGENT_PLAN Phase 2 - Full Auth)
 
@@ -233,17 +238,18 @@ This plan outlines the development tasks for the Auth module, responsible for us
 ### 4. Token Management (JWT)
 
 *   **Access Token:**
-    *   Short-lived token (e.g., 15 minutes).
-    *   Contains user ID and role, issued at, and expiration.
-    *   Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeJK9y6bpQ0s1b6z8Q0s1b6z8Q0s1b6z8`
+    *   Short-lived token (e.g., 15 minutes - configurable via `JWT_ACCESS_TOKEN_EXPIRATION`).
+    *   Contains `userId`, `email`, `role`. Issued at (`iat`) and expiration (`exp`) are standard JWT claims.
+    *   Payload example: `{ "sub": "user-uuid-123", "email": "user@example.com", "role": "USER", "iat": 1678886400, "exp": 1678887300 }`
 *   **Refresh Token:**
-    *   Longer-lived token (e.g., 7 days).
-    *   Used to obtain new access tokens.
-    *   Should be stored securely (e.g., HttpOnly cookie).
-    *   Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeJK9y6bpQ0s1b6z8Q0s1b6z8Q0s1b6z8`
-*   **Token Blacklisting:**
-    *   Consider blacklisting refresh tokens on logout or password change.
-    *   Implement a denylist in the database or in-memory store (e.g., Redis).
+    *   Longer-lived token (e.g., 7 days - configurable via `JWT_REFRESH_TOKEN_EXPIRATION`).
+    *   Contains `userId` and a unique token ID (`jti`) for potential revocation.
+    *   Stored securely on the client (e.g., HttpOnly cookie with `Secure` and `SameSite=Strict` flags) and its hash or a reference can be stored in the database against the user for revocation.
+    *   Payload example: `{ "sub": "user-uuid-123", "jti": "refresh-uuid-abc", "iat": 1678886400, "exp": 1679491200 }`
+*   **Token Blacklisting/Revocation:**
+    *   For refresh tokens: On logout or password change, the `jti` of the refresh token (or the token itself if not hashed in DB) is added to a denylist (e.g., Redis set with expiry matching token's remaining validity, or a `RevokedRefreshTokens` table).
+    *   The `JwtRefreshStrategy` must check this denylist before issuing new tokens.
+    *   Access tokens are generally not revoked server-side due to their stateless nature; rely on short expiry.
 
 ### 5. External Dependencies
 
@@ -260,10 +266,18 @@ This plan outlines the development tasks for the Auth module, responsible for us
 
 ### 6. Security Considerations
 
-*   **Token Security:** Access and refresh tokens should be securely generated, with sufficient entropy and length. Consider using a library like `crypto` for generation.
-*   **Storage:** Tokens should be stored securely on the client-side (e.g., HttpOnly cookies or secure storage mechanisms).
-*   **Transmission:** Use HTTPS to encrypt data in transit. Never expose sensitive data in URLs.
-*   **Email Verification Tokens:** Ensure tokens are single-use, have a reasonable expiry time, and are securely generated.
-*   **Password Reset Tokens:** Ensure tokens are single-use, have a short expiry time (e.g., 15-60 minutes), and are securely generated. Log password reset attempts.
-*   **Rate Limiting:** Implement rate limiting on authentication endpoints to mitigate brute-force attacks.
-*   **Monitoring and Logging:** Monitor authentication attempts and log relevant events for auditing and anomaly detection.
+*   **Token Security:** Access and refresh tokens should be securely generated using strong secrets (`JWT_SECRET`, `JWT_REFRESH_SECRET`).
+*   **Storage (Client-Side):**
+    *   **Refresh Tokens:** Store in HttpOnly, Secure, SameSite=Strict cookies to prevent XSS access.
+    *   **Access Tokens:** Can be stored in JavaScript memory. If localStorage/sessionStorage is used, be aware of XSS risks. HttpOnly cookies are not suitable for access tokens if they need to be read by JavaScript for API calls (unless using a backend-for-frontend pattern).
+*   **Transmission:** Always use HTTPS.
+*   **Email Verification Tokens & Password Reset Tokens:** Single-use, short-lived, securely generated (e.g., `crypto.randomBytes().toString('hex')`), and not guessable. Store a hash of the token in the database if it's long-lived before verification.
+*   **Rate Limiting:** Apply to `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/refresh`, `/auth/resend-verification-email`.
+*   **Monitoring and Logging:** Log all auth events (login success/failure, registration, password reset requests, token refresh, logout).
+*   **CSRF Protection:** If using cookies for session management or refresh tokens, implement CSRF protection (e.g., `csurf` package in Express/NestJS, or double-submit cookie pattern).
+*   **Input Validation:** Rigorously validate all input DTOs.
+*   **Password Hashing:** Use a strong, adaptive hashing algorithm like Argon2 (preferred) or bcrypt with a sufficient work factor.
+*   **OAuth Security:**
+    *   Use the `state` parameter in OAuth flows to prevent CSRF.
+    *   Validate the `iss` (issuer) and `aud` (audience) claims in tokens received from OAuth providers if applicable (though Passport strategies often handle this).
+    *   Store external provider tokens (access_token, refresh_token) securely (encrypted at rest).
