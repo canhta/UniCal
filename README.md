@@ -13,7 +13,7 @@ UniCal consolidates events from multiple calendar platforms. It's a Yarn monorep
 1.  **Enable Corepack & Get Code**
     ```bash
     corepack enable
-    git clone <repository_url> # Replace <repository_url>
+    git clone git@github.com:canhta/UniCal.git
     cd UniCal
     ```
     Corepack uses the Yarn version in `package.json`.
