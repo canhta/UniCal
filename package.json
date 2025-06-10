@@ -1,0 +1,16 @@
+{
+  "name": "unical",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "yarn@4.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace @unical/backend start:dev\" \"yarn workspace @unical/frontend dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
