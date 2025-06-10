@@ -57,6 +57,29 @@ This page will be a Server Component by default (`apps/frontend/src/app/(protect
     *   **Action:** Clicking "Save" makes an API call to update the sync preferences for that account's calendars (e.g., `PUT /api/integrations/accounts/{accountId}/calendars`).
     *   **SSR Preference:** If navigating to a new page, this page can be a Server Component, fetching the list of calendars and their current sync state on the server.
 
+### 5. Frontend Considerations
+
+*   [ ] **Displaying Sync Status & Errors:**
+    *   **Integrations Page (`/integrations`):**
+        *   List each `ConnectedAccount`.
+        *   Display `syncStatus` clearly (e.g., "Syncing...", "Last synced: 5 minutes ago", "Error: Google Calendar connection failed").
+        *   Provide a visual indicator for the status (e.g., green check for `IDLE`, yellow warning for `ERROR_PARTIAL`, red cross for `ERROR_FULL` or `DISABLED`).
+        *   If `lastSyncErrorDetails` is populated, show a summary or a link/tooltip to view more details of the last error.
+        *   Offer actions based on status:
+            *   `ERROR_FULL` / `DISABLED`: "Reconnect Account" or "Resolve Issue" button.
+            *   `ERROR_PARTIAL`: "Retry Failed Items" or "View Details" button.
+            *   `PENDING_INITIAL_SYNC`: Prompt to complete setup (e.g., select native calendars).
+    *   **Global UI Notification:**
+        *   Consider a subtle global indicator (e.g., in the sidebar or header) if there's an active sync issue with any connected account, prompting the user to visit the Integrations page.
+        *   Toast notifications for critical sync failures that require immediate attention (e.g., account disconnected).
+    *   **Calendar View:**
+        *   If an event or calendar is affected by a sync issue (e.g., a specific native calendar is failing to sync), a visual cue could be shown next to the calendar name or events from that source.
+        *   This requires `syncStatus` or error information to be available at a per-native-calendar granularity and propagated to the frontend when fetching calendar/event data.
+
+*   [ ] **Triggering Sync Actions:**
+    *   "Refresh All" or "Sync Now" button on the Integrations page (could trigger a poll for all accounts or specific ones).
+    *   "Retry" button for accounts/calendars in an error state.
+
 ## Components to Create/Use:
 
 *   `apps/frontend/src/app/(protected)/integrations/page.tsx` (Main Server Component)
