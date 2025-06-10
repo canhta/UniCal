@@ -1,4 +1,10 @@
-# System Challenges and Solutions for UniCal MVP
+# Challenges and Solutions
+
+## 0. Key AI Agent Directives
+
+*   **Development Order:** This document supports the 4-Milestone plan detailed in `apps/backend/AGENT_PLAN.md` and `apps/frontend/AGENT_PLAN.md`.
+*   **Focus:** The AI agent should refer to this document for guidance on *how* to approach specific technical challenges encountered during the milestone-based implementation described in `FRD.md` and the `AGENT_PLAN.md` files.
+*   **Conciseness:** This document provides targeted solutions for known challenges. Broader requirements are in `FRD.md`.
 
 This document outlines key technical challenges anticipated during the implementation of the UniCal Minimum Viable Product (MVP) and proposes actionable solutions or approaches. It is intended to be a living document, updated as development progresses.
 
