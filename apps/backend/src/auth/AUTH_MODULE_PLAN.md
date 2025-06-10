@@ -1,11 +1,18 @@
 <!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/backend/src/auth/AUTH_MODULE_PLAN.md -->
 # Auth Module Plan
 
-This plan outlines the development tasks for the Auth module, responsible for user authentication, authorization, and session management. It will coordinate closely with the `UserModule` and `AccountsModule`.
+This plan outlines the development tasks for the Auth module, responsible for user authentication, authorization, and session management for the UniCal application. It will coordinate closely with the `UserModule`.
 
-## Phase 1: Initial Authentication via Primary Identity Provider (e.g., Auth0)
+## 0. Overview & Clarifications
+*   **Primary Authenticator:** Auth0 will serve as the primary identity provider. It handles user registration, login (including SSO with Google/Microsoft), password management (reset, change), and email verification.
+*   **UniCal User Identity:** This Auth module manages the UniCal application's session (via its own JWTs) after a user is successfully authenticated by Auth0. It ensures a corresponding UniCal user record exists (created/updated via `UserModule`).
+*   **Distinction from AccountsModule:**
+    *   **AuthModule:** Focuses on authenticating the *user to UniCal* via Auth0.
+    *   **AccountsModule:** Focuses on allowing an authenticated UniCal user to connect their *external service accounts* (e.g., Google Calendar, Outlook Calendar) to UniCal for data integration. The OAuth flows in `AccountsModule` are for authorizing UniCal to access those external services, not for logging the user into UniCal itself.
 
-*This phase aligns with FRD 3.1.0, where a primary authentication provider like Auth0 handles the initial login experience, potentially federating to Google/Microsoft or offering its own email/password or passwordless options.*
+## Phase 1: Initial Authentication via Primary Identity Provider (Auth0)
+
+*This phase aligns with FRD 3.1.0, where Auth0 handles the initial login experience, potentially federating to Google/Microsoft or offering its own email/password or passwordless options.*
 
 *   [ ] **Module Setup (Foundation):**
     *   Ensure `AuthService` and `AuthController` are in place.

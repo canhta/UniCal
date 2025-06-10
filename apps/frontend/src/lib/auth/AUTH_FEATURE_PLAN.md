@@ -3,8 +3,12 @@
 This plan details the implementation of authentication features for the UniCal frontend, aligning with `AGENT_PLAN.md` and `SETUP_PLAN.md`.
 
 ## FRD Alignment
-*   **FR3.1.0 Simplified Email-Only Login (UI Focus):** Initial implementation will focus on UI elements. If the backend provides a truly simplified JWT mechanism (pre-Auth0), this plan will adapt. Otherwise, Auth0 will be used for the "simplified" flow by initially only presenting email-based SSO options or a direct email login if Auth0 is configured for it.
+*   **FR3.1.0 Simplified Email-Only Login (UI Focus):** Initial implementation will focus on UI elements. Auth0 will be used for the "simplified" flow by initially only presenting email-based SSO options or a direct email login if Auth0 is configured for it.
 *   **FR3.1.3 Single Sign-On (SSO) - Google & Microsoft:** Core focus of this plan using Auth0.
+
+## Clarifications on Account Linking
+*   **Identity Linking (Auth0):** Linking different methods of signing into *UniCal* (e.g., allowing a user to sign in with their Google account and later with an email/password, and recognizing them as the same UniCal user) is a feature managed by Auth0 (identity federation/account linking within Auth0). The frontend will primarily direct users through Auth0 flows.
+*   **External Service Connection (UniCal Settings/Integrations):** Connecting UniCal to *external services* like Google Calendar or Outlook Calendar to access data is handled separately, typically within the UniCal application's "Integrations" or "Settings" sections, and involves OAuth flows managed by the `AccountsModule` on the backend. This feature plan focuses on user authentication into UniCal.
 
 ## Core Tasks (Using @auth0/nextjs-auth0)
 
