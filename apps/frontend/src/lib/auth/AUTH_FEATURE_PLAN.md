@@ -80,10 +80,84 @@ This plan details the implementation of authentication features for the UniCal f
     *   Display appropriate messages for login errors (e.g., if Auth0 returns an error on callback).
     *   The `useUser` hook provides an `error` object.
 
+### 2. User Flows
+
+*   **Registration Flow:**
+    *   User navigates to the registration page.
+    *   Fills in name, email, and password.
+    *   Submits the form.
+    *   Frontend calls `POST /auth/register`.
+    *   **On success (e.g., 201 response or specific message indicating email sent):**
+        *   **Display a message to the user instructing them to check their email to verify their account.**
+        *   **Optionally, redirect to a "Check Your Email" page or a login page with a message.**
+        *   **Do not automatically log the user in or provide auth tokens until email is verified (unless backend provides them post-verification).**
+    *   On error (e.g., email already exists, validation error), display appropriate feedback.
+*   **Email Verification Flow:**
+    *   **User clicks the verification link in their email (e.g., `https://<frontend_url>/verify-email?token=<token>`).**
+    *   **Frontend mounts a specific page/route for `/verify-email`.**
+    *   **This page extracts the `token` from the URL query parameters.**
+    *   **It calls the backend endpoint `GET /auth/verify-email?token=<token>`.**
+    *   **On success:**
+        *   **Display a "Email Verified Successfully" message.**
+        *   **Redirect to the login page or, if the backend returns auth tokens, log the user in and redirect to the dashboard.**
+    *   **On error (e.g., invalid/expired token):**
+        *   **Display an appropriate error message (e.g., "Invalid or expired verification link.").**
+        *   **Optionally, provide a button/link to request a new verification email (`POST /auth/resend-verification-email`).**
+*   **Resend Verification Email Flow (Optional but Recommended):**
+    *   **If a user tries to log in with an unverified email (backend might return a specific error code/message for this), or from a dedicated UI element:**
+    *   **User clicks a "Resend Verification Email" button/link.**
+    *   **Frontend calls `POST /auth/resend-verification-email` with the user's email.**
+    *   **On success, display a message: "A new verification email has been sent."**
+    *   **On error, display an appropriate message.**
+*   **Login Flow:**
+    *   User navigates to the login page.
+    *   Enters email and password (or uses SSO).
+    *   Submits the form.
+    *   Frontend calls `POST /auth/login`.
+    *   **On success:**
+        *   Stores JWT and other user data (if any) in the client (e.g., cookies, local storage).
+        *   Updates auth state.
+        *   **If the email is not verified (backend indicates this), display a message: "Please verify your email before logging in." and optionally provide a way to resend the verification email.**
+        *   Redirects to the intended page or dashboard.
+    *   On error (e.g., invalid credentials, user not found), display appropriate feedback.
+
+*   **Forgot Password Flow:**
+    *   **User clicks "Forgot Password?" link (typically on the login page).**
+    *   **User is navigated to a "Forgot Password" page.**
+    *   **User enters their registered email address and submits.**
+    *   **Frontend calls `POST /auth/forgot-password` with the email.**
+    *   **On success (backend should always return a generic success message to prevent email enumeration):**
+        *   **Display a message like: "If an account with that email exists, a password reset link has been sent."**
+    *   **On error (e.g., client-side validation or network error), display appropriate feedback.**
+
+*   **Reset Password Flow:**
+    *   **User clicks the password reset link in their email (e.g., `https://<frontend_url>/reset-password?token=<token>`).**
+    *   **Frontend mounts a specific page/route for `/reset-password`.**
+    *   **The page extracts the `token` from the URL query parameters.**
+    *   **(Optional but Recommended) Frontend first calls `GET /auth/verify-reset-token?token=<token>` to check if the token is valid before showing the password form.**
+        *   **If token is invalid/expired, display an error message (e.g., "Invalid or expired password reset link. Please try again.") and guide the user back to the "Forgot Password" page.**
+    *   **If token is valid (or if skipping the verify step), display a form asking for "New Password" and "Confirm New Password".**
+    *   **User enters and confirms their new password, then submits.**
+    *   **Frontend calls `POST /auth/reset-password` with `{ token, newPassword }`.**
+    *   **On success:**
+        *   **Display a "Password has been reset successfully" message.**
+        *   **Redirect to the login page.**
+    *   **On error (e.g., token became invalid, password policy not met), display appropriate feedback.**
+
+### 4. API Interaction
+
+*   `POST /auth/register`: To register a new user.
+*   `POST /auth/login`: To log in the user.
+*   `GET /auth/verify-email?token=<token>`: To verify the email using the token from the verification link.
+*   `POST /auth/resend-verification-email`: (Optional) To request a new verification email.
+*   `POST /auth/forgot-password`: To initiate the password reset process.
+*   `GET /auth/verify-reset-token`: (Optional) To verify the validity of a password reset token.
+*   `POST /auth/reset-password`: To submit the new password along with the reset token.
+
 ## Future Considerations (Post-Initial Product / Phase 5 of AGENT_PLAN)
 *   **FR3.1.1 User Registration (Full Email/Password):** If Auth0 Universal Login is not customized to handle this, or if a custom UI is needed.
 *   **FR3.1.2 User Login (with Password):** Update login page for email/password fields.
-*   **FR3.1.4 Password Reset:** UI for "Forgot Password" and password reset form.
+*   **FR3.1.4 Password Reset:** UI for "Forgot Password" and password reset form. **(This is now being addressed)**
 *   **FR3.1.5 Profile Management (Password Change):** UI for changing password within account settings.
 
 ## Notes:

@@ -71,151 +71,157 @@ Functional requirements for the initial product, implemented via a phased strate
     *   **User Story:** As a new user, I want to register with email and password for full account features.
     *   **Solution:** Registration page: `Email Address`, `Password`, `Confirm Password`. No email verification for initial product.
     *   **Acceptance Criteria:** Access registration. Error messages for invalid input.
+    *   Users must be able to create a new account using their email address and a password.
+    *   The system should collect necessary information such as name and email.
+    *   **Upon successful registration, the system must send a verification email to the user's provided email address.**
+    *   **Users must verify their email address by clicking a link in the verification email before gaining full access to account features (e.g., creating calendars, events).**
+    *   Password policies (minimum length, complexity) should be enforced.
 
-*   **FR3.1.2 User Login (with Password - Later Phase):**
+### 3.2. User Login
+*   **FR3.2.1 User Login (with Password - Later Phase):**
     *   **User Story:** As a registered user, I want to log in with email and password.
     *   **Solution:** Login page: `Email Address`, `Password`. Secure session management.
     *   **Acceptance Criteria:** Successful login. (Post-initial product: account lockout).
 
-*   **FR3.1.3 Single Sign-On (SSO) (Early Phase):**
+*   **FR3.2.2 Single Sign-On (SSO) (Early Phase):**
     *   **User Story:** As a user, I want to sign in with Google or Microsoft.
     *   **Solution:** "Sign in with Google/Microsoft" options. OAuth 2.0 / OpenID Connect. Provision/link UniCal account.
     *   **Acceptance Criteria:** Successful Google/Microsoft SSO. UniCal account created/linked. User logged in.
 
-*   **FR3.1.4 Password Reset (Later Phase):**
-    *   **User Story:** As a user, I want to reset my forgotten password.
-    *   **Solution:** "Forgot Password?" -> email entry. System sends time-limited tokenized reset link. User sets new password via link.
-    *   **Acceptance Criteria:** Request reset. Email with link sent. Set new password. Link single-use. Old password invalid.
+### 3.3. Password Management
+*   **Users must be able to initiate a "Forgot Password" process if they cannot remember their password.**
+*   **The system must send a secure, time-limited password reset link to the user's verified email address.**
+*   **Users must be able to set a new password by following the reset link.**
+*   Users should be able to change their password when logged in (covered under Account Management if separate).
 
-*   **FR3.1.5 Profile Management (Simplified - password change only - Later Phase):**
-    *   **User Story:** As a logged-in user, I want to change my password.
-    *   **Solution:** "Account Settings" -> "Change Password" form (`Current Password`, `New Password`, `Confirm New Password`). Validate current password.
-    *   **Acceptance Criteria:** Access change password. Successful password change. Error messages for invalid input.
+### 3.4. Session Management
+*   **FR3.4.1 Session Management (Initial Product):**
+    *   **User Story:** As a user, I want my login session to be managed securely.
+    *   **Solution:** Secure, HttpOnly cookies for session ID. Regenerate session ID on login. Invalidate old sessions on password change.
+    *   **Acceptance Criteria:** Secure cookie set. Session ID not exposed to JavaScript. Old sessions invalidated on password change.
 
-### 3.2. Multi-Platform Connectivity (Initial Product)
+### 3.5. Multi-Platform Connectivity (Initial Product)
 
-*   **FR3.2.1 Connect Google Calendar:**
+*   **FR3.5.1 Connect Google Calendar:**
     *   **User Story:** As a user, I want to connect my Google Calendar for unified view.
     *   **Solution:** OAuth 2.0 client. "Connect Google Calendar" button -> Google consent screen. Request minimal scopes. Exchange auth code for tokens. Securely store tokens. Allow selection of Google calendars to sync.
     *   **Acceptance Criteria:** Successful Google OAuth. Tokens stored. Account displayed. Calendars selectable. Error handling.
 
-*   **FR3.2.2 Connect Microsoft Outlook/Teams Calendar:**
+*   **FR3.5.2 Connect Microsoft Outlook/Teams Calendar:**
     *   **User Story:** As a user, I want to connect my Microsoft Outlook calendar.
     *   **Solution:** Similar to Google. OAuth 2.0 client (Azure AD). "Connect Microsoft Calendar" button. Request Graph API permissions. Securely store tokens. Allow selection of Outlook calendars.
     *   **Acceptance Criteria:** Successful Microsoft OAuth. Tokens stored. Account displayed. Calendars selectable. Error handling.
 
-*   **FR3.2.3 Connect Apple Calendar (iCloud):** (Post-Initial Product)
+*   **FR3.5.3 Connect Apple Calendar (iCloud):** (Post-Initial Product)
 
-*   **FR3.2.4 Connect Zoom Account:** (Post-Initial Product)
+*   **FR3.5.4 Connect Zoom Account:** (Post-Initial Product)
 
-*   **FR3.2.5 Manage Connected Accounts (Initial Product):**
+*   **FR3.5.5 Manage Connected Accounts (Initial Product):**
     *   **User Story:** As a user, I want to see and disconnect my connected accounts.
     *   **Solution:** "Integrations" page lists connected accounts (platform, identifier, "Disconnect" button). Disconnecting revokes tokens.
     *   **Acceptance Criteria:** View connected accounts. Disconnect account. UCS stops syncing. (Post-initial product: richer status/re-auth).
 
-*   **FR3.2.6 Authentication Error Handling (Initial Product):**
+*   **FR3.5.6 Authentication Error Handling (Initial Product):**
     *   **Solution:** On OAuth failure/denial, redirect to UCS page with generic error message. Log specific errors.
     *   **Acceptance Criteria:** User informed of connection failures.
 
-### 3.3. Unified Calendar View (Initial Product)
+### 3.6. Unified Calendar View (Initial Product)
 
-*   **FR3.3.1 Standard Calendar Views:**
+*   **FR3.6.1 Standard Calendar Views:**
     *   **User Story:** As a user, I want day, week, and month views of my aggregated schedule.
     *   **Solution:** JS calendar library. Day, Week, Month views with navigation. Fetch aggregated data from UCS backend.
     *   **Acceptance Criteria:** Functional views display events from selected synced calendars. View switching. Past/future navigation. Current date highlighted.
 
-*   **FR3.3.2 Visual Differentiation of Events (Initial Product):**
+*   **FR3.6.2 Visual Differentiation of Events (Initial Product):**
     *   **User Story:** As a user, I want events from different platforms visually distinct.
     *   **Solution:** Fixed, non-customizable color per platform (e.g., Google=blue, Outlook=green).
     *   **Acceptance Criteria:** Consistent, distinct colors for Google and Outlook events.
 
-*   **FR3.3.3 Calendar Visibility Toggle (Initial Product):**
+*   **FR3.6.3 Calendar Visibility Toggle (Initial Product):**
     *   **User Story:** As a user, I want to show/hide events from specific connected native calendars.
     *   **Solution:** List of synced native calendars with checkboxes. Unchecking hides events. Preferences stored locally or server-side.
     *   **Acceptance Criteria:** Toggle visibility. View updates. Preferences remembered.
 
-*   **FR3.3.4 Event Display in Views (Initial Product):**
+*   **FR3.6.4 Event Display in Views (Initial Product):**
     *   **User Story:** As a user, I want to see essential event details in views and access more by clicking.
     *   **Solution:** Views show title, start time. Hover (desktop): full title, start/end time, source. Click: modal with Title, Start/End, Description (plain text), Location (plain text), Source. Edit/Delete buttons.
     *   **Acceptance Criteria:** Title/start time in cells. Hover details. Click modal with info & actions. Overlapping events indicated.
 
-*   **FR3.3.5 Time Zone Support (Initial Product):**
+*   **FR3.6.5 Time Zone Support (Initial Product):**
     *   **User Story:** As a user, I want events displayed in my current system's time zone.
     *   **Solution:** Backend stores times in UTC. Frontend displays in browser's local time zone. Times entered assumed local, converted to UTC.
     *   **Acceptance Criteria:** Events displayed in local TZ. Times correctly converted/stored in UTC.
 
-### 3.4. Event Management (CRUD Operations - Initial Product)
+### 3.7. Event Management (CRUD Operations - Initial Product)
 
-*   **FR3.4.1 Create Event (Initial Product):**
+*   **FR3.7.1 Create Event (Initial Product):**
     *   **User Story:** As a user, I want to create an event in UCS, select a target native calendar, and have it sync.
     *   **Solution:** Event creation modal: Title, Start/End, All-day, Target Calendar (dropdown of connected native calendars), Description, Location (all plain text). UCS sends to selected native calendar API.
     *   **Acceptance Criteria:** Create event with core details, select target. Event created on native platform. Appears in UCS view. Error handling.
 
-*   **FR3.4.2 Read Event Details (Initial Product):** (Covered by FR3.3.4)
+*   **FR3.7.2 Read Event Details (Initial Product):** (Covered by FR3.3.4)
     *   **User Story:** As a user, I want to view all details of an event.
     *   **Solution:** Per FR3.3.4 click action.
     *   **Acceptance Criteria:** Core details displayed.
 
-*   **FR3.4.3 Update Event (Initial Product):**
+*   **FR3.7.3 Update Event (Initial Product):**
     *   **User Story:** As a user, I want to modify events in UCS and have changes sync to the native calendar.
     *   **Solution:** Edit from event details modal. Modify core fields. UCS sends update to native calendar API.
     *   **Acceptance Criteria:** Edit core fields. Changes saved in UCS & synced. Error handling.
 
-*   **FR3.4.4 Delete Event (Initial Product):**
+*   **FR3.7.4 Delete Event (Initial Product):**
     *   **User Story:** As a user, I want to delete events in UCS and have them removed from the native calendar.
     *   **Solution:** Delete from event details modal with confirmation. UCS sends delete to native calendar API.
     *   **Acceptance Criteria:** Delete event after confirmation. Removed from UCS & native platform. Error handling.
 
-*   **FR3.4.5 Recurring Events (Initial Product - Basic Sync & Display):**
+*   **FR3.7.5 Recurring Events (Initial Product - Basic Sync & Display):**
     *   **User Story:** As a user, I want to see recurring events and sync single instance changes.
     *   **Solution:** Read/display recurring events. Sync single instance edits as exceptions. Rely on native calendar recurrence handling.
     *   **Acceptance Criteria:** Recurring events displayed. Single instance edits/deletes sync if API supports. (Creating/editing rules from UCS is post-initial product).
 
-### 3.5. Two-Way Synchronization (Initial Product)
+### 3.8. Two-Way Synchronization (Initial Product)
 
-*   **FR3.5.1 Real-time/Near Real-time Sync (Initial Product):**
+*   **FR3.8.1 Real-time/Near Real-time Sync (Initial Product):**
     *   **User Story:** As a user, I expect changes to sync quickly between UCS and native calendars.
     *   **Solution:** Webhooks (Google/Microsoft) for native-to-UCS. Direct API calls for UCS-to-native. Periodic poll fallback.
     *   **Acceptance Criteria:** Changes via webhooks reflected <1 min. UCS changes to native <1 min. Polling for eventual consistency.
 
-*   **FR3.5.2 Sync Depth (Initial Product):**
+*   **FR3.8.2 Sync Depth (Initial Product):**
     *   **User Story:** As a user, I want core event details accurately synced.
     *   **Solution:** Sync: Title, Start/End (UTC), All-day, Description (plain text), Location (plain text). Basic recurrence.
     *   **Acceptance Criteria:** Specified fields accurately synced.
 
-*   **FR3.5.3 Conflict Resolution (Initial Product):**
+*   **FR3.8.3 Conflict Resolution (Initial Product):**
     *   **User Story:** As a user, I understand the most recent change wins in conflicts.
     *   **Solution:** "Last update wins" based on native platform's `updated` timestamp.
     *   **Acceptance Criteria:** System consistently applies "last update wins".
 
-*   **FR3.5.4 Sync Control (Initial Product - Calendar Selection):**
+*   **FR3.8.4 Sync Control (Initial Product - Calendar Selection):**
     *   **User Story:** As a user, I want to choose which calendars under a connected account are synced.
     *   **Solution:** Post-OAuth, list user's calendars from platform. User selects via checkboxes.
     *   **Acceptance Criteria:** Select/deselect individual calendars. Only selected are synced/displayed.
 
-### 3.6. Personal Booking Page (Moved to Post-Initial Product)
+### 3.9. Privacy Controls (Initial Product - Basic Indication)
 
-### 3.7. Privacy Controls (Initial Product - Basic Indication)
-
-*   **FR3.7.1 Event-Level Privacy Indication:**
+*   **FR3.9.1 Event-Level Privacy Indication:**
     *   **User Story:** As a user, I want UCS to acknowledge an event's "private" status from the native calendar.
     *   **Solution:** Read native privacy flag. Store with event data. User sees own private events. No change to privacy from UCS in initial product.
     *   **Acceptance Criteria:** UCS reads/stores privacy. User sees own private events.
 
-*   **FR3.7.2 Control over Shared Availability:** (Moved to Post-Initial Product)
+*   **FR3.9.2 Control over Shared Availability:** (Moved to Post-Initial Product)
 
-### 3.8. AI-Driven Features (Moved to Post-Initial Product)
+### 3.10. AI-Driven Features (Moved to Post-Initial Product)
 
-### 3.9. Notifications (Initial Product - Basic)
+### 3.11. Notifications (Initial Product - Basic)
 
-*   **FR3.9.1 Event Reminders (Initial Product - Passthrough/Display):**
+*   **FR3.11.1 Event Reminders (Initial Product - Passthrough/Display):**
     *   **User Story:** As a user, I want to see reminders set on my native calendar events.
     *   **Solution:** Fetch/display reminder info from native events in UCS event details modal (text only). UCS does not trigger its own reminders.
     *   **Acceptance Criteria:** Native reminder info displayed. UCS doesn't create/trigger duplicate reminders.
 
-*   **FR3.9.2 Booking Notifications:** (Moved to Post-Initial Product)
+*   **FR3.11.2 Booking Notifications:** (Moved to Post-Initial Product)
 
-*   **FR3.9.3 Sync Status/Error Notifications (Initial Product - Basic):**
+*   **FR3.11.3 Sync Status/Error Notifications (Initial Product - Basic):**
     *   **User Story:** As a user, I want to see connection issues on the 'Connected Accounts' page.
     *   **Solution:** "Connected Accounts" page shows basic status. Persistent auth errors may show simple message (e.g., "Connection issue, try reconnecting"). No proactive alerts.
     *   **Acceptance Criteria:** Auth errors result in visible status on "Connected Accounts" page.
