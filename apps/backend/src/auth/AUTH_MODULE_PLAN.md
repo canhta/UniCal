@@ -3,30 +3,33 @@
 
 This plan outlines the development tasks for the Auth module, responsible for user authentication, authorization, and session management. It will coordinate closely with the `UserModule` and `AccountsModule`.
 
-## Phase 1: Simplified Email-Only Login (Aligns with Backend AGENT_PLAN Phase 2 - Simplified Login)
+## Phase 1: Initial Authentication via Primary Identity Provider (e.g., Auth0)
 
-*   [ ] **Module Setup:**
-    *   Create `AuthService`.
-    *   Create `AuthController`.
-    *   Install `@nestjs/jwt` and `@nestjs/passport`.
+*This phase aligns with FRD 3.1.0, where a primary authentication provider like Auth0 handles the initial login experience, potentially federating to Google/Microsoft or offering its own email/password or passwordless options.*
+
+*   [ ] **Module Setup (Foundation):**
+    *   Ensure `AuthService` and `AuthController` are in place.
+    *   Ensure `@nestjs/jwt` and `@nestjs/passport` are installed (for UniCal's own token management and general Passport integration).
 *   [ ] **Configuration:**
-    *   Define `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_TOKEN_EXPIRATION`, `JWT_REFRESH_TOKEN_EXPIRATION` in `.env` and load via `ConfigService`. **(Ensure `EncryptionService` is NOT used for JWT secrets; these are for signing, not encryption at rest).**
-*   [ ] **Simplified Login Logic:**
-    *   `AuthService.generateTokens(user)`: Generate JWT access and refresh tokens.
-    *   `AuthService.validateUserSimplified(email)`:
-        *   Call `UserService.findByEmail(email)`.
-        *   If user doesn't exist, call `UserService.create({ email, role: 'USER' })`.
-        *   Return user object.
-    *   `AuthController.simpleLogin(simpleLoginDto)`: (`POST /auth/simple-login`)
-        *   Call `AuthService.validateUserSimplified()`.
-        *   If valid, call `AuthService.generateTokens()` and return them.
-*   [ ] **JWT Strategy & Guard:**
-    *   Implement `JwtStrategy` to validate access tokens.
-    *   Implement `JwtAuthGuard` to protect routes.
-    *   Apply `JwtAuthGuard` to a test endpoint.
+    *   **UniCal JWT Configuration:** Define `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_TOKEN_EXPIRATION`, `JWT_REFRESH_TOKEN_EXPIRATION` in `.env` for UniCal's internal tokens.
+    *   **Primary Provider (Auth0) Configuration:** Add `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` (if backend confidential client), `AUTH0_AUDIENCE`, `AUTH0_CALLBACK_URL` to `.env` and load via `ConfigService`.
+*   [ ] **Primary Provider (Auth0) Integration Logic:**
+    *   Implement a Passport strategy for Auth0 (e.g., using `passport-auth0` or a generic `passport-jwt` strategy configured for Auth0's JWKS URI, issuer, and audience). This strategy will validate JWTs issued by Auth0.
+    *   `AuthController` endpoint (e.g., `GET /auth/provider/callback`):
+        *   This endpoint is the redirect target from Auth0 after successful user authentication there.
+        *   It should be protected by the Auth0 Passport strategy.
+        *   On successful validation of the Auth0 token/user:
+            *   Extract user profile information from Auth0 (e.g., email, name, `email_verified`, provider-specific user ID).
+            *   Call `UserService.findOrCreateUser({ email: auth0Profile.email, name: auth0Profile.name, avatarUrl: auth0Profile.picture, emailVerified: auth0Profile.email_verified, authProviderId: auth0Profile.sub })` to provision or link the UniCal user.
+            *   Call `AuthService.generateTokens(uniCalUser)` to issue UniCal's internal JWT access and refresh tokens.
+            *   Redirect the user to a frontend URL with UniCal tokens (e.g., `https://<frontend_url>/auth/callback?accessToken=...&refreshToken=...`) or set tokens in HttpOnly cookies.
+    *   Frontend will initiate the login flow by redirecting the user to Auth0. The backend's role is primarily to handle the callback and issue its own session tokens.
+*   [ ] **JWT Strategy & Guard (for UniCal's Internal Tokens):**
+    *   Implement `JwtStrategy` to validate UniCal's own access tokens (issued after primary authentication).
+    *   Implement `JwtAuthGuard` to protect UniCal API routes.
+    *   Apply `JwtAuthGuard` to relevant UniCal API endpoints.
 *   [ ] **DTOs:**
-    *   `SimpleLoginDto` (email).
-    *   `TokenResponseDto` (accessToken, refreshToken).
+    *   `TokenResponseDto` (for UniCal's accessToken and refreshToken).
 
 ## Phase 2: Single Sign-On (SSO) Implementation (Aligns with Backend AGENT_PLAN Phase 2 - SSO)
 

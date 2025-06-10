@@ -62,14 +62,14 @@ Functional requirements for the initial product, implemented via a phased strate
 
 ### 3.1. User Account Management (Staged for Phased Rollout)
 
-*   **FR3.1.0 Simplified Email-Only Login (Initial Phase):**
-    *   **User Story:** As a new user, I want to quickly log in using only my email to access basic functionalities.
-    *   **Solution:** Email input for login; backend issues JWT. No password initially.
-    *   **Acceptance Criteria:** User enters email, receives token, accesses system. No password field.
+*   **FR3.1.0 Initial Login Experience (Initial Phase):**
+    *   **User Story:** As a new user, I want a straightforward way to log in or sign up to access the system.
+    *   **Solution:** The system will utilize a primary authentication provider (e.g., Auth0). Users will be presented with options such as Single Sign-On (SSO) with Google or Microsoft. If configured, an email-based login (e.g., passwordless or standard email/password managed by the provider) may also be available. The initial interaction will guide users to authenticate via one of these established methods.
+    *   **Acceptance Criteria:** User can successfully authenticate using one of the configured methods provided by the primary authentication provider (e.g., Google SSO, Microsoft SSO, or an email-based flow managed by the provider). Upon successful authentication, the user gains access to the system, and a UniCal user account is provisioned or linked.
 
-*   **FR3.1.1 User Registration (Later Phase):**
-    *   **User Story:** As a new user, I want to register with email and password for full account features.
-    *   **Solution:** Registration page: `Email Address`, `Password`, `Confirm Password`. No email verification for initial product.
+*   **FR3.1.1 User Registration (Later Phase - for systems with direct UniCal username/password):**
+    *   **User Story:** As a new user, if direct registration with UniCal (email and password) is offered separately from SSO, I want to be able to register this way.
+    *   **Solution:** If the primary authentication provider is configured to support direct email/password registration for UniCal (alongside SSO options), a registration page will be available: `Email Address`, `Password`, `Confirm Password`. No email verification for initial product.
     *   **Acceptance Criteria:** Access registration. Error messages for invalid input.
     *   Users must be able to create a new account using their email address and a password.
     *   The system should collect necessary information such as name and email.
@@ -78,9 +78,9 @@ Functional requirements for the initial product, implemented via a phased strate
     *   Password policies (minimum length, complexity) should be enforced.
 
 ### 3.2. User Login
-*   **FR3.2.1 User Login (with Password - Later Phase):**
-    *   **User Story:** As a registered user, I want to log in with email and password.
-    *   **Solution:** Login page: `Email Address`, `Password`. Secure session management.
+*   **FR3.2.1 User Login (with Password - Later Phase - for systems with direct UniCal username/password):**
+    *   **User Story:** As a registered user, if direct login with UniCal (email and password) is offered, I want to log in this way.
+    *   **Solution:** If the primary authentication provider is configured to support direct email/password login for UniCal, a login page will be available: `Email Address`, `Password`. Secure session management.
     *   **Acceptance Criteria:** Successful login. (Post-initial product: account lockout).
 
 *   **FR3.2.2 Single Sign-On (SSO) (Early Phase):**
