@@ -81,6 +81,10 @@ This page will likely be a mix of Server and Client Components. The main calenda
     *   **[ ] Actions:**
         *   "Save" button: Makes API call (`POST /api/events`) with event data.
         *   "Cancel" button.
+*   **Target Calendar Selection:**
+    *   When creating a new event, a dropdown will allow the user to select the target native calendar.
+    *   This dropdown will be populated by calling a backend endpoint (e.g., `GET /calendars/targetable` from the `calendars` module) which lists all native calendars the user has connected and has write permissions for.
+    *   The selected `nativeCalendarId` will be sent with the `POST /events` request.
 
 ### 5. Edit Event Modal (`apps/frontend/src/components/calendar/EditEventModal.tsx`)
 *   **Similar to Create Event Modal, but pre-filled with existing event data.**

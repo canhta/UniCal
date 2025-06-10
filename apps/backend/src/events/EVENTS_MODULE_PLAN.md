@@ -42,3 +42,40 @@ This plan outlines the development tasks for the Events module.
 - [ ] TODO: Write comprehensive unit tests for `EventsService`.
 - [ ] TODO: Write integration tests for event CRUD operations and data aggregation/retrieval.
 - [ ] TODO: Ensure Swagger documentation is complete and accurate for all `EventsController` endpoints and DTOs.
+
+## 3. Data Models
+
+*   **Event:** Represents an event within UCS, aggregated from native calendars.
+    *   `ucsEventId` (Primary Key, UUID)
+    *   `nativeEventId` (String, ID from the source platform)
+    *   `nativeCalendarId` (String, ID of the source native calendar)
+    *   `userId` (Foreign Key to User table)
+    *   `title` (String)
+    *   `description` (String, plain text)
+    *   `startTime` (DateTime, ISO 8601 in UTC)
+    *   `endTime` (DateTime, ISO 8601 in UTC)
+    *   `isAllDay` (Boolean)
+    *   `location` (String, plain text)
+    *   `nativePrivacySetting` (String, e.g., 'public', 'private', 'confidential' - as per source)
+    *   `nativeColorId` (String, optional, from source)
+    *   `nativeOrganizer` (JSON, optional, { email, name } from source)
+    *   `nativeAttendees` (JSON array, optional, [{ email, name, status }, ...] from source)
+    *   `recurrenceRule` (String, optional, e.g., iCalendar RRULE string)
+    *   `recurringEventId` (String, optional, ID of the master recurring event if this is an instance/exception)
+    *   `isException` (Boolean, true if this instance is an exception to a recurring series)
+    *   `exceptionOriginalStartTime` (DateTime, optional, ISO 8601 in UTC, if `isException` is true, this is the original start time of the instance that was modified/deleted)
+    *   `createdAt` (DateTime)
+    *   `updatedAt` (DateTime)
+    *   `lastSyncedAt` (DateTime)
+    *   `sourcePlatform` (String, e.g., 'google', 'microsoft')
+
+## 5. Sync Logic Details
+
+*   **Recurrence Handling:**
+    *   **Reading:** When fetching events from native platforms, if an event is recurring, its recurrence rule (e.g., RRULE) will be fetched and stored in `recurrenceRule`.
+    *   **Expanding for API:** When the `GET /events` endpoint is called, the backend will need to expand recurring events within the requested time range. This means calculating all occurrences of a recurring event that fall between `start_date` and `end_date`.
+        *   Individual occurrences will be returned as separate event objects, but can share a common `recurringEventId` (pointing to a conceptual master or the first instance's ID).
+        *   Exceptions (single instances of a recurring event that have been modified or deleted) must be correctly handled. If an instance is modified, it becomes an exception. If deleted, it should not appear in the expanded list.
+    *   **Storing Exceptions:** If a single instance of a recurring event is modified via UCS, this modification will be sent to the native platform. The native platform typically handles this by creating an exception. UCS will store this modified instance as a separate event record with `isException` set to true, `recurringEventId` linking to the master series, and `exceptionOriginalStartTime` indicating the original time of the instance that was changed. The original `recurrenceRule` remains on the master event.
+    *   **Deleting Single Instance:** If a single instance is deleted via UCS, this is also an exception. The native platform is instructed to delete that instance. UCS might mark this instance as deleted or simply not return it during expansion.
+    *   **Updating Series:** Modifying the entire series (e.g., changing the RRULE) is complex and might be deferred post-initial product, as per FRD's focus on "single instance modification."
