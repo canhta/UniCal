@@ -30,18 +30,18 @@ This document outlines the initial setup steps for the UniCal backend applicatio
 
 ## Phase 2: Database Setup (Prisma & PostgreSQL)
 
-*   [X] **Install Prisma CLI:**
+*   [ ] **Install Prisma CLI:**
     *   `npm install prisma --save-dev`
-*   [X] **Initialize Prisma:**
+*   [ ] **Initialize Prisma:**
     *   `npx prisma init --datasource-provider postgresql`
-*   [X] **Configure `DATABASE_URL`:**
+*   [ ] **Configure `DATABASE_URL`:**
     *   Ensure `DATABASE_URL` in `.env` points to a valid PostgreSQL instance.
 *   [ ] **Define Initial Schemas:**
     *   Start defining core schemas in `prisma/schema.prisma` based on module plans (e.g., `User`, `ConnectedAccount`, `CalendarEvent`, `UserCalendarSetting`, `Calendar`, `Event`).
     *   Refer to `USER_MODULE_PLAN.md`, `ACCOUNTS_MODULE_PLAN.md`, `EVENTS_MODULE_PLAN.md`, `CALENDARS_MODULE_PLAN.md`.
-*   [X] **Generate Prisma Client:**
+*   [ ] **Generate Prisma Client:**
     *   `npx prisma generate` (after schema changes)
-*   [X] **Create Prisma Service:**
+*   [ ] **Create Prisma Service:**
     *   Create a `PrismaService` (e.g., `src/prisma/prisma.service.ts`) that extends `PrismaClient` and implements `OnModuleInit`.
     *   Provide this service globally or in modules that need database access.
 *   [ ] **Initial Migration:**

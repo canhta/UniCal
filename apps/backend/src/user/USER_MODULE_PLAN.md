@@ -5,7 +5,7 @@ This plan outlines the development tasks for the User module, which manages user
 
 ## Phase 1: Core User Entity (Aligns with Backend AGENT_PLAN Phase 1 & 2 - Simplified Login)
 
-*   [X] **Schema:** Define/confirm `User` schema in `prisma/schema.prisma`:
+*   [ ] **Schema:** Define/confirm `User` schema in `prisma/schema.prisma`:
     *   `id` (autoincrement/uuid) - **Decision: Use UUID for all IDs.**
     *   `auth0Id` (string, unique) - **Key identifier from Auth0, used for linking.**
     *   `email` (unique) - **Initially populated from Auth0. Source of truth is Auth0; read-only in UniCal post-initial sync.**
@@ -16,11 +16,11 @@ This plan outlines the development tasks for the User module, which manages user
     *   `createdAt`
     *   `updatedAt`
     *   *(Initially, no `password` field as per simplified login)*
-*   [X] **Module Setup:**
+*   [ ] **Module Setup:**
     *   Create `UserService`.
     *   Create `UserController` (potentially empty or with a `/users/me` initially if needed by simplified login).
     *   Define DTOs for user operations (e.g., `CreateUserDto`, `UserResponseDto`).
-*   [X] **Service Logic (Simplified):**
+*   [ ] **Service Logic (Simplified):**
     *   `UserService.findOrCreateUser(data: { auth0Id: string, email: string, name?: string, avatarUrl?: string, emailVerified?: boolean })`: Finds a user by `auth0Id` or creates them if they don't exist. If creating, sets role to `USER`, populates `name`, `avatarUrl`, `email`, and `emailVerified` from Auth0 data. Returns the user.
     *   `UserService.findByEmail(email)`: Retrieve a user by their email address.
     *   `UserService.findById(id)`: Retrieve a user by their UniCal ID.
@@ -36,7 +36,7 @@ This plan outlines the development tasks for the User module, which manages user
     *   Add `emailVerificationToken` (string, nullable, unique) and `emailVerificationExpires` (DateTime, nullable) for email verification process.
     *   Add `passwordResetToken` (string, nullable, unique) and `passwordResetExpires` (DateTime, nullable) for password reset process.
     *   Run `prisma migrate dev --name add_auth_fields_to_user`.
-*   [X] **Service Logic (Extended, largely delegated to Auth0 if Auth0-centric):**
+*   [ ] **Service Logic (Extended, largely delegated to Auth0 if Auth0-centric):**
     *   `UserService.updatePassword(userId, newPassword)`: Hash and update user's password. (Called by AuthModule's password change/reset flows, if UniCal manages passwords).
     *   Modify `UserService.create()` (or ensure `AuthService.register` handles it): to include hashing password if provided, setting `emailVerified` to false, and generating/storing `emailVerificationToken` (if UniCal manages this).
     *   `UserService.verifyEmail(token)`: Validates token, sets `emailVerified` to true, clears token fields (if UniCal manages this).

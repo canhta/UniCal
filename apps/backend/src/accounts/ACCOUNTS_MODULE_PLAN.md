@@ -7,10 +7,10 @@ The Accounts module is responsible for managing connections to **external servic
 This module does **not** handle UniCal user identity federation or linking multiple identity providers (e.g., login with Google, login with Facebook) for the UniCal user account itself; that is the responsibility of the Auth module and its integration with Auth0.
 
 ## Phase 1: Setup & Core Infrastructure
-- [X] TODO: Define `ConnectedAccount` schema in `prisma/schema.prisma` (e.g., `id`, `userId` (links to UniCal User), `platform` (enum: GOOGLE, MICROSOFT), `accountIdOnPlatform`, `emailOnPlatform`, `encryptedAccessToken`, `encryptedRefreshToken`, `tokenExpiresAt`, `scopes`, `selectedNativeCalendarIds`, `syncStatus`, `lastSyncAt`, `initialSyncCompletedAt`, `lastSyncErrorDetails`, `nextSyncToken`). **(Added sync-related fields)**
-- [X] TODO: Create `AccountsService` and `AccountsController`.
-- [X] TODO: Define DTOs for managing connected accounts (e.g., `ConnectAccountDto`, `ConnectedAccountResponseDto`, `SelectCalendarsDto`, `UpdateSelectedCalendarsDto`, `NativeCalendarDto`).
-- [X] TODO: Integrate `EncryptionService` for token encryption/decryption. **(Ensure this is used for `encryptedAccessToken` and `encryptedRefreshToken`)**
+- [ ] TODO: Define `ConnectedAccount` schema in `prisma/schema.prisma` (e.g., `id`, `userId` (links to UniCal User), `platform` (enum: GOOGLE, MICROSOFT), `accountIdOnPlatform`, `emailOnPlatform`, `encryptedAccessToken`, `encryptedRefreshToken`, `tokenExpiresAt`, `scopes`, `selectedNativeCalendarIds`, `syncStatus`, `lastSyncAt`, `initialSyncCompletedAt`, `lastSyncErrorDetails`, `nextSyncToken`). **(Added sync-related fields)**
+- [ ] TODO: Create `AccountsService` and `AccountsController`.
+- [ ] TODO: Define DTOs for managing connected accounts (e.g., `ConnectAccountDto`, `ConnectedAccountResponseDto`, `SelectCalendarsDto`, `UpdateSelectedCalendarsDto`, `NativeCalendarDto`).
+- [ ] TODO: Integrate `EncryptionService` for token encryption/decryption. **(Ensure this is used for `encryptedAccessToken` and `encryptedRefreshToken`)**
 
 ## Phase 2: Staged Feature Implementation
 

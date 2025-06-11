@@ -42,19 +42,19 @@ This plan outlines the development tasks for the Auth module, responsible for us
 
 *Prerequisites: `UserModule` can find/create users. `AccountsModule` is ready for OAuth token exchange and storage. `EncryptionService` is available.*
 
-*   [X] **Configuration:**
+*   [ ] **Configuration:**
     *   Add Google/Microsoft OAuth client IDs, secrets, and callback URLs to `.env` and `ConfigService`. **(These secrets should be managed by `ConfigService` and potentially encrypted if stored outside `.env` in a config file, though `.env` is typical for these).**
-*   [X] **Google OAuth Strategy:**
+*   [ ] **Google OAuth Strategy:**
     *   Implement `GoogleStrategy` (using `passport-google-oauth20`).
     *   `validate()` method:
         *   Receive Google profile (email, name, avatar).
         *   Call `UserService.findOrCreateUser({ email: profile.email, name: profile.displayName, avatarUrl: profile.photos[0].value, emailVerified: profile.emails[0].verified })` to provision/link user. Mark `emailVerified` based on provider data.
         *   Call `AccountsService.createOrUpdateAccount()` to store Google tokens (access_token, refresh_token from Google, encrypted using `EncryptionService`) and profile info (e.g., Google ID).
         *   Return UniCal user object.
-*   [X] **Microsoft OAuth Strategy:**
+*   [ ] **Microsoft OAuth Strategy:**
     *   Implement `MicrosoftStrategy` (using a suitable Passport strategy e.g., `passport-microsoft`).
     *   `validate()` method: Similar to Google\'s, for Microsoft accounts. Ensure `emailVerified` is set based on provider data. **(Ensure `EncryptionService` is used for external tokens here too).**
-*   [X] **Controller Endpoints for SSO:**
+*   [ ] **Controller Endpoints for SSO:**
     *   `GET /auth/google/connect`: Redirect to Google for authentication. **(Responsibility: Initiates external OAuth flow).** Ensure `prompt: 'consent'` and `access_type: 'offline'` are used if refresh tokens are needed consistently.
     *   `GET /auth/google/callback`: Handles Google callback.
         *   Passport strategy (`GoogleStrategy`) will invoke its `validate()` method.
@@ -63,11 +63,11 @@ This plan outlines the development tasks for the Auth module, responsible for us
         *   Redirect user to frontend with tokens (e.g., `https://<frontend_url>/auth/callback?accessToken=...&refreshToken=...`) or set HttpOnly cookies.
     *   `GET /auth/microsoft/connect`: Redirect to Microsoft for authentication. **(Responsibility: Initiates external OAuth flow).** Ensure appropriate scopes for profile and offline_access.
     *   `GET /auth/microsoft/callback`: Handles Microsoft callback. Similar to Google\'s.
-*   [X] **Refresh Token Logic (UniCal JWTs):**
+*   [ ] **Refresh Token Logic (UniCal JWTs):**
     *   `AuthService.refreshToken(refreshToken)`: Validate UniCal refresh token, issue new access token. **(This refers to UniCal's own JWT refresh tokens).**
     *   `AuthController.refresh()`: (`POST /auth/refresh`) Endpoint for token refresh. Uses `JwtRefreshAuthGuard`.
     *   Implement `JwtRefreshStrategy`.
-*   [X] **Logout Logic:**
+*   [ ] **Logout Logic:**
     *   `AuthController.logout()`: (`POST /auth/logout`)
         *   Accepts refresh token in the request body.
         *   Invalidate the provided refresh token (e.g., by storing it in a denylist or database table like `RevokedRefreshTokens` until it expires).
