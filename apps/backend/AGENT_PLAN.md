@@ -15,21 +15,21 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 
 **Goal:** Establish a runnable NestJS project with database, basic configuration, core module structure, and essential services.
 
-*   [ ] **Project Setup:** Verify NestJS project (ESLint, Prettier, TS).
-*   [ ] **Database (Prisma):**
+*   [x] **Project Setup:** Verify NestJS project (ESLint, Prettier, TS).
+*   [x] **Database (Prisma):**
     *   Install Prisma Client.
     *   Define `schema.prisma` for `User`, `ConnectedAccount`, `CalendarEvent` (align with respective module plans).
     *   Run migration: `prisma migrate dev --name initial_schema`.
     *   Create `PrismaService`.
-*   [ ] **Configuration (`@nestjs/config`):**
+*   [x] **Configuration (`@nestjs/config`):**
     *   Setup `.env`: `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`. (Platform client IDs/secrets, Auth0 domain/keys added in relevant milestones).
     *   Implement `ConfigService`.
-*   [ ] **Module Structure:**
+*   [x] **Module Structure:**
     *   Create skeleton module/controller/service files for `AuthModule`, `UserModule`, `CalendarPlatformModule`, `ConnectedAccountModule`, `EventModule`, `SyncModule`.
     *   Create `[MODULE_NAME]_PLAN.md` in each module directory.
     *   Define `EncryptionService` structure in `apps/backend/src/common/encryption/`. (Implementation in M2).
-*   [ ] **Logging:** Implement basic, consistent logging framework.
-*   [ ] **API Docs (Swagger):** Setup `@nestjs/swagger`. Define DTO conventions.
+*   [x] **Logging:** Implement basic, consistent logging framework.
+*   [x] **API Docs (Swagger):** Setup `@nestjs/swagger`. Define DTO conventions.
 
 ## Phase 2: Staged Feature Implementation
 
@@ -39,14 +39,14 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 **Sub-Phase 2.1: Simplified User Login & Basic Setup**
 *Goal: Enable basic user interaction with the system post-authentication, focusing on Auth0/SSO as the primary mechanism.*
 
-*   [ ] **`UserModule` (Simplified - `USER_MODULE_PLAN.md`):** Implement user profile management (`GET /me`, `PUT /me`). User creation/linking primarily handled by Auth0/SSO flow.
-*   [ ] **`AuthModule` (SSO Focused - `AUTH_MODULE_PLAN.md`):** Implement Auth0 (or other OIDC/OAuth2 provider) integration. Handle callbacks, JWT validation (Auth0 JWKS). Minimal local strategy only if essential for pre-Auth0 testing, marked for deprecation.
+*   [x] **`UserModule` (Simplified - `USER_MODULE_PLAN.md`):** Implement user profile management (`GET /me`, `PUT /me`). User creation/linking primarily handled by Auth0/SSO flow.
+*   [x] **`AuthModule` (SSO Focused - `AUTH_MODULE_PLAN.md`):** Implement Auth0 (or other OIDC/OAuth2 provider) integration. Handle callbacks, JWT validation (Auth0 JWKS). Minimal local strategy only if essential for pre-Auth0 testing, marked for deprecation.
 
 ---
 **Sub-Phase 2.2: Single Sign-On (SSO) & Account Connection**
 *Goal: Robust Auth0 (or Google/Microsoft direct) SSO for user login, and ability to connect external calendar accounts.*
 
-*   [ ] **`AuthModule` (SSO Login - `AUTH_MODULE_PLAN.md`):** Solidify Auth0/OIDC integration. Handle SSO Callbacks, user provisioning/linking from provider data. Update `User` model fields (`emailVerified`, `firstName`, `lastName`, `picture`) from provider.
+*   [x] **`AuthModule` (SSO Login - `AUTH_MODULE_PLAN.md`):** Solidify Auth0/OIDC integration. Handle SSO Callbacks, user provisioning/linking from provider data. Update `User` model fields (`emailVerified`, `firstName`, `lastName`, `picture`) from provider.
 *   [ ] **`AccountsModule` (Account Connection - `ACCOUNTS_MODULE_PLAN.md`):**
     *   Implement OAuth 2.0 flow for connecting external calendar accounts (e.g., `/accounts/connect/google`, `/accounts/connect/google/callback`).
     *   Utilize `CalendarPlatformModule` for OAuth client logic.

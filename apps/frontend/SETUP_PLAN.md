@@ -1,6 +1,9 @@
 # Frontend Setup Plan
 
-This document outlines the initial setup steps for the UniCal frontend application.
+This document outlines the initial*   [ ] **Setup Auth0 middleware:**
+    *   Create `middleware.ts` with `auth0.middleware()` - routes auto-mounted.
+*   [ ] **Implement Login/Logout UI:**
+    *   Create components/links for `/auth/login` and `/auth/logout`. steps for the UniCal frontend application.
 
 ## Core Technologies & Libraries
 
@@ -8,7 +11,7 @@ This document outlines the initial setup steps for the UniCal frontend applicati
 *   **Styling:** Tailwind CSS
 *   **UI Components:** @headlessui/react
 *   **Calendar:** @event-calendar/core
-*   **Authentication:** @auth0/nextjs-auth0
+*   **Authentication:** @auth0/nextjs-auth0 v4
 *   **Data Fetching & Server State Management:** TanStack Query (React Query)
 *   **Language:** TypeScript
 *   **Package Manager:** npm
@@ -40,14 +43,14 @@ This document outlines the initial setup steps for the UniCal frontend applicati
 *   [ ] **Font Setup:**
     *   Integrate custom fonts using `next/font`.
 
-## Phase 3: Authentication (@auth0/nextjs-auth0)
+## Phase 3: Authentication (@auth0/nextjs-auth0 v4)
 
 *   [ ] **Install Auth0 SDK:**
-    *   `npm install @auth0/nextjs-auth0`.
+    *   `npm install @auth0/nextjs-auth0` (v4 - latest stable version).
 *   [ ] **Configure Auth0 Application:**
     *   Set up a "Regular Web Application" in Auth0 dashboard.
     *   Note Domain, Client ID, Client Secret.
-    *   Configure Allowed Callback URLs (e.g., `http://localhost:3000/api/auth/callback`).
+    *   Configure Allowed Callback URLs (e.g., `http://localhost:3001/auth/callback`).
     *   Configure Allowed Logout URLs (e.g., `http://localhost:3000`).
 *   [ ] **Set Environment Variables for Auth0 (in `.env.local`):**
     *   `AUTH0_SECRET`: Generate with `openssl rand -hex 32`.
@@ -56,14 +59,14 @@ This document outlines the initial setup steps for the UniCal frontend applicati
     *   `AUTH0_CLIENT_ID`: Your Auth0 app Client ID.
     *   `AUTH0_CLIENT_SECRET`: Your Auth0 app Client Secret.
 *   [ ] **Create Dynamic API Route for Auth0:**
-    *   Create `app/api/auth/[auth0]/route.ts` with `handleAuth()` from `@auth0/nextjs-auth0`.
+    *   Create `app/api/auth/[auth0]/route.ts` with `handleAuth()` from `@auth0/nextjs-auth0` v4.
 *   [ ] **Wrap Root Layout with `UserProvider`:**
-    *   Modify `app/layout.tsx` to include `<UserProvider>` from `@auth0/nextjs-auth0/client`.
+    *   Modify `app/layout.tsx` to include `<UserProvider>` from `@auth0/nextjs-auth0` v4.
 *   [ ] **Implement Login/Logout UI:**
     *   Create components/links for `/api/auth/login` and `/api/auth/logout`.
 *   [ ] **Access User Information:**
-    *   Client-side: `useUser` hook from `@auth0/nextjs-auth0/client`.
-    *   Server-side: `getSession` from `@auth0/nextjs-auth0`.
+    *   Client-side: `useUser` hook from `@auth0/nextjs-auth0` v4.
+    *   Server-side: `getSession` from `@auth0/nextjs-auth0` v4.
 *   [ ] **Protecting Routes:**
     *   Server Components: Use `getSession`.
     *   Client Components: Use `useUser`.
@@ -98,7 +101,7 @@ This document outlines the initial setup steps for the UniCal frontend applicati
     *   Client Components: Use TanStack Query for client-side fetching.
 *   [ ] **Authenticated API Requests:**
     *   Include Auth0 access token in `Authorization` header.
-    *   Use `@auth0/nextjs-auth0` SDK to obtain the token.
+    *   Use `@auth0/nextjs-auth0` v4 SDK to obtain the token.
 
 ## Phase 7: Core Components & Pages
 

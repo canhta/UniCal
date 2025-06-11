@@ -7,6 +7,9 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Set global route prefix
+  app.setGlobalPrefix('api/v1');
+
   // Enable global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
@@ -28,7 +31,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   // Enable CORS for frontend
   app.enableCors({
@@ -38,9 +41,9 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`🚀 UniCal Backend running on port ${port}`);
+  console.log(`📚 API routes available at http://localhost:${port}/api/v1`);
   console.log(
-    `📚 API Documentation available at http://localhost:${port}/api-docs`,
+    `📚 API Documentation available at http://localhost:${port}/docs`,
   );
 }
 

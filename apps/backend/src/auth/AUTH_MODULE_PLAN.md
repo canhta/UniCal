@@ -12,15 +12,15 @@
 ## Phase 1: Auth0 Integration & UniCal Session Management (Aligns with Backend AGENT_PLAN Phase 2.1 & 2.2)
 *Goal: Establish core Auth0 authentication flow and UniCal internal session token issuance.*
 
-*   [ ] **Module Setup (`auth.module.ts`):** Create `AuthService`, `AuthController`. Import `UserModule`, `JwtModule`, `PassportModule`, `ConfigModule`.
-*   [ ] **Configuration (`.env` & `ConfigService`):
+*   [x] **Module Setup (`auth.module.ts`):** Create `AuthService`, `AuthController`. Import `UserModule`, `JwtModule`, `PassportModule`, `ConfigModule`.
+*   [x] **Configuration (`.env` & `ConfigService`):
     *   **UniCal JWT:** `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_TOKEN_EXPIRATION`, `JWT_REFRESH_TOKEN_EXPIRATION`.
     *   **Auth0:** `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_AUDIENCE`, `AUTH0_ISSUER_URL`, `AUTH0_CALLBACK_URL`.
-*   [ ] **Auth0 Passport Strategy (`Auth0Strategy.ts`):
+*   [x] **Auth0 Passport Strategy (`Auth0Strategy.ts`):
     *   Implement Passport strategy (e.g., `passport-jwt` for Auth0) to validate Auth0-issued JWTs.
     *   Config: `jwksUri`, `audience`, `issuer`.
     *   `validate` method receives Auth0 payload (user info: `sub`, `email`, `name`, `picture`, `email_verified`).
-*   [ ] **Auth Controller (`auth.controller.ts`) - Simplified Flow (Frontend handles Auth0 SDK):
+*   [x] **Auth Controller (`auth.controller.ts`) - Simplified Flow (Frontend handles Auth0 SDK):
     *   `POST /auth/provider-login` (or similar endpoint, e.g., `/auth/auth0/callback`):
         *   Protected by `Auth0Strategy`.
         *   Receives Auth0 Access Token from frontend.

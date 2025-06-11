@@ -124,7 +124,7 @@
     *   **AI Action:** AI will use these hooks for managing URL-based state.
 
 ### E. Authentication State
-*   **[ ] Solution:** `@auth0/nextjs-auth0` (`UserProvider`, `useUser`, `getSession`).
+*   **[ ] Solution:** `@auth0/nextjs-auth0` v4 (`UserProvider`, `useUser`, `getSession`).
     *   **Reasoning:** Dedicated library for auth, session management, user context.
     *   **AI Action:** AI will ensure `UserProvider` wraps the application (as shown in `ReactQueryProvider` example) and use `useUser` or `getSession` as needed, following `AUTH_FEATURE_PLAN.md`.
 

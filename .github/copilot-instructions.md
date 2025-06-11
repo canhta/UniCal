@@ -23,7 +23,7 @@ UniCal is a unified calendar portal aggregating Google/Outlook calendars. Monore
 
 ### 3. Tech Stack Standards
 **Backend:** NestJS, DDD architecture, Prisma/PostgreSQL, Auth0 SSO, Swagger docs, Jest testing
-**Frontend:** Next.js 15 App Router, Tailwind CSS, Headless UI, `@event-calendar/core`, `@auth0/nextjs-auth0`
+**Frontend:** Next.js 15 App Router, Tailwind CSS, Headless UI, `@event-calendar/core`, `@auth0/nextjs-auth0` v4
 
 ### 4. Code Quality
 - TypeScript strict mode, ESLint/Prettier

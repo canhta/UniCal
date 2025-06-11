@@ -5,14 +5,14 @@
 
 ## 1. Core Principles & AI Agent Actionables
 
-*   **[ ] Goal:** Centralize API interactions.
+*   **[x] Goal:** Centralize API interactions.
     *   **Action:** AI will create a primary API client module.
 *   **[ ] Goal:** Ensure type safety for requests and responses.
     *   **Action:** AI will define and use TypeScript types for all API DTOs, co-locating them with feature plans or in a shared types directory.
 *   **[ ] Goal:** Implement consistent error handling.
     *   **Action:** AI will create a custom `ApiError` class and ensure the client throws this for non-successful responses.
 *   **[ ] Goal:** Handle authenticated requests securely.
-    *   **Action:** AI will integrate `@auth0/nextjs-auth0` for token retrieval and implement a Backend-for-Frontend (BFF) approach for client-side authenticated requests.
+    *   **Action:** AI will integrate `@auth0/nextjs-auth0` v4 for token retrieval and implement a Backend-for-Frontend (BFF) approach for client-side authenticated requests.
 *   **[ ] Goal:** Make the client extensible for new endpoints.
     *   **Action:** AI will structure the client to allow easy addition of new API methods, likely grouped by resource/feature.
 
@@ -20,7 +20,7 @@
 
 *   **[ ] Fetching:** Native `fetch` API.
 *   **[ ] Client-Side Data Management:** TanStack Query (React Query) for caching, mutations, revalidation in Client Components (details in `STATE_MANAGEMENT_PLAN.md`). Server Components will use direct `fetch`.
-*   **[ ] Auth Token Retrieval:** `@auth0/nextjs-auth0`.
+*   **[ ] Auth Token Retrieval:** `@auth0/nextjs-auth0` v4.
 
 ## 3. Phase 1: Setup & Core Functionality
 
@@ -94,7 +94,7 @@
     ```
 *   **[ ] Goal:** Implement authenticated request handling.
     *   **Server-Side (Route Handlers, Server Components):**
-        *   **Action:** AI will use `getAccessToken` from `@auth0/nextjs-auth0` and pass the token in the `Authorization` header when calling `apiClient` directly (targeting the actual backend API, not the BFF proxy).
+        *   **Action:** AI will use `getAccessToken` from `@auth0/nextjs-auth0` v4 and pass the token in the `Authorization` header when calling `apiClient` directly (targeting the actual backend API, not the BFF proxy).
     *   **Client-Side (Client Components - BFF Approach):**
         *   **Action:** AI will create Next.js Route Handlers under `apps/frontend/app/api/proxy/[...path]/route.ts`.
         *   **Action:** These BFF handlers will:

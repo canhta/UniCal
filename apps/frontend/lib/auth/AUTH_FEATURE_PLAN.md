@@ -1,46 +1,43 @@
 <!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/lib/auth/AUTH_FEATURE_PLAN.md -->
 # Auth Feature Plan (Frontend - Aligns with Frontend AGENT_PLAN Phase 2)
 
-This plan details frontend authentication using `@auth0/nextjs-auth0`, aligning with `AGENT_PLAN.md` and backend capabilities.
+This plan details frontend authentication using `@auth0/nextjs-auth0` v4, aligning with `AGENT_PLAN.md` and backend capabilities.
+
+> **Note:** This project uses Auth0 v4 directly - no migration from v3 needed.
 
 ## FRD Alignment
 *   **FR3.1.3 Single Sign-On (SSO) - Google & Microsoft:** Core focus, using Auth0.
 *   **FR3.1.0 Simplified Email-Only Login (UI Focus):** Leverages Auth0's capabilities (passwordless email or email/password if configured in Auth0, or users choosing Google/Microsoft).
 *   **FR3.1.1, FR3.1.2, FR3.1.4, FR3.1.5 (User Registration, Email/Password Login, Password Management):** Primarily handled by Auth0's Universal Login Page (ULP) and management features. Frontend UI will direct to Auth0 for these unless a custom UniCal UI interacting with specific backend endpoints (for non-Auth0 managed flows) is explicitly required later.
 
-## Core Tasks (Using @auth0/nextjs-auth0)
+## Core Tasks (Using @auth0/nextjs-auth0 v4)
 
-1.  [ ] **Environment Variables Setup (`.env.local`):**
-    *   Ensure `AUTH0_SECRET`, `AUTH0_BASE_URL`, `AUTH0_ISSUER_BASE_URL`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` are set.
-2.  [ ] **Dynamic API Route for Auth0 (`app/api/auth/[auth0]/route.ts`):**
-    *   Implement with `handleAuth()` from `@auth0/nextjs-auth0`.
-3.  [ ] **Wrap Root Layout with `UserProvider` (`app/layout.tsx`):**
-    *   Include `<UserProvider>` from `@auth0/nextjs-auth0/client`.
-4.  [ ] **Login UI Implementation (e.g., `app/(auth)/login/page.tsx` or Navbar):
+1.  [x] **Environment Variables Setup (`.env.local`):**
+    *   Set up with v4 format: `AUTH0_SECRET`, `APP_BASE_URL`, `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`.
+2.  [x] **Auth0 Client Setup (`lib/auth0.ts`):**
+    *   Created Auth0Client instance using `@auth0/nextjs-auth0/server` v4.
+3.  [x] **Auth0 Middleware (`middleware.ts`):**
+    *   Auto-mounted routes via `auth0.middleware()` - no manual API routes needed in v4.
+    *   Added protected route logic for `/dashboard`, `/calendar`, `/integrations`, `/settings`.
+4.  [x] **Login UI Implementation (v4 routes):**
     *   **SSO Buttons (FR3.1.3):**
-        *   "Sign in with Google" button linking to `/api/auth/login?connection=google-oauth2` (verify connection name in Auth0).
-        *   "Sign in with Microsoft" button linking to `/api/auth/login?connection=windowslive` (verify connection name in Auth0).
-    *   **(Optional) Email Input for Auth0 Passwordless/Email-Password:** If Auth0 is configured for passwordless email or traditional email/password, provide an email input. The login button would call `/api/auth/login` (Auth0 SDK handles redirect to ULP where user enters email/password or gets magic link).
-5.  [ ] **Logout UI Implementation (Navbar/Profile Dropdown):**
-    *   "Logout" button/link to `/api/auth/logout`.
-6.  [ ] **Accessing User Information:**
-    *   **Client Components:** Use `useUser()` hook.
-    *   **Server Components/Route Handlers:** Use `getSession()`.
-7.  [ ] **Protected Routes Implementation:**
-    *   **Middleware (`middleware.ts` in root `apps/frontend/`):** Use `withMiddlewareAuthRequired` for routes like `/dashboard`, `/calendar`, `/integrations`, `/settings`.
-        ```typescript
-        // middleware.ts
-        import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge';
-        export default withMiddlewareAuthRequired();
-        export const config = {
-          matcher: ['/dashboard/:path*', '/calendar/:path*', '/integrations/:path*', '/settings/:path*'],
-        };
-        ```
-    *   **Fallback/Granular Check (Client/Server Components):** Use `useUser` or `getSession` with conditional rendering/redirect if not fully covered by middleware.
-8.  [ ] **API Client Integration (`/lib/api/API_CLIENT_PLAN.md`):
-    *   Ensure API client automatically attaches the Auth0 Access Token (obtained via `getAccessToken` from `@auth0/nextjs-auth0`) to requests to the UniCal backend.
-    *   Backend expects this Auth0 token for its `/auth/provider-login` (or similar) endpoint to validate and issue UniCal's internal session tokens.
-9.  [ ] **Error Handling:** Display messages for login errors (e.g., Auth0 callback errors, `useUser` error state).
+        *   "Sign in with Google" button linking to `/auth/login?connection=google-oauth2`.
+        *   "Sign in with Microsoft" button linking to `/auth/login?connection=windowslive`.
+    *   **Email Login:** Button linking to `/auth/login` for Auth0 Universal Login Page.
+5.  [x] **Logout UI Implementation (v4 routes):**
+    *   "Logout" button/link to `/auth/logout`.
+6.  [x] **Accessing User Information:**
+    *   **Client Components:** Use `useUser()` hook from v4.
+    *   **Server Components/Route Handlers:** Use `getSession()` via auth0 client v4.
+7.  [x] **Protected Routes Implementation:**
+    *   **Middleware:** Routes auto-protected via `auth0.middleware()` with custom logic for specific routes.
+    *   **Component-level:** Use `useUser` hook for conditional rendering.
+8.  [x] **v4 Implementation Complete:**
+    *   Using auto-mounted routes via middleware (no manual API routes needed).
+    *   All login/logout URLs use `/auth/*` format.
+    *   No `<UserProvider />` wrapper required in v4.
+    *   Fixed `asChild` prop handling in Button component.
+9.  [x] **Error Handling:** Auth errors displayed via `useUser` hook error state.
 
 ## User Flows (Primarily via Auth0 ULP)
 

@@ -4,12 +4,14 @@ import Link from "next/link"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
+import { useUser } from '@auth0/nextjs-auth0'
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, isLoading } = useUser()
   
-  // TODO: Replace with actual auth state in Phase 2
-  const isAuthenticated = false
+  // Use Auth0 user state instead of hardcoded value
+  const isAuthenticated = !!user
 
   const publicNavItems = [
     { href: "/", label: "Home" },
@@ -53,19 +55,23 @@ export default function Navbar() {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
+            {isLoading ? (
+              <div className="animate-pulse">
+                <div className="h-8 w-20 bg-gray-200 rounded"></div>
+              </div>
+            ) : isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">
-                  Welcome back!
+                  Welcome, {user?.name || user?.email}!
                 </span>
-                <Button variant="outline" size="sm">
-                  Logout
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/auth/logout">Logout</Link>
                 </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/login">Login</Link>
+                  <Link href="/auth/login">Login</Link>
                 </Button>
                 <Button size="sm" asChild>
                   <Link href="/dashboard">Get Started</Link>
@@ -106,19 +112,23 @@ export default function Navbar() {
               ))}
               
               <div className="border-t border-gray-200 pt-4 flex flex-col space-y-2">
-                {isAuthenticated ? (
+                {isLoading ? (
+                  <div className="animate-pulse mx-2">
+                    <div className="h-8 w-full bg-gray-200 rounded"></div>
+                  </div>
+                ) : isAuthenticated ? (
                   <>
                     <span className="text-sm text-gray-600 px-2">
-                      Welcome back!
+                      Welcome, {user?.name || user?.email}!
                     </span>
-                    <Button variant="outline" size="sm" className="mx-2">
-                      Logout
+                    <Button variant="outline" size="sm" className="mx-2" asChild>
+                      <Link href="/auth/logout">Logout</Link>
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="outline" size="sm" className="mx-2" asChild>
-                      <Link href="/login">Login</Link>
+                      <Link href="/auth/login">Login</Link>
                     </Button>
                     <Button size="sm" className="mx-2" asChild>
                       <Link href="/dashboard">Get Started</Link>

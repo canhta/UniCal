@@ -2,25 +2,68 @@
   "name": "unical",
   "private": true,
   "version": "0.0.1",
+  "description": "UniCal - Unified Calendar Portal aggregating Google/Outlook calendars",
+  "author": "Canh Ta",
+  "license": "MIT",
   "packageManager": "yarn@4.9.2",
+  "engines": {
+    "node": ">=23.0.0",
+    "yarn": ">=4.0.0"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev:backend": "yarn workspace @unical/backend start:dev",
-    "dev:frontend": "yarn workspace @unical/frontend dev",
-    "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
-    "prisma": "yarn workspace @unical/backend prisma",
     "setup": "./scripts/setup.sh",
+    "env:copy": "cp apps/backend/.env.example apps/backend/.env && cp apps/frontend/.env.example apps/frontend/.env.local",
+    "env:copy:backend": "cp apps/backend/.env.example apps/backend/.env",
+    "env:copy:frontend": "cp apps/frontend/.env.example apps/frontend/.env.local",
+    "dev": "concurrently \"yarn backend start:dev\" \"yarn frontend dev\"",
+    "frontend": "yarn workspace @unical/frontend",
+    "backend": "yarn workspace @unical/backend",
+    "prisma": "yarn workspace @unical/backend prisma",
+    "db:setup": "yarn prisma migrate dev",
+    "db:reset": "yarn prisma migrate reset",
+    "db:generate": "yarn prisma generate",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:clean": "docker-compose down -v --remove-orphans",
-    "env:copy": "cp apps/backend/.env.example apps/backend/.env && cp apps/frontend/.env.example apps/frontend/.env.local",
-    "env:copy:backend": "cp apps/backend/.env.example apps/backend/.env",
-    "env:copy:frontend": "cp apps/frontend/.env.example apps/frontend/.env.local"
+    "docker:logs": "docker-compose logs -f",
+    "_comment_quality": "=== Code Quality Commands ===",
+    "lint": "yarn workspace @unical/frontend lint && yarn workspace @unical/backend lint",
+    "lint:fix": "yarn workspace @unical/frontend lint --fix && yarn workspace @unical/backend lint --fix",
+    "format": "yarn workspace @unical/frontend format && yarn workspace @unical/backend format",
+    "type-check": "yarn workspace @unical/frontend type-check && yarn workspace @unical/backend type-check",
+    "test": "yarn workspace @unical/frontend test && yarn workspace @unical/backend test",
+    "test:watch": "yarn workspace @unical/frontend test:watch",
+    "test:e2e": "yarn workspace @unical/backend test:e2e",
+    "build": "yarn workspace @unical/frontend build && yarn workspace @unical/backend build",
+    "build:frontend": "yarn workspace @unical/frontend build",
+    "build:backend": "yarn workspace @unical/backend build",
+    "start": "concurrently \"yarn backend start:prod\" \"yarn frontend start\"",
+    "start:frontend": "yarn workspace @unical/frontend start",
+    "start:backend": "yarn workspace @unical/backend start:prod"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
-  }
+  },
+  "keywords": [
+    "calendar",
+    "scheduling",
+    "google-calendar",
+    "outlook",
+    "nextjs",
+    "nestjs",
+    "unified-calendar",
+    "calendar-aggregation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/canhta/UniCal"
+  },
+  "bugs": {
+    "url": "https://github.com/canhta/UniCal/issues"
+  },
+  "homepage": "https://github.com/canhta/UniCal#readme"
 }

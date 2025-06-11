@@ -26,10 +26,10 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
 **Goal:** Implement user authentication (primarily Auth0 SSO) and create basic page structure with protected routes.
 
-*   [ ] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):
-    *   **FR3.1.3 SSO (Google & Microsoft):** Integrate `@auth0/nextjs-auth0` (env vars, API route, UserProvider). Implement UI for "Sign in with Google/Microsoft" buttons. Handle Auth0 callback. Implement logout.
+*   [x] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):
+    *   **FR3.1.3 SSO (Google & Microsoft):** Integrate `@auth0/nextjs-auth0` v4 (env vars, API route, UserProvider). Implement UI for "Sign in with Google/Microsoft" buttons. Handle Auth0 callback. Implement logout.
     *   **FR3.1.0 Simplified Email-Only Login (UI Focus):** UI for email login. *If backend supports non-Auth0 simple JWT, implement; otherwise, Auth0 handles this via its email/passwordless options or by users selecting Google/Microsoft.* Update `AUTH_FEATURE_PLAN.md`.
-*   [ ] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
+*   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
 *   [ ] **Initial Page Structure (`app/`):
     *   `app/page.tsx` (Public landing).
     *   `app/(protected)/dashboard/page.tsx` (Placeholder dashboard - protected).

@@ -102,10 +102,101 @@ If you prefer manual setup or need to troubleshoot:
 
 ## Development Commands
 
-*   `yarn dev`: Start both backend and frontend development servers
-*   `yarn workspace @unical/backend <command>`: Run backend-specific commands
-*   `yarn workspace @unical/frontend <command>`: Run frontend-specific commands
-*   `./scripts/setup.sh`: Complete development environment setup
+### Quick Start Commands
+- `yarn setup`: Complete automated setup (recommended for first-time setup)
+- `yarn dev`: Start both backend and frontend development servers concurrently
+- `yarn env:copy`: Copy all environment example files
+
+### Workspace Commands
+- `yarn frontend <command>`: Run frontend-specific commands
+- `yarn backend <command>`: Run backend-specific commands
+
+### Development Workflow
+```bash
+# Start development servers
+yarn dev
+
+# Run specific workspace commands
+yarn frontend dev          # Start only frontend
+yarn backend start:dev     # Start only backend
+
+# Environment setup
+yarn env:copy              # Copy all environment files
+yarn env:copy:frontend     # Copy only frontend environment
+yarn env:copy:backend      # Copy only backend environment
+```
+
+### Database Management
+```bash
+yarn prisma <command>      # Run any Prisma command
+yarn db:setup             # Run database migrations
+yarn db:reset             # Reset database (caution: destroys data)
+yarn db:generate          # Generate Prisma client
+```
+
+### Docker Operations
+```bash
+yarn docker:up            # Start all Docker services
+yarn docker:down          # Stop all Docker services  
+yarn docker:clean         # Stop services and remove volumes
+yarn docker:logs          # View Docker service logs
+```
+
+### Code Quality & Testing
+```bash
+# Linting
+yarn lint                 # Lint both frontend and backend
+yarn lint:fix             # Fix linting issues automatically
+yarn format               # Format code with Prettier
+yarn type-check           # Run TypeScript type checking
+
+# Testing
+yarn test                 # Run all tests
+yarn test:watch           # Run tests in watch mode
+yarn test:e2e             # Run end-to-end tests
+```
+
+### Build & Production
+```bash
+# Building
+yarn build                # Build both applications
+yarn build:frontend       # Build only frontend
+yarn build:backend        # Build only backend
+
+# Production
+yarn start                # Start both applications in production mode
+yarn start:frontend       # Start only frontend in production
+yarn start:backend        # Start only backend in production
+```
+
+### Common Development Workflows
+
+**First-time setup:**
+```bash
+yarn setup                # Automated complete setup
+yarn dev                  # Start development
+```
+
+**Daily development:**
+```bash
+yarn docker:up            # Start services
+yarn dev                  # Start development servers
+# ... develop ...
+yarn docker:down          # Stop services when done
+```
+
+**Before committing:**
+```bash
+yarn lint:fix             # Fix linting issues
+yarn test                 # Run tests
+yarn type-check           # Verify types
+```
+
+**Database changes:**
+```bash
+yarn db:reset             # Reset if needed
+yarn db:setup             # Apply migrations
+```
 
 ## Docker Services
 

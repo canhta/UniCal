@@ -11,7 +11,7 @@
 *   **[ ] Goal:** Prioritize accessibility.
     *   **Action:** AI will use semantic HTML, ARIA attributes, and ensure keyboard navigability for all layout elements. Headless UI will be used for interactive elements like dropdowns and mobile menus.
 *   **[ ] Goal:** Make layout components auth-aware.
-    *   **Action:** AI will use `useUser` from `@auth0/nextjs-auth0/client` in `Navbar.tsx` to display different links and user information based on authentication status.
+    *   **Action:** AI will use `useUser` from `@auth0/nextjs-auth0` v4 in `Navbar.tsx` to display different links and user information based on authentication status.
 
 ## 2. Components
 
@@ -20,11 +20,11 @@
 *   **[ ] Goal:** Implement Navbar with branding, navigation, and user profile section.
     *   **Action (Branding):** AI will display the UniCal logo/name, linking to `/`.
     *   **Action (Navigation Links - Auth-Dependent):**
-        *   **Unauthenticated:** "Login" button (to `/api/auth/login`).
+        *   **Unauthenticated:** "Login" button (to `/auth/login`).
         *   **Authenticated:** "Dashboard" (`/dashboard`), "Calendar" (`/calendar`), "Integrations" (`/integrations`), "Settings" (`/settings`).
     *   **Action (User Profile - Authenticated):**
         *   AI will display user name/avatar (from `useUser`).
-        *   AI will implement a dropdown menu (using `@headlessui/react` `Menu`) with "Account Settings" (`/settings/account`) and "Logout" (`/api/auth/logout`) links.
+        *   AI will implement a dropdown menu (using `@headlessui/react` `Menu`) with "Account Settings" (`/settings/account`) and "Logout" (`/auth/logout`) links.
     *   **Action (Responsive Mobile Menu):**
         *   AI will implement a hamburger icon to toggle a mobile menu (using `@headlessui/react` `Transition` and potentially `Dialog` or `Popover` for the panel) containing navigation links and user actions.
     *   **Action (Styling & Accessibility):**
@@ -42,14 +42,14 @@
 ### C. Root Layout (`apps/frontend/app/layout.tsx`)
 
 *   **[ ] Goal:** Integrate Navbar and Footer into the root application layout.
-    *   **Action:** AI will ensure `UserProvider` (from `@auth0/nextjs-auth0/client`) and `ReactQueryProvider` (from `STATE_MANAGEMENT_PLAN.md`) wrap the main content.
+    *   **Action:** AI will ensure `UserProvider` (from `@auth0/nextjs-auth0` v4) and `ReactQueryProvider` (from `STATE_MANAGEMENT_PLAN.md`) wrap the main content.
     *   **Action:** AI will render `<Navbar />` before and `<Footer />` after the `{children}` within the `<body>`.
     *   **Action:** AI will wrap `{children}` in a `<main>` HTML element.
     *   **Action:** AI will confirm `globals.css` and `next/font` configurations are correctly applied.
     ```tsx
     // Example structure for apps/frontend/app/layout.tsx
     // ... other imports
-    import { UserProvider } from '@auth0/nextjs-auth0/client';
+    import { UserProvider } from '@auth0/nextjs-auth0/client'; // v4
     import ReactQueryProvider from '@/components/providers/ReactQueryProvider'; // Path based on actual location
     import Navbar from '@/components/layout/Navbar'; // Path based on actual location
     import Footer from '@/components/layout/Footer'; // Path based on actual location
@@ -82,7 +82,7 @@
 *   **[ ] Goal:** Create a layout for routes within the `(protected)` group, primarily for shared UI or structure.
     *   **Action:** AI will create `apps/frontend/app/(protected)/layout.tsx`.
     *   **Action:** This layout will, at a minimum, provide consistent padding/margin for the content area of protected pages.
-    *   **Constraint:** Authentication enforcement is primarily handled by `middleware.ts` using `@auth0/nextjs-auth0/edge`'s `withMiddlewareAuthRequired`.
+    *   **Constraint:** Authentication enforcement is primarily handled by `middleware.ts` using `@auth0/nextjs-auth0` v4's middleware capabilities.
     ```tsx
     // Example: apps/frontend/app/(protected)/layout.tsx
     export default function ProtectedLayout({
