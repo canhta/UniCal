@@ -1,31 +1,51 @@
-Follow these general instructions to build UniCal portal:
+# UniCal AI Agent Instructions
 
-## Core References
-- Backend: `apps/backend/AGENT_PLAN.md`
-- Frontend: `apps/frontend/AGENT_PLAN.md`
-- Requirements: `docs/FRD.md`, `docs/BRD.md`
-- Technical: `docs/Challenges.md`, `docs/EventCalendar.md`
-- Each feature/module: `[MODULE_OR_FEATURE_NAME]_PLAN.md` (checklists)
+## Project Context
+UniCal is a unified calendar portal aggregating Google/Outlook calendars. Monorepo with `@unical/frontend` (Next.js 15), `@unical/backend` (NestJS/Prisma), `@unical/core` (shared types).
 
-## Principles
-- **Phased Only:** Implement features for the current phase as defined in the agent plan. Do not skip ahead.
-- **TODO-Driven:**
-  - Update the relevant `[MODULE_OR_FEATURE_NAME]_PLAN.md` with actionable TODOs for the phase before coding.
-  - Mark TODOs as complete as you implement.
-- **Backend:** DDD, NestJS, Prisma, UTC, Swagger, robust error handling.
-- **Frontend:** Next.js App Router, Tailwind, component-based, follow `src/lib` plans, use `@event-calendar/core`.
-- **General:** Write/run tests, follow ESLint/Prettier, make small, clear commits.
+## Key Documentation
+- Agent Plans: `apps/{backend,frontend}/AGENT_PLAN.md`
+- Requirements: `docs/{FRD,BRD}.md`
+- Technical: `docs/{Challenges,EventCalendar}.md`
+- Module Plans: `[MODULE_NAME]_PLAN.md` files
+
+## Core Principles
+
+### 1. Phased Development
+- **CRITICAL:** Only implement current phase features from agent plans
+- Never skip ahead to future phases
+- Follow phase sequence methodically
+
+### 2. TODO-Driven Process
+- Update relevant `[MODULE_NAME]_PLAN.md` with TODOs before coding
+- Use `- [ ]` for pending, `- [x]` for completed tasks
+- Mark TODOs complete as you implement
+
+### 3. Tech Stack Standards
+**Backend:** NestJS, DDD architecture, Prisma/PostgreSQL, Auth0 SSO, Swagger docs, Jest testing
+**Frontend:** Next.js 15 App Router, Tailwind CSS, Headless UI, `@event-calendar/core`, `@auth0/nextjs-auth0`
+
+### 4. Code Quality
+- TypeScript strict mode, ESLint/Prettier
+- Write tests for business logic
+- Small, clear commits
 
 ## Workflow
-1. Review the current phase in the agent plan.
-2. Reference requirements and challenges docs.
-3. Update the relevant feature/module plan with TODOs.
-4. Implement, test, and document each TODO.
-5. Commit with clear messages.
-6. Refine and align with best practices.
-7. Ask for clarification if anything is unclear—never assume.
+1. Review current phase in agent plan
+2. Check FRD.md/BRD.md for requirements
+3. Update module plan with TODOs
+4. Implement, test, document
+5. Mark TODOs complete and commit
 
-## Focus
-- Only work on what is defined.
-- Prioritize and follow TODOs in each plan.
-- Reference docs for requirements and solutions.
+## Key Requirements (FRD)
+- Auth: Email login → SSO (Google/Microsoft)
+- Integrations: Google Calendar, Microsoft Outlook
+- Views: Day/Week/Month calendar with event aggregation
+- CRUD: Basic event management
+- Sync: Two-way calendar synchronization
+
+## Quality Gates
+- Ask for clarification, never assume requirements
+- Prioritize security, accessibility, performance
+- Follow established patterns and conventions
+- Use yarn workspaces for dependencies
