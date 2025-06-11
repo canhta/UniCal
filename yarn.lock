@@ -3165,7 +3165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:^24.0.0":
   version: 24.0.0
   resolution: "@types/node@npm:24.0.0"
   dependencies:
@@ -3523,6 +3523,7 @@ __metadata:
     "@types/passport-jwt": "npm:^4.0.1"
     "@types/passport-local": "npm:^1.0.38"
     "@types/supertest": "npm:^6.0.2"
+    "@unical/core": "workspace:*"
     axios: "npm:^1.9.0"
     bcrypt: "npm:^6.0.0"
     bullmq: "npm:^5.53.2"
@@ -3554,6 +3555,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@unical/core@workspace:*, @unical/core@workspace:^, @unical/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@unical/core@workspace:packages/core"
+  dependencies:
+    "@types/node": "npm:^24.0.0"
+    typescript: "npm:^5.8.3"
+  peerDependencies:
+    "@nestjs/swagger": ^7.0.0
+    class-validator: ^0.14.0
+  peerDependenciesMeta:
+    "@nestjs/swagger":
+      optional: true
+    class-validator:
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@unical/frontend@workspace:apps/frontend":
   version: 0.0.0-use.local
   resolution: "@unical/frontend@workspace:apps/frontend"
@@ -3569,6 +3587,7 @@ __metadata:
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
+    "@unical/core": "workspace:^"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     eslint: "npm:^9"
@@ -11799,7 +11818,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.8.3, typescript@npm:^5, typescript@npm:^5.7.3":
+"typescript@npm:5.8.3, typescript@npm:^5, typescript@npm:^5.7.3, typescript@npm:^5.8.3":
   version: 5.8.3
   resolution: "typescript@npm:5.8.3"
   bin:
@@ -11809,7 +11828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.7.3#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.7.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
   version: 5.8.3
   resolution: "typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"
   bin:

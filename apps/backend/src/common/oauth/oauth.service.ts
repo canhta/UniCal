@@ -5,7 +5,7 @@ import { MicrosoftCalendarService } from '../../calendars/services/microsoft-cal
 import {
   PlatformTokenResponseDto,
   ICalendarPlatformService,
-} from '../../calendars/interfaces/calendar-platform.interface';
+} from '@unical/core';
 import { randomBytes } from 'crypto';
 
 @Injectable()

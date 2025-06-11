@@ -87,18 +87,12 @@ export interface ExternalEvent {
  * Query parameters for fetching external events
  */
 export interface ExternalEventQuery {
-  calendarId?: string;
-  startDate?: string; // ISO 8601
-  endDate?: string; // ISO 8601
-  maxResults?: number;
-  pageToken?: string;
-  showDeleted?: boolean;
-  singleEvents?: boolean;
-  orderBy?: 'startTime' | 'updated';
   timeMin?: string;
   timeMax?: string;
-  timeZone?: string;
-  q?: string; // Search query
+  syncToken?: string;
+  pageToken?: string;
+  maxResults?: number;
+  showDeleted?: boolean;
 }
 
 /**
@@ -107,7 +101,5 @@ export interface ExternalEventQuery {
 export interface ExternalEventQueryResponse {
   events: ExternalEvent[];
   nextPageToken?: string;
-  timeZone?: string;
-  updated?: string;
-  totalItems?: number;
+  nextSyncToken?: string;
 }

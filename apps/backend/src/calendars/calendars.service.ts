@@ -4,8 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { GoogleCalendarService } from './services/google-calendar.service';
 import { MicrosoftCalendarService } from './services/microsoft-calendar.service';
-import { CalendarResponseDto } from './dto';
 import {
+  CalendarResponseDto,
   PlatformCalendarDto,
   PlatformEventDto,
   CreatePlatformEventDto,
@@ -14,7 +14,7 @@ import {
   FetchPlatformEventsResponseDto,
   PlatformTokenResponseDto,
   ICalendarPlatformService,
-} from './interfaces/calendar-platform.interface';
+} from '@unical/core';
 import { Calendar } from '@prisma/client';
 
 @Injectable()

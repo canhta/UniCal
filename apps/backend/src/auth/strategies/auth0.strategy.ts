@@ -3,18 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { passportJwtSecret } from 'jwks-rsa';
-
-export interface Auth0Payload {
-  sub: string;
-  email: string;
-  name: string;
-  picture?: string;
-  email_verified: boolean;
-  iat: number;
-  exp: number;
-  aud: string;
-  iss: string;
-}
+import { Auth0User } from '@unical/core';
 
 @Injectable()
 export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
@@ -36,7 +25,7 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
     });
   }
 
-  validate(payload: Auth0Payload): Auth0Payload {
+  validate(payload: Auth0User): Auth0User {
     // Additional validation can be added here
     // For now, we just return the validated payload
     return payload;

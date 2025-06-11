@@ -1,3 +1,7 @@
+/**
+ * Platform-agnostic calendar service interfaces
+ */
+
 export interface PlatformTokenResponseDto {
   accessToken: string;
   refreshToken?: string;
@@ -108,6 +112,9 @@ export interface PlatformWebhookSubscriptionDto {
   token?: string;
 }
 
+/**
+ * Platform service interface
+ */
 export interface ICalendarPlatformService {
   // OAuth methods
   getAuthorizationUrl(redirectUri: string): string;

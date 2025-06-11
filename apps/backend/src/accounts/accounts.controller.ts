@@ -20,7 +20,7 @@ import {
 import { AccountsService } from './accounts.service';
 import { ConnectedAccountResponseDto } from './dto/accounts.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from '../common/types';
+import { AuthenticatedRequest } from '@unical/core';
 
 @ApiTags('Connected Accounts')
 @Controller('accounts')

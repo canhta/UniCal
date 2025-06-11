@@ -23,7 +23,7 @@ import {
   Auth0LoginDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Auth0Request } from '../common/types';
+import { Auth0Request } from '@unical/core';
 
 @ApiTags('Authentication')
 @Controller('auth')

@@ -15,7 +15,7 @@ import {
   FetchPlatformEventsQueryDto,
   FetchPlatformEventsResponseDto,
   PlatformWebhookSubscriptionDto,
-} from '../interfaces/calendar-platform.interface';
+} from '@unical/core';
 
 // Microsoft Graph API response interfaces
 interface MicrosoftTokenResponse {

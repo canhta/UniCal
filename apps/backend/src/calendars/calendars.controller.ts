@@ -20,13 +20,12 @@ import {
 } from '@nestjs/swagger';
 import { CalendarsService } from './calendars.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PlatformCalendarDto } from './interfaces/calendar-platform.interface';
-import { AuthenticatedRequest } from '../common/types';
+import { AuthenticatedRequest, PlatformCalendarDto } from '@unical/core';
 import {
   CalendarResponseDto,
   SyncCalendarDto,
   UpdateCalendarSettingsDto,
-} from './dto';
+} from './dto/calendar.dto';
 
 @ApiTags('Calendars')
 @Controller('calendars')

@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CalendarsService } from '../calendars/calendars.service';
-import { PlatformEventDto } from '../calendars/interfaces/calendar-platform.interface';
+import { PlatformEventDto } from '@unical/core';
 import {
   EventResponseDto,
   CreateEventRequestDto,
   UpdateEventRequestDto,
   GetEventsQueryDto,
-} from './dto/events.dto';
+} from '@unical/core';
 import { Event, Prisma } from '@prisma/client';
 
 @Injectable()

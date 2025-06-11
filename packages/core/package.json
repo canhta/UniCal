@@ -1,0 +1,32 @@
+{
+  "name": "@unical/core",
+  "version": "0.0.1",
+  "description": "Shared types, DTOs and interfaces for UniCal",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "@nestjs/swagger": "^7.0.0",
+    "class-validator": "^0.14.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/swagger": {
+      "optional": true
+    },
+    "class-validator": {
+      "optional": true
+    }
+  }
+}

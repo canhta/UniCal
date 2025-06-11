@@ -4,8 +4,6 @@
  */
 
 // Types
-export * from './types';
-
 // DTOs
 export * from './dto';
 

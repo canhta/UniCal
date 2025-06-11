@@ -11,7 +11,7 @@ import {
   FetchPlatformEventsResponseDto,
   PlatformWebhookSubscriptionDto,
   PlatformTokenResponseDto,
-} from '../interfaces/calendar-platform.interface';
+} from '@unical/core';
 
 @Injectable()
 export class GoogleCalendarService implements ICalendarPlatformService {
