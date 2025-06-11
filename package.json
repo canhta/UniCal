@@ -8,7 +8,17 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"yarn workspace @unical/backend start:dev\" \"yarn workspace @unical/frontend dev\""
+    "dev:backend": "yarn workspace @unical/backend start:dev",
+    "dev:frontend": "yarn workspace @unical/frontend dev",
+    "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
+    "prisma": "yarn workspace @unical/backend prisma",
+    "setup": "./scripts/setup.sh",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:clean": "docker-compose down -v --remove-orphans",
+    "env:copy": "cp apps/backend/.env.example apps/backend/.env && cp apps/frontend/.env.example apps/frontend/.env.local",
+    "env:copy:backend": "cp apps/backend/.env.example apps/backend/.env",
+    "env:copy:frontend": "cp apps/frontend/.env.example apps/frontend/.env.local"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

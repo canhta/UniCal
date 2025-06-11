@@ -8,77 +8,143 @@ UniCal consolidates events from multiple calendar platforms. It's a Yarn monorep
 *   Corepack (for Yarn 4.x, usually included with Node.js v16.10+)
 *   Docker and Docker Compose
 
-## Local Development Setup
+## Quick Start (Recommended)
 
-1.  **Enable Corepack & Get Code**
+We provide an automated setup script that handles the entire development environment setup:
+
+1.  **Get the Code**
     ```bash
     corepack enable
     git clone git@github.com:canhta/UniCal.git
     cd UniCal
     ```
-    Corepack uses the Yarn version in `package.json`.
 
-2.  **Install Dependencies**
+2.  **Run the Setup Script**
+    ```bash
+    chmod +x scripts/setup.sh
+    ./scripts/setup.sh
+    ```
+
+The setup script automatically:
+- 🔧 Creates environment files with secure auto-generated keys
+- 🐳 Sets up and starts Docker services (PostgreSQL & Redis)
+- 📦 Installs all project dependencies
+- 🗄️ Runs database migrations and generates Prisma client
+- ✅ Performs health checks
+- 🚀 Optionally starts development servers
+
+After running the script, you'll have:
+- Backend API at `http://localhost:3000`
+- Frontend at `http://localhost:3030`
+- PostgreSQL at `localhost:5432`
+- Redis at `localhost:6379`
+
+## Manual Configuration (Optional)
+
+After running the setup script, you may want to configure OAuth credentials:
+
+### Backend Environment (`apps/backend/.env`)
+Update the following values for calendar integrations:
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: Your Google OAuth credentials
+- `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`: Your Microsoft OAuth credentials
+- Ensure redirect URIs match: `http://localhost:3000/api/connect/google/callback`
+
+### Frontend Environment (`apps/frontend/.env.local`)
+The setup script handles most configuration, but you can customize:
+- `NEXT_PUBLIC_API_URL`: Should point to `http://localhost:3000/api`
+
+## Manual Setup (Alternative)
+
+If you prefer manual setup or need to troubleshoot:
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+1.  **Install Dependencies**
     ```bash
     yarn install
     ```
 
-3.  **Configure Backend Environment (`apps/backend/.env`)**
-    *   Navigate to `apps/backend`.
-    *   Create a `.env` file by copying the example: `cp .env.example .env`.
-    *   Open `apps/backend/.env` and fill in the required values:
-        *   `JWT_SECRET`: A strong secret string for signing JWTs.
-        *   `TOKEN_ENCRYPTION_KEY`: A 32-character string for encrypting sensitive tokens.
-        *   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: Your Google OAuth credentials.
-        *   `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`: Your Microsoft OAuth credentials.
-        *   The `DATABASE_URL`, `REDIS_HOST`, `REDIS_PORT` are pre-filled for local Docker. 
-        *   **Important:** Update `PORT` to `3000`. Consequently, `GOOGLE_REDIRECT_URI` and `MICROSOFT_REDIRECT_URI` should also reflect port 3000 (e.g., `http://localhost:3000/api/connect/google/callback`). Adjust these in your `.env` file and ensure they match your OAuth provider configurations.
-    *   Return to the project root: `cd ../..`
-
-4.  **Configure Frontend Environment (`apps/frontend/.env.local`)**
-    *   Navigate to `apps/frontend`.
-    *   Create a `.env.local` file by copying the example: `cp .env.example .env.local`.
-        *   Next.js uses `.env.local` for local environment variables that are not committed to Git.
-    *   The `NEXT_PUBLIC_API_URL` in `.env.local` should be updated to point to the backend at port 3000 (e.g., `http://localhost:3000/api`).
-    *   Return to the project root: `cd ../..`
-
-5.  **Start Local Services (PostgreSQL & Redis)**
-    *   Ensure Docker is running.
-    *   From the project root (`/Users/canh/Projects/Personals/UniCal`):
-        ```bash
-        docker-compose up -d
-        ```
-        This starts PostgreSQL (port 5432) and Redis (port 6379).
-        Manage with `docker-compose ps`, `docker-compose logs -f <service>`, `docker-compose down`.
-
-6.  **Run Database Migrations**
-    Once PostgreSQL is healthy, from the project root:
+2.  **Configure Environment Files**
     ```bash
-    yarn workspace @unical/backend prisma migrate dev
+    # Backend
+    cp apps/backend/.env.example apps/backend/.env
+    # Frontend  
+    cp apps/frontend/.env.example apps/frontend/.env.local
     ```
 
-7.  **Start Development Servers**
-    From the project root:
+3.  **Start Docker Services**
+    ```bash
+    docker-compose up -d
+    ```
+
+4.  **Run Database Setup**
+    ```bash
+    yarn workspace @unical/backend prisma generate
+    yarn workspace @unical/backend prisma migrate dev --name init
+    ```
+
+5.  **Start Development Servers**
     ```bash
     yarn dev
     ```
-    *   Backend (NestJS) typically on `http://localhost:3000` (as per your `.env` setting).
-    *   Frontend (Next.js) typically on `http://localhost:3030` (you will need to configure this in `apps/frontend/package.json` or Next.js config).
+
+</details>
 
 ## Project Structure
 
-*   `apps/backend`: NestJS API.
-*   `apps/frontend`: Next.js UI.
-*   `docs/`: Documentation.
-*   `docker-compose.yml`: Local development services.
+*   `apps/backend`: NestJS API server
+*   `apps/frontend`: Next.js frontend application
+*   `packages/core`: Shared types and utilities
+*   `docs/`: Project documentation
+*   `scripts/`: Development and deployment scripts
+*   `docker-compose.yml`: Local development services
 
-## Available Scripts (Root)
+## Development Commands
 
-*   `yarn dev`: Starts backend and frontend.
+*   `yarn dev`: Start both backend and frontend development servers
+*   `yarn workspace @unical/backend <command>`: Run backend-specific commands
+*   `yarn workspace @unical/frontend <command>`: Run frontend-specific commands
+*   `./scripts/setup.sh`: Complete development environment setup
 
-(Refer to `package.json` in `apps/*` for app-specific scripts.)
+## Docker Services
 
-## Stopping Local Development
+*   **PostgreSQL**: Database server on port 5432
+*   **Redis**: Caching and session store on port 6379
 
-1.  Stop dev servers (Ctrl+C).
-2.  Stop Docker services: `docker-compose down`.
+Manage services:
+```bash
+docker-compose ps          # View running services
+docker-compose logs -f     # View all logs
+docker-compose logs -f postgres  # View specific service logs
+docker-compose down        # Stop all services
+```
+
+## Troubleshooting
+
+### Setup Script Issues
+- Ensure Docker is running before running the setup script
+- On macOS, the script uses `openssl` to generate secure keys
+- If setup fails, check Docker service status: `docker-compose ps`
+
+### Database Connection Issues
+- Verify PostgreSQL is running: `docker-compose ps`
+- Check database logs: `docker-compose logs postgres`
+- Regenerate Prisma client: `yarn workspace @unical/backend prisma generate`
+
+### Port Conflicts
+- Backend default: `http://localhost:3000`
+- Frontend default: `http://localhost:3030`
+- Database: `localhost:5432`
+- Redis: `localhost:6379`
+
+If ports are occupied, update the respective configuration files.
+
+## Stopping Development
+
+1.  Stop development servers (Ctrl+C)
+2.  Stop Docker services: `docker-compose down`
+
+## Next Steps
+
+After setup, configure your OAuth credentials in the environment files to enable calendar integrations with Google and Microsoft.

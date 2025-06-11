@@ -4,7 +4,7 @@ CREATE TABLE "users" (
     "email" TEXT NOT NULL,
     "displayName" TEXT,
     "avatarUrl" TEXT,
-    "timeZone" TEXT NOT NULL DEFAULT 'UTC',
+    "timeZone" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -35,8 +35,8 @@ CREATE TABLE "calendars" (
     "description" TEXT,
     "color" TEXT,
     "timeZone" TEXT,
-    "isDefault" BOOLEAN NOT NULL DEFAULT false,
-    "isVisible" BOOLEAN NOT NULL DEFAULT true,
+    "isDefault" BOOLEAN,
+    "isVisible" BOOLEAN,
     "connectedAccountId" TEXT,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -53,15 +53,15 @@ CREATE TABLE "events" (
     "description" TEXT,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
-    "isAllDay" BOOLEAN NOT NULL DEFAULT false,
+    "isAllDay" BOOLEAN,
     "location" TEXT,
     "url" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'confirmed',
-    "visibility" TEXT NOT NULL DEFAULT 'default',
+    "status" TEXT,
+    "visibility" TEXT,
     "recurrenceRule" TEXT,
     "recurrenceId" TEXT,
     "lastSyncedAt" TIMESTAMP(3),
-    "syncStatus" TEXT NOT NULL DEFAULT 'synced',
+    "syncStatus" TEXT,
     "calendarId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,10 +75,10 @@ CREATE TABLE "user_calendar_settings" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "calendarId" TEXT NOT NULL,
-    "syncEnabled" BOOLEAN NOT NULL DEFAULT true,
-    "conflictResolution" TEXT NOT NULL DEFAULT 'manual',
-    "notificationsEnabled" BOOLEAN NOT NULL DEFAULT true,
-    "defaultEventDuration" INTEGER NOT NULL DEFAULT 60,
+    "syncEnabled" BOOLEAN,
+    "conflictResolution" TEXT,
+    "notificationsEnabled" BOOLEAN,
+    "defaultEventDuration" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -101,10 +101,10 @@ CREATE UNIQUE INDEX "user_calendar_settings_userId_calendarId_key" ON "user_cale
 ALTER TABLE "connected_accounts" ADD CONSTRAINT "connected_accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "calendars" ADD CONSTRAINT "calendars_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "calendars" ADD CONSTRAINT "calendars_connectedAccountId_fkey" FOREIGN KEY ("connectedAccountId") REFERENCES "connected_accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "calendars" ADD CONSTRAINT "calendars_connectedAccountId_fkey" FOREIGN KEY ("connectedAccountId") REFERENCES "connected_accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "calendars" ADD CONSTRAINT "calendars_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "events" ADD CONSTRAINT "events_calendarId_fkey" FOREIGN KEY ("calendarId") REFERENCES "calendars"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -113,7 +113,7 @@ ALTER TABLE "events" ADD CONSTRAINT "events_calendarId_fkey" FOREIGN KEY ("calen
 ALTER TABLE "events" ADD CONSTRAINT "events_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_calendar_settings" ADD CONSTRAINT "user_calendar_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_calendar_settings" ADD CONSTRAINT "user_calendar_settings_calendarId_fkey" FOREIGN KEY ("calendarId") REFERENCES "calendars"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_calendar_settings" ADD CONSTRAINT "user_calendar_settings_calendarId_fkey" FOREIGN KEY ("calendarId") REFERENCES "calendars"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_calendar_settings" ADD CONSTRAINT "user_calendar_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
