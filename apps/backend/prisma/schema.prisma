@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core user model
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  displayName String?
+  avatarUrl   String?
+  timeZone    String   @default("UTC")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  connectedAccounts ConnectedAccount[]
+  calendars         Calendar[]
+  events            Event[]
+  calendarSettings  UserCalendarSetting[]
+
+  @@map("users")
+}
+
+// Connected external accounts (Google, Microsoft)
+model ConnectedAccount {
+  id                    String   @id @default(cuid())
+  userId                String
+  provider              String   // "google" | "microsoft"
+  providerAccountId     String
+  encryptedAccessToken  String
+  encryptedRefreshToken String?
+  tokenExpiresAt        DateTime?
+  scope                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendars Calendar[]
+
+  @@unique([provider, providerAccountId])
+  @@map("connected_accounts")
+}
+
+// Calendar model
+model Calendar {
+  id                  String   @id @default(cuid())
+  externalId          String   // ID from external provider
+  name                String
+  description         String?
+  color               String?
+  timeZone            String?
+  isDefault           Boolean  @default(false)
+  isVisible           Boolean  @default(true)
+  connectedAccountId  String?
+  userId              String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectedAccount ConnectedAccount?     @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+  events           Event[]
+  settings         UserCalendarSetting[]
+
+  @@unique([externalId, connectedAccountId])
+  @@map("calendars")
+}
+
+// Event model
+model Event {
+  id                String    @id @default(cuid())
+  externalId        String?   // ID from external provider (null for local events)
+  title             String
+  description       String?
+  startTime         DateTime
+  endTime           DateTime
+  isAllDay          Boolean   @default(false)
+  location          String?
+  url               String?
+  status            String    @default("confirmed") // confirmed, tentative, cancelled
+  visibility        String    @default("default") // default, public, private, confidential
+  recurrenceRule    String?   // RRULE string for recurring events
+  recurrenceId      String?   // For recurring event instances
+  lastSyncedAt      DateTime?
+  syncStatus        String    @default("synced") // synced, pending, error
+  calendarId        String
+  userId            String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+// User calendar settings
+model UserCalendarSetting {
+  id                    String   @id @default(cuid())
+  userId                String
+  calendarId            String
+  syncEnabled           Boolean  @default(true)
+  conflictResolution    String   @default("manual") // manual, local_priority, remote_priority
+  notificationsEnabled  Boolean  @default(true)
+  defaultEventDuration  Int      @default(60) // in minutes
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, calendarId])
+  @@map("user_calendar_settings")
+}
