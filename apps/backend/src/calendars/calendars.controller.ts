@@ -17,53 +17,16 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiProperty,
 } from '@nestjs/swagger';
 import { CalendarsService } from './calendars.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PlatformCalendarDto } from './interfaces/calendar-platform.interface';
-
-interface AuthenticatedRequest {
-  user: {
-    id: string;
-    email: string;
-    displayName?: string;
-  };
-}
-
-export class SyncCalendarRequestDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
-  connectedAccountId: string;
-
-  @ApiProperty({ example: 'primary' })
-  externalCalendarId: string;
-
-  @ApiProperty({ example: 'My Google Calendar' })
-  name: string;
-
-  @ApiProperty({
-    example: 'Main calendar for personal events',
-    required: false,
-  })
-  description?: string;
-
-  @ApiProperty({ example: '#1976D2', required: false })
-  color?: string;
-
-  @ApiProperty({ example: 'America/New_York', required: false })
-  timeZone?: string;
-}
-
-export class UpdateCalendarSettingsDto {
-  @ApiProperty({ example: true, required: false })
-  isVisible?: boolean;
-
-  @ApiProperty({ example: '#FF5722', required: false })
-  color?: string;
-
-  @ApiProperty({ example: 'Updated Calendar Name', required: false })
-  name?: string;
-}
+import { AuthenticatedRequest } from '../common/types';
+import {
+  CalendarResponseDto,
+  SyncCalendarDto,
+  UpdateCalendarSettingsDto,
+} from './dto';
 
 @ApiTags('Calendars')
 @Controller('calendars')
@@ -107,6 +70,7 @@ export class CalendarsController {
   @ApiResponse({
     status: 200,
     description: 'User calendars retrieved successfully',
+    type: [CalendarResponseDto],
   })
   @ApiBearerAuth()
   async listUserCalendars(
@@ -130,7 +94,7 @@ export class CalendarsController {
   @ApiBearerAuth()
   async syncCalendar(
     @Request() req: AuthenticatedRequest,
-    @Body() dto: SyncCalendarRequestDto,
+    @Body() dto: SyncCalendarDto,
   ): Promise<any> {
     return this.calendarsService.syncCalendar(req.user.id, {
       connectedAccountId: dto.connectedAccountId,

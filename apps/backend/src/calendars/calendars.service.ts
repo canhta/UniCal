@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { GoogleCalendarService } from './services/google-calendar.service';
 import { MicrosoftCalendarService } from './services/microsoft-calendar.service';
+import { CalendarResponseDto } from './dto';
 import {
   PlatformCalendarDto,
   PlatformEventDto,
@@ -14,6 +15,7 @@ import {
   PlatformTokenResponseDto,
   ICalendarPlatformService,
 } from './interfaces/calendar-platform.interface';
+import { Calendar } from '@prisma/client';
 
 @Injectable()
 export class CalendarsService {
@@ -187,7 +189,7 @@ export class CalendarsService {
   async getUserCalendars(
     userId: string,
     includeHidden: boolean = false,
-  ): Promise<any[]> {
+  ): Promise<CalendarResponseDto[]> {
     const calendars = await this.prisma.calendar.findMany({
       where: {
         userId,
@@ -208,20 +210,7 @@ export class CalendarsService {
       orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
     });
 
-    return calendars.map((calendar) => ({
-      id: calendar.id,
-      externalId: calendar.externalId,
-      name: calendar.name,
-      description: calendar.description,
-      color: calendar.color,
-      timeZone: calendar.timeZone,
-      isDefault: calendar.isDefault,
-      isVisible: calendar.isVisible,
-      connectedAccount: calendar.connectedAccount,
-      settings: calendar.settings[0] || null,
-      createdAt: calendar.createdAt,
-      updatedAt: calendar.updatedAt,
-    }));
+    return calendars.map((calendar) => this.toCalendarResponseDto(calendar));
   }
 
   async syncCalendar(
@@ -234,7 +223,7 @@ export class CalendarsService {
       color?: string;
       timeZone?: string;
     },
-  ): Promise<any> {
+  ): Promise<CalendarResponseDto> {
     // Verify the connected account belongs to the user
     const _connectedAccount =
       await this.accountsService.getConnectedAccountById(
@@ -299,19 +288,7 @@ export class CalendarsService {
     // TODO: Trigger initial sync of events
     // This would be implemented when we build the SyncModule
 
-    return {
-      id: calendar.id,
-      externalId: calendar.externalId,
-      name: calendar.name,
-      description: calendar.description,
-      color: calendar.color,
-      timeZone: calendar.timeZone,
-      isDefault: calendar.isDefault,
-      isVisible: calendar.isVisible,
-      connectedAccount: calendar.connectedAccount,
-      createdAt: calendar.createdAt,
-      updatedAt: calendar.updatedAt,
-    };
+    return this.toCalendarResponseDto(calendar);
   }
 
   async updateCalendarSettings(
@@ -322,7 +299,7 @@ export class CalendarsService {
       color?: string;
       name?: string;
     },
-  ): Promise<any> {
+  ): Promise<CalendarResponseDto> {
     // Verify calendar belongs to user
     const calendar = await this.prisma.calendar.findFirst({
       where: {
@@ -358,20 +335,7 @@ export class CalendarsService {
       },
     });
 
-    return {
-      id: updatedCalendar.id,
-      externalId: updatedCalendar.externalId,
-      name: updatedCalendar.name,
-      description: updatedCalendar.description,
-      color: updatedCalendar.color,
-      timeZone: updatedCalendar.timeZone,
-      isDefault: updatedCalendar.isDefault,
-      isVisible: updatedCalendar.isVisible,
-      connectedAccount: updatedCalendar.connectedAccount,
-      settings: updatedCalendar.settings[0] || null,
-      createdAt: updatedCalendar.createdAt,
-      updatedAt: updatedCalendar.updatedAt,
-    };
+    return this.toCalendarResponseDto(updatedCalendar);
   }
 
   async unsyncCalendar(userId: string, calendarId: string): Promise<void> {
@@ -393,5 +357,23 @@ export class CalendarsService {
     });
 
     this.logger.log(`Unsynced calendar ${calendarId} for user ${userId}`);
+  }
+
+  // Helper method to convert Prisma calendar to DTO
+  private toCalendarResponseDto(calendar: Calendar): CalendarResponseDto {
+    return {
+      id: calendar.id,
+      externalId: calendar.externalId || undefined,
+      name: calendar.name,
+      description: calendar.description || undefined,
+      color: calendar.color || undefined,
+      timeZone: calendar.timeZone || undefined,
+      isDefault: calendar.isDefault || false,
+      isVisible: calendar.isVisible || true,
+      connectedAccountId: calendar.connectedAccountId || undefined,
+      userId: calendar.userId,
+      createdAt: calendar.createdAt.toISOString(),
+      updatedAt: calendar.updatedAt.toISOString(),
+    };
   }
 }

@@ -8,22 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { LoginDto, RegisterDto, AuthResponseDto } from './dto/auth.dto';
 import { User } from '@prisma/client';
+import { Auth0User, JwtPayload } from '../common/types';
 import * as bcrypt from 'bcrypt';
-
-interface Auth0User {
-  sub: string;
-  email: string;
-  name: string;
-  picture?: string;
-  email_verified: boolean;
-}
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-  iat?: number;
-  exp?: number;
-}
 
 @Injectable()
 export class AuthService {

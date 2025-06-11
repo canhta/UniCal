@@ -23,16 +23,7 @@ import {
   Auth0LoginDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-
-interface Auth0Request {
-  user: {
-    sub: string;
-    email: string;
-    name: string;
-    picture?: string;
-    email_verified: boolean;
-  };
-}
+import { Auth0Request } from '../common/types';
 
 @ApiTags('Authentication')
 @Controller('auth')

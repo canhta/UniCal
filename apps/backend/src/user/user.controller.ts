@@ -17,16 +17,7 @@ import {
 import { UserService } from './user.service';
 import { UpdateUserDto, UserResponseDto } from './dto/user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-interface AuthenticatedUser {
-  id: string;
-  email: string;
-  displayName?: string | null;
-}
-
-interface AuthenticatedRequest {
-  user: AuthenticatedUser;
-}
+import { AuthenticatedRequest } from '../common/types';
 
 @ApiTags('User')
 @Controller('user')

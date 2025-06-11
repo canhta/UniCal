@@ -26,14 +26,7 @@ import {
   GetEventsQueryDto,
 } from './dto/events.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-interface AuthenticatedRequest {
-  user: {
-    id: string;
-    email: string;
-    displayName?: string;
-  };
-}
+import { AuthenticatedRequest } from '../common/types';
 
 @ApiTags('Events')
 @Controller('events')
