@@ -35,17 +35,17 @@
 
 ### Phase 1: Foundational UI Elements
 
-*   **[ ] Component: `Button.tsx`**
+*   **[x] Component: `Button.tsx`**
     *   **Needs:** Variants (`primary`, `secondary`, `danger`, `outline`, `ghost`, `link`), sizes (`sm`, `md`, `lg`), icons, loading/disabled states, `asChild` prop for composition (e.g., with Next.js `<Link>`).
-*   **[ ] Component: `Input.tsx`**
+*   **[x] Component: `Input.tsx`**
     *   **Needs:** Standard input types, label association (via `Label.tsx`), helper/error text display, disabled/readonly states, icons, sizes.
-*   **[ ] Component: `Label.tsx`**
+*   **[x] Component: `Label.tsx`**
     *   **Needs:** Association with inputs via `htmlFor`.
-*   **[ ] Component: `Card.tsx`** (and sub-components like `CardHeader.tsx`, `CardContent.tsx`, `CardFooter.tsx` if preferred over props)
+*   **[x] Component: `Card.tsx`** (and sub-components like `CardHeader.tsx`, `CardContent.tsx`, `CardFooter.tsx` if preferred over props)
     *   **Needs:** Container with configurable padding, border, shadow. Structured content sections.
-*   **[ ] Component: `Spinner.tsx`**
+*   **[x] Component: `Spinner.tsx`**
     *   **Needs:** Visual loading indicator, various sizes, centering.
-*   **[ ] Component: `Alert.tsx`** (Moved to Phase 1 as it's crucial for user feedback, e.g., form errors, notifications)
+*   **[x] Component: `Alert.tsx`** (Moved to Phase 1 as it's crucial for user feedback, e.g., form errors, notifications)
     *   **Needs:** Variants (`info`, `success`, `warning`, `error`), optional title, icon, dismiss button, ARIA roles.
 
 ### Phase 2: Interactive & Overlay Components

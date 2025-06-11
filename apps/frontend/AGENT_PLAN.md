@@ -15,11 +15,13 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 ## Phase 1: Core Setup & Foundational UI (Aligns with SETUP_PLAN Phases 1-2)
 **Goal:** Establish a runnable Next.js project with basic layout, UI component structure, and environment setup.
 
-*   [ ] **Project Setup Verification:** Confirm Next.js 15 (App Router), TypeScript, Tailwind CSS, ESLint, Prettier (per `SETUP_PLAN.md`).
-*   [ ] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_API_BASE_URL`, Auth0 placeholders (fill in Phase 2).
-*   [ ] **Basic Layout & Global Styles (`app/layout.tsx`, `app/globals.css`):** Implement main layout (Tailwind), global styles, custom fonts (per `SETUP_PLAN.md`).
-*   [ ] **UI Component Library Structure (`/components/ui/UI_COMPONENTS_PLAN.md`):** Plan common UI components. Implement basic Button, Input (Tailwind, @headlessui/react).
-*   [ ] **Core Directory Structure:** Establish `/components/`, `/lib/`, `/app/`, `/styles/`, `/contexts/`.
+*   [x] **Project Setup Verification:** Confirm Next.js 15 (App Router), TypeScript, Tailwind CSS, ESLint, Prettier (per `SETUP_PLAN.md`).
+*   [x] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_API_BASE_URL`, Auth0 placeholders (fill in Phase 2).
+*   [x] **Basic Layout & Global Styles (`app/layout.tsx`, `app/globals.css`):** Implement main layout (Tailwind), global styles, custom fonts (per `SETUP_PLAN.md`).
+*   [x] **UI Component Library Structure (`/components/ui/UI_COMPONENTS_PLAN.md`):** Plan common UI components. Implement basic Button, Input (Tailwind, @headlessui/react).
+*   [x] **Core Directory Structure:** Establish `/components/`, `/lib/`, `/app/`, `/styles/`, `/contexts/`.
+*   [x] **Layout Components (`/components/layout/LAYOUT_COMPONENTS_PLAN.md`):** Develop Navbar, Footer. Integrate auth status (user info, login/logout). Update `LAYOUT_COMPONENTS_PLAN.md`.
+*   [x] **Basic Pages:** Create landing page, dashboard, calendar, integrations, and settings pages.
 
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
 **Goal:** Implement user authentication (primarily Auth0 SSO) and create basic page structure with protected routes.
