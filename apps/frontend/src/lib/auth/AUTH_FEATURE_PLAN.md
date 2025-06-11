@@ -1,170 +1,70 @@
-# Auth Feature Plan (Phase 2)
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/lib/auth/AUTH_FEATURE_PLAN.md -->
+# Auth Feature Plan (Frontend - Aligns with Frontend AGENT_PLAN Phase 2)
 
-This plan details the implementation of authentication features for the UniCal frontend, aligning with `AGENT_PLAN.md` and `SETUP_PLAN.md`.
+This plan details frontend authentication using `@auth0/nextjs-auth0`, aligning with `AGENT_PLAN.md` and backend capabilities.
 
 ## FRD Alignment
-*   **FR3.1.0 Simplified Email-Only Login (UI Focus):** Initial implementation will focus on UI elements. Auth0 will be used for the "simplified" flow by initially only presenting email-based SSO options or a direct email login if Auth0 is configured for it.
-*   **FR3.1.3 Single Sign-On (SSO) - Google & Microsoft:** Core focus of this plan using Auth0.
-
-## Clarifications on Account Linking
-*   **Identity Linking (Auth0):** Linking different methods of signing into *UniCal* (e.g., allowing a user to sign in with their Google account and later with an email/password, and recognizing them as the same UniCal user) is a feature managed by Auth0 (identity federation/account linking within Auth0). The frontend will primarily direct users through Auth0 flows.
-*   **External Service Connection (UniCal Settings/Integrations):** Connecting UniCal to *external services* like Google Calendar or Outlook Calendar to access data is handled separately, typically within the UniCal application's "Integrations" or "Settings" sections, and involves OAuth flows managed by the `AccountsModule` on the backend. This feature plan focuses on user authentication into UniCal.
+*   **FR3.1.3 Single Sign-On (SSO) - Google & Microsoft:** Core focus, using Auth0.
+*   **FR3.1.0 Simplified Email-Only Login (UI Focus):** Leverages Auth0's capabilities (passwordless email or email/password if configured in Auth0, or users choosing Google/Microsoft).
+*   **FR3.1.1, FR3.1.2, FR3.1.4, FR3.1.5 (User Registration, Email/Password Login, Password Management):** Primarily handled by Auth0's Universal Login Page (ULP) and management features. Frontend UI will direct to Auth0 for these unless a custom UniCal UI interacting with specific backend endpoints (for non-Auth0 managed flows) is explicitly required later.
 
 ## Core Tasks (Using @auth0/nextjs-auth0)
 
-1.  **[ ] Environment Variables Setup (as per `SETUP_PLAN.md` Phase 3):**
-    *   Ensure `AUTH0_SECRET`, `AUTH0_BASE_URL`, `AUTH0_ISSUER_BASE_URL`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` are correctly set in `.env.local`.
-2.  **[ ] Create Dynamic API Route for Auth0 (as per `SETUP_PLAN.md` Phase 3):**
-    *   Implement `apps/frontend/app/api/auth/[auth0]/route.ts` with `handleAuth()`.
-3.  **[ ] Wrap Root Layout with `UserProvider` (as per `SETUP_PLAN.md` Phase 3):**
-    *   Modify `apps/frontend/app/layout.tsx` to include `<UserProvider>`.
-4.  **[ ] Login UI Implementation (`apps/frontend/src/app/(auth)/login/page.tsx` or integrated into Navbar):**
-    *   **Simplified Email-Only UI (FR3.1.0):**
-        *   If backend supports a non-Auth0 simple email login: Create an email input field and a "Login" button. On submit, call the backend's simple login endpoint. Store the received JWT securely (e.g., in an HttpOnly cookie via a backend-for-frontend endpoint, or carefully in local storage if no other option - though less secure). Update auth state.
-        *   If using Auth0 for simplified flow: This might mean initially only showing "Sign in with Google/Microsoft" if those are email-based, or configuring Auth0 to allow passwordless email login.
+1.  [ ] **Environment Variables Setup (`.env.local`):**
+    *   Ensure `AUTH0_SECRET`, `AUTH0_BASE_URL`, `AUTH0_ISSUER_BASE_URL`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET` are set.
+2.  [ ] **Dynamic API Route for Auth0 (`app/api/auth/[auth0]/route.ts`):**
+    *   Implement with `handleAuth()` from `@auth0/nextjs-auth0`.
+3.  [ ] **Wrap Root Layout with `UserProvider` (`app/layout.tsx`):**
+    *   Include `<UserProvider>` from `@auth0/nextjs-auth0/client`.
+4.  [ ] **Login UI Implementation (e.g., `app/(auth)/login/page.tsx` or Navbar):
     *   **SSO Buttons (FR3.1.3):**
-        *   Create "Sign in with Google" button linking to `/api/auth/login?connection=google-oauth2` (or appropriate connection name).
-        *   Create "Sign in with Microsoft" button linking to `/api/auth/login?connection=windowslive` (or appropriate connection name).
-        *   Style buttons appropriately.
-5.  **[ ] Logout UI Implementation (e.g., in Navbar or User Profile Dropdown):**
-    *   Create a "Logout" button/link pointing to `/api/auth/logout`.
-6.  **[ ] Accessing User Information:**
-    *   **Client Components:** Use `useUser` hook from `@auth0/nextjs-auth0/client` to get user profile, loading, and error states.
-    *   **Server Components/Route Handlers:** Use `getSession` from `@auth0/nextjs-auth0` to get user session server-side.
-7.  **[ ] Protected Routes Implementation:**
-    *   **Using Middleware (Optional but Recommended for Edge Protection):**
-        *   Create `middleware.ts` in the root of `apps/frontend/`.
-        *   Use `withMiddlewareAuthRequired` from `@auth0/nextjs-auth0/edge` to protect specific routes or route groups (e.g., `/dashboard`, `/calendar`, `/integrations`).
+        *   "Sign in with Google" button linking to `/api/auth/login?connection=google-oauth2` (verify connection name in Auth0).
+        *   "Sign in with Microsoft" button linking to `/api/auth/login?connection=windowslive` (verify connection name in Auth0).
+    *   **(Optional) Email Input for Auth0 Passwordless/Email-Password:** If Auth0 is configured for passwordless email or traditional email/password, provide an email input. The login button would call `/api/auth/login` (Auth0 SDK handles redirect to ULP where user enters email/password or gets magic link).
+5.  [ ] **Logout UI Implementation (Navbar/Profile Dropdown):**
+    *   "Logout" button/link to `/api/auth/logout`.
+6.  [ ] **Accessing User Information:**
+    *   **Client Components:** Use `useUser()` hook.
+    *   **Server Components/Route Handlers:** Use `getSession()`.
+7.  [ ] **Protected Routes Implementation:**
+    *   **Middleware (`middleware.ts` in root `apps/frontend/`):** Use `withMiddlewareAuthRequired` for routes like `/dashboard`, `/calendar`, `/integrations`, `/settings`.
         ```typescript
         // middleware.ts
         import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge';
         export default withMiddlewareAuthRequired();
         export const config = {
-          matcher: ['/dashboard/:path*', '/calendar/:path*', '/integrations/:path*', '/settings/:path*'], // Add paths to protect
+          matcher: ['/dashboard/:path*', '/calendar/:path*', '/integrations/:path*', '/settings/:path*'],
         };
         ```
-    *   **Manual Check in Server Components (if not using middleware for all):**
-        ```typescript
-        // Example: app/(protected)/dashboard/page.tsx
-        import { getSession } from '@auth0/nextjs-auth0';
-        import { redirect } from 'next/navigation';
-        export default async function DashboardPage() {
-          const session = await getSession();
-          if (!session?.user) {
-            redirect('/api/auth/login'); // Or to a custom login page
-          }
-          // ... rest of the page
-        }
-        ```
-    *   **Manual Check in Client Components (if not using middleware for all):**
-        ```typescript
-        // Example: some client component
-        'use client';
-        import { useUser } from '@auth0/nextjs-auth0/client';
-        import { useRouter } from 'next/navigation'; // Use next/navigation for App Router
-        export default function MyProtectedClientComponent() {
-          const { user, error, isLoading } = useUser();
-          const router = useRouter();
-          if (isLoading) return <p>Loading...</p>;
-          if (error) return <p>{error.message}</p>;
-          if (!user) {
-            // Option 1: Redirect if appropriate for the component's context
-            // router.push('/api/auth/login'); 
-            // return null; 
-            // Option 2: Show a message or different UI
-            return <p>Please log in to view this content.</p>;
-          }
-          return <div>Welcome {user.name}!</div>;
-        }
-        ```
-8.  **[ ] Auth State Management (if needed beyond `useUser`):**
-    *   For more complex global auth state or derived state, integrate with the chosen global state manager (Zustand/Jotai - see `STATE_MANAGEMENT_PLAN.md`).
-    *   The `UserProvider` and `useUser` hook handle most common cases.
-9.  **[ ] Error Handling:**
-    *   Display appropriate messages for login errors (e.g., if Auth0 returns an error on callback).
-    *   The `useUser` hook provides an `error` object.
+    *   **Fallback/Granular Check (Client/Server Components):** Use `useUser` or `getSession` with conditional rendering/redirect if not fully covered by middleware.
+8.  [ ] **API Client Integration (`src/lib/api/API_CLIENT_PLAN.md`):
+    *   Ensure API client automatically attaches the Auth0 Access Token (obtained via `getAccessToken` from `@auth0/nextjs-auth0`) to requests to the UniCal backend.
+    *   Backend expects this Auth0 token for its `/auth/provider-login` (or similar) endpoint to validate and issue UniCal's internal session tokens.
+9.  [ ] **Error Handling:** Display messages for login errors (e.g., Auth0 callback errors, `useUser` error state).
 
-### 2. User Flows
+## User Flows (Primarily via Auth0 ULP)
 
-*   **Registration Flow:**
-    *   User navigates to the registration page.
-    *   Fills in name, email, and password.
-    *   Submits the form.
-    *   Frontend calls `POST /auth/register`.
-    *   **On success (e.g., 201 response or specific message indicating email sent):**
-        *   **Display a message to the user instructing them to check their email to verify their account.**
-        *   **Optionally, redirect to a "Check Your Email" page or a login page with a message.**
-        *   **Do not automatically log the user in or provide auth tokens until email is verified (unless backend provides them post-verification).**
-    *   On error (e.g., email already exists, validation error), display appropriate feedback.
-*   **Email Verification Flow:**
-    *   **User clicks the verification link in their email (e.g., `https://<frontend_url>/verify-email?token=<token>`).**
-    *   **Frontend mounts a specific page/route for `/verify-email`.**
-    *   **This page extracts the `token` from the URL query parameters.**
-    *   **It calls the backend endpoint `GET /auth/verify-email?token=<token>`.**
-    *   **On success:**
-        *   **Display a "Email Verified Successfully" message.**
-        *   **Redirect to the login page or, if the backend returns auth tokens, log the user in and redirect to the dashboard.**
-    *   **On error (e.g., invalid/expired token):**
-        *   **Display an appropriate error message (e.g., "Invalid or expired verification link.").**
-        *   **Optionally, provide a button/link to request a new verification email (`POST /auth/resend-verification-email`).**
-*   **Resend Verification Email Flow (Optional but Recommended):**
-    *   **If a user tries to log in with an unverified email (backend might return a specific error code/message for this), or from a dedicated UI element:**
-    *   **User clicks a "Resend Verification Email" button/link.**
-    *   **Frontend calls `POST /auth/resend-verification-email` with the user's email.**
-    *   **On success, display a message: "A new verification email has been sent."**
-    *   **On error, display an appropriate message.**
-*   **Login Flow:**
-    *   User navigates to the login page.
-    *   Enters email and password (or uses SSO).
-    *   Submits the form.
-    *   Frontend calls `POST /auth/login`.
-    *   **On success:**
-        *   Stores JWT and other user data (if any) in the client (e.g., cookies, local storage).
-        *   Updates auth state.
-        *   **If the email is not verified (backend indicates this), display a message: "Please verify your email before logging in." and optionally provide a way to resend the verification email.**
-        *   Redirects to the intended page or dashboard.
-    *   On error (e.g., invalid credentials, user not found), display appropriate feedback.
+*   **Registration/Login:**
+    *   User clicks "Login" or SSO buttons.
+    *   Redirected to Auth0 Universal Login Page (ULP).
+    *   User registers (if new) or logs in (email/password, social provider) on Auth0 ULP.
+    *   Auth0 handles email verification, password reset initiation if user chooses these options on ULP.
+    *   On successful Auth0 authentication, user is redirected back to `AUTH0_BASE_URL` (the frontend app).
+    *   `handleCallback` (part of `handleAuth()`) exchanges code for tokens, creates session.
+    *   Frontend makes a call to backend's `/auth/provider-login` (or similar) with the Auth0 access token to get UniCal session tokens.
+*   **Password Reset (Initiated from UniCal UI - Optional, if not relying solely on Auth0 ULP prompts):
+    *   If a user needs to reset password and isn't prompted by Auth0 ULP during a failed login: Provide a "Forgot Password?" link.
+    *   This link should ideally redirect to Auth0's password reset flow or trigger it via Auth0 mechanisms if possible. If a custom flow is built interacting with a UniCal backend endpoint for this, that backend endpoint would then likely use Auth0 Management API to trigger password reset.
 
-*   **Forgot Password Flow:**
-    *   **User clicks "Forgot Password?" link (typically on the login page).**
-    *   **User is navigated to a "Forgot Password" page.**
-    *   **User enters their registered email address and submits.**
-    *   **Frontend calls `POST /auth/forgot-password` with the email.**
-    *   **On success (backend should always return a generic success message to prevent email enumeration):**
-        *   **Display a message like: "If an account with that email exists, a password reset link has been sent."**
-    *   **On error (e.g., client-side validation or network error), display appropriate feedback.**
+## Backend Interaction Points (Frontend Perspective)
 
-*   **Reset Password Flow:**
-    *   **User clicks the password reset link in their email (e.g., `https://<frontend_url>/reset-password?token=<token>`).**
-    *   **Frontend mounts a specific page/route for `/reset-password`.**
-    *   **The page extracts the `token` from the URL query parameters.**
-    *   **(Optional but Recommended) Frontend first calls `GET /auth/verify-reset-token?token=<token>` to check if the token is valid before showing the password form.**
-        *   **If token is invalid/expired, display an error message (e.g., "Invalid or expired password reset link. Please try again.") and guide the user back to the "Forgot Password" page.**
-    *   **If token is valid (or if skipping the verify step), display a form asking for "New Password" and "Confirm New Password".**
-    *   **User enters and confirms their new password, then submits.**
-    *   **Frontend calls `POST /auth/reset-password` with `{ token, newPassword }`.**
-    *   **On success:**
-        *   **Display a "Password has been reset successfully" message.**
-        *   **Redirect to the login page.**
-    *   **On error (e.g., token became invalid, password policy not met), display appropriate feedback.**
-
-### 4. API Interaction
-
-*   `POST /auth/register`: To register a new user.
-*   `POST /auth/login`: To log in the user.
-*   `GET /auth/verify-email?token=<token>`: To verify the email using the token from the verification link.
-*   `POST /auth/resend-verification-email`: (Optional) To request a new verification email.
-*   `POST /auth/forgot-password`: To initiate the password reset process.
-*   `GET /auth/verify-reset-token`: (Optional) To verify the validity of a password reset token.
-*   `POST /auth/reset-password`: To submit the new password along with the reset token.
-
-## Future Considerations (Post-Initial Product / Phase 5 of AGENT_PLAN)
-*   **FR3.1.1 User Registration (Full Email/Password):** If Auth0 Universal Login is not customized to handle this, or if a custom UI is needed.
-*   **FR3.1.2 User Login (with Password):** Update login page for email/password fields.
-*   **FR3.1.4 Password Reset:** UI for "Forgot Password" and password reset form. **(This is now being addressed)**
-*   **FR3.1.5 Profile Management (Password Change):** UI for changing password within account settings.
+*   **Primary:** After successful Auth0 login on frontend, call a backend endpoint (e.g., `POST /auth/provider-login`) with the Auth0 `accessToken`.
+    *   **Request:** `{ "providerToken": "<Auth0 Access Token>" }`
+    *   **Response (Success):** `{ "accessToken": "<UniCal Backend JWT>", "refreshToken": "<UniCal Backend Refresh JWT>" }` (or similar structure).
+    *   These UniCal tokens are then stored securely (e.g., HttpOnly cookies set by backend, or carefully managed by frontend state/storage) and used for subsequent API calls to UniCal backend.
+*   **Token Refresh (UniCal Tokens):** Implement logic to use UniCal `refreshToken` to get a new UniCal `accessToken` from backend's `/auth/refresh` endpoint when the current `accessToken` expires.
 
 ## Notes:
-*   This plan assumes Auth0 is the primary authentication provider.
-*   Connection names for Google (`google-oauth2`) and Microsoft (`windowslive`, `waad`, or custom OIDC) should be verified from the Auth0 dashboard settings.
-*   The "Simplified Email-Only Login" will likely leverage Auth0's passwordless email connection or rely on users choosing Google/Microsoft (which are email-based) if a separate backend mechanism isn't implemented first.
+*   This plan prioritizes leveraging Auth0 for most auth UI and logic (registration, password complexity, email verification, MFA if configured in Auth0).
+*   The key frontend responsibility is integrating the `@auth0/nextjs-auth0` SDK, initiating login flows to Auth0, handling the callback, and then exchanging the Auth0 token with the backend for a UniCal-specific session token.
+*   Ensure connection names (`google-oauth2`, `windowslive`, etc.) in login links match Auth0 configuration.

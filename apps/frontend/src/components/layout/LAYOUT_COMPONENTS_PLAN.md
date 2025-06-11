@@ -1,120 +1,112 @@
-# Layout Components Plan
+# Layout Components Plan (Frontend)
 
-This plan outlines the development of core layout components for the UniCal frontend, such as Navbar and Footer.
+**Overall Goal:** Develop core, responsive, and accessible layout components (Navbar, Footer, etc.) that provide a consistent user experience and reflect authentication state.
 
-## Core Principles
-*   **Consistency:** Provide a consistent look and feel across all pages.
-*   **Responsiveness:** Ensure components adapt to different screen sizes.
-*   **Accessibility:** Navigation elements should be accessible.
-*   **Auth-Aware:** Components should reflect the user's authentication state (e.g., show login/logout buttons, user profile).
-*   **Clarity:** Navigation and layout should be intuitive.
+## 1. Core Principles & AI Agent Actionables
 
-## Components
+*   **[ ] Goal:** Ensure consistent look and feel across pages.
+    *   **Action:** AI will develop `Navbar.tsx` and `Footer.tsx` with consistent styling (Tailwind CSS).
+*   **[ ] Goal:** Implement responsive design for all layout components.
+    *   **Action:** AI will ensure Navbar (with mobile hamburger menu) and Footer adapt to various screen sizes.
+*   **[ ] Goal:** Prioritize accessibility.
+    *   **Action:** AI will use semantic HTML, ARIA attributes, and ensure keyboard navigability for all layout elements. Headless UI will be used for interactive elements like dropdowns and mobile menus.
+*   **[ ] Goal:** Make layout components auth-aware.
+    *   **Action:** AI will use `useUser` from `@auth0/nextjs-auth0/client` in `Navbar.tsx` to display different links and user information based on authentication status.
 
-### 1. Navbar (`apps/frontend/src/components/layout/Navbar.tsx`)
+## 2. Components
 
-*   **FRD Ref:** Implicitly required for navigation and accessing features.
-*   **Requirements:**
-    *   **[ ] Branding/Logo:** Display UniCal logo/name, links to homepage (`/`).
-    *   **[ ] Navigation Links (Auth-Dependent):**
-        *   **Unauthenticated Users:**
-            *   "Login" button/link (to `/api/auth/login`).
-            *   (Optional) "Features", "Pricing" (if applicable later, can be static links).
-        *   **Authenticated Users:**
-            *   "Dashboard" link (to `/dashboard` or `/`).
-            *   "Calendar" link (to `/calendar`).
-            *   "Integrations" link (to `/integrations`).
-            *   "Settings" link (to `/settings`).
-    *   **[ ] User Profile / Logout (Authenticated Users):**
-        *   Display user's name/avatar (using `useUser` from `@auth0/nextjs-auth0/client`).
-        *   Dropdown menu using Headless UI for accessibility:
-            *   "Account Settings" link (to `/settings/account` or similar).
-            *   "Logout" button/link (to `/api/auth/logout`).
-    *   **[ ] Responsive Design:**
-        *   Desktop: Horizontal layout.
-        *   Mobile: Hamburger menu icon that toggles a slide-out or dropdown menu for navigation links and user actions. Use Headless UI for transitions and accessibility.
-    *   **[ ] Styling:** Use Tailwind CSS for a modern and clean look.
-    *   **[ ] Accessibility:**
-        *   Ensure proper ARIA attributes for navigation (`<nav>`, `aria-label`), links (`aria-current` for active link), buttons, and the mobile menu (e.g., `aria-expanded`, `aria-controls`).
-        *   Keyboard navigation must be supported.
-*   **Implementation Details:**
-    *   Use `useUser` hook from `@auth0/nextjs-auth0/client` to get authentication state and user information.
-    *   Use Next.js `<Link>` component for internal navigation.
-    *   Leverage `@headlessui/react` (e.g., `Menu` for dropdown, `Transition` for mobile menu).
+### A. Navbar (`apps/frontend/src/components/layout/Navbar.tsx`)
 
-### 2. Footer (`apps/frontend/src/components/layout/Footer.tsx`)
+*   **[ ] Goal:** Implement Navbar with branding, navigation, and user profile section.
+    *   **Action (Branding):** AI will display the UniCal logo/name, linking to `/`.
+    *   **Action (Navigation Links - Auth-Dependent):**
+        *   **Unauthenticated:** "Login" button (to `/api/auth/login`).
+        *   **Authenticated:** "Dashboard" (`/dashboard`), "Calendar" (`/calendar`), "Integrations" (`/integrations`), "Settings" (`/settings`).
+    *   **Action (User Profile - Authenticated):**
+        *   AI will display user name/avatar (from `useUser`).
+        *   AI will implement a dropdown menu (using `@headlessui/react` `Menu`) with "Account Settings" (`/settings/account`) and "Logout" (`/api/auth/logout`) links.
+    *   **Action (Responsive Mobile Menu):**
+        *   AI will implement a hamburger icon to toggle a mobile menu (using `@headlessui/react` `Transition` and potentially `Dialog` or `Popover` for the panel) containing navigation links and user actions.
+    *   **Action (Styling & Accessibility):**
+        *   AI will use Tailwind CSS for styling.
+        *   AI will ensure all interactive elements are accessible (ARIA attributes, keyboard navigation, focus management).
+        *   AI will use Next.js `<Link>` for client-side navigation.
 
-*   **FRD Ref:** Standard website component.
-*   **Requirements:**
-    *   **[ ] Copyright Information:** "© {new Date().getFullYear()} UniCal. All rights reserved."
-    *   **[ ] Optional Links (placeholders initially):**
-        *   "Privacy Policy" (link to `/privacy-policy`).
-        *   "Terms of Service" (link to `/terms-of-service`).
-    *   **[ ] Styling:** Simple, clean design using Tailwind CSS, unobtrusive.
-    *   **[ ] Responsiveness:** Adapt to different screen sizes, content should remain legible.
+### B. Footer (`apps/frontend/src/components/layout/Footer.tsx`)
 
-*   **Implementation Details:**
-    *   Can be a simple stateless functional component.
-    *   Use Next.js `<Link>` for internal links if they become actual pages.
+*   **[ ] Goal:** Implement a simple and clean Footer.
+    *   **Action:** AI will display copyright information (e.g., "© {new Date().getFullYear()} UniCal. All rights reserved.").
+    *   **Action (Optional Links):** AI will include placeholder links for "Privacy Policy" (`/privacy-policy`) and "Terms of Service" (`/terms-of-service`).
+    *   **Action (Styling & Responsiveness):** AI will use Tailwind CSS and ensure it adapts to screen sizes.
 
-### 3. Main Application Layout (`apps/frontend/app/layout.tsx`)
+### C. Root Layout (`apps/frontend/src/app/layout.tsx`)
 
-*   **This file already exists and is foundational.**
-*   **Tasks:**
-    *   **[x] UserProvider:** Confirm `@auth0/nextjs-auth0/client`'s `UserProvider` wraps the main content area. (Already planned in SETUP_PLAN)
-    *   **[ ] Integrate Navbar:** Render `<Navbar />` component within the `<body>` before the main content.
-    *   **[ ] Page Content Area:** Ensure `{children}` is wrapped in a `<main>` HTML element for semantic structure.
-    *   **[ ] Integrate Footer:** Render `<Footer />` component within the `<body>` after the main content.
-    *   **[x] Global Styles:** `globals.css` is imported here. (Standard Next.js setup)
-    *   **[x] Font Setup:** Next.js font optimization (`next/font`) should be configured here. (As per SETUP_PLAN)
-    *   **[ ] Theme Provider (Optional):** If a theming solution (e.g., for dark mode, or if Tailwind's theme capabilities are extended via context) is planned, it would be integrated here. For now, Tailwind's default theme and customization in `tailwind.config.ts` is primary.
+*   **[ ] Goal:** Integrate Navbar and Footer into the root application layout.
+    *   **Action:** AI will ensure `UserProvider` (from `@auth0/nextjs-auth0/client`) and `ReactQueryProvider` (from `STATE_MANAGEMENT_PLAN.md`) wrap the main content.
+    *   **Action:** AI will render `<Navbar />` before and `<Footer />` after the `{children}` within the `<body>`.
+    *   **Action:** AI will wrap `{children}` in a `<main>` HTML element.
+    *   **Action:** AI will confirm `globals.css` and `next/font` configurations are correctly applied.
+    ```tsx
+    // Example structure for apps/frontend/src/app/layout.tsx
+    // ... other imports
+    import { UserProvider } from '@auth0/nextjs-auth0/client';
+    import ReactQueryProvider from '@/components/providers/ReactQueryProvider'; // Path based on actual location
+    import Navbar from '@/components/layout/Navbar'; // Path based on actual location
+    import Footer from '@/components/layout/Footer'; // Path based on actual location
+    // import { Inter } from 'next/font/google'; // Example font
+    // const inter = Inter({ subsets: ['latin'] });
 
-### 4. Protected Route Layout (`apps/frontend/app/(protected)/layout.tsx`)
+    export default function RootLayout(
+      { children }: { children: React.ReactNode }
+    ) {
+      return (
+        <html lang="en" /* className={inter.className} */ >
+          <body>
+            <UserProvider>
+              <ReactQueryProvider>
+                <Navbar />
+                <main className="flex-grow"> {/* Ensure main content can grow to push footer down */}
+                  {children}
+                </main>
+                <Footer />
+              </ReactQueryProvider>
+            </UserProvider>
+          </body>
+        </html>
+      );
+    }
+    ```
 
-*   **Purpose:** To provide a consistent structure or behavior for all routes within the `(protected)` group.
-*   **Requirements:**
-    *   **[ ] Create File:** `apps/frontend/app/(protected)/layout.tsx`.
-    *   **[ ] Authentication Check (Middleware Preferred):** While middleware (`middleware.ts` at the root of `app` or `src`) is the primary way to protect routes using `@auth0/nextjs-auth0/edge`'s `withMiddlewareAuthRequired`, this layout can serve as a secondary check or handle UI aspects for authenticated users.
-        *   If middleware handles redirection, this layout component will only render if the user is authenticated.
-    *   **[ ] Shared UI for Protected Sections (Optional):**
-        *   If there's a need for a sub-navigation sidebar specific to authenticated sections (e.g., for settings sub-pages, user-specific dashboards), it could be placed here.
-        *   Could define a common page title structure or breadcrumb area if consistent across all protected pages.
-    *   **[ ] Structure:**
-        ```tsx
-        // Example: apps/frontend/app/(protected)/layout.tsx
-        export default function ProtectedLayout({
-          children,
-        }: {
-          children: React.ReactNode;
-        }) {
-          // Optional: Additional auth check or user data fetching if needed server-side for this layout
-          // const session = await getSession();
-          // if (!session?.user) { /* This case should ideally be handled by middleware */ }
+### D. Protected Route Layout (`apps/frontend/src/app/(protected)/layout.tsx`)
 
-          return (
-            <>
-              {/* Optional: Sidebar specific to protected routes */}
-              {/* <ProtectedSidebar /> */}
-              <div className="flex-grow p-4 md:p-6 lg:p-8"> {/* Example padding */}
-                {children}
-              </div>
-            </>
-          );
-        }
-        ```
+*   **[ ] Goal:** Create a layout for routes within the `(protected)` group, primarily for shared UI or structure.
+    *   **Action:** AI will create `apps/frontend/src/app/(protected)/layout.tsx`.
+    *   **Action:** This layout will, at a minimum, provide consistent padding/margin for the content area of protected pages.
+    *   **Constraint:** Authentication enforcement is primarily handled by `middleware.ts` using `@auth0/nextjs-auth0/edge`'s `withMiddlewareAuthRequired`.
+    ```tsx
+    // Example: apps/frontend/src/app/(protected)/layout.tsx
+    export default function ProtectedLayout({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) {
+      // Middleware should handle auth enforcement.
+      // This layout can add shared UI for protected sections, e.g., a sub-sidebar or consistent padding.
+      return (
+        <div className="p-4 md:p-6 lg:p-8"> {/* Example padding for content area */}
+          {children}
+        </div>
+      );
+    }
+    ```
 
-*   **Implementation Notes:**
-    *   The primary role of route group layouts is to share UI. Authentication enforcement is best handled by middleware.
-    *   For now, this layout might just pass children through, or include minimal structural elements like padding for the content area of protected pages.
+## 3. Directory Structure
 
-## Directory Structure
 *   `apps/frontend/src/components/layout/Navbar.tsx`
 *   `apps/frontend/src/components/layout/Footer.tsx`
-*   `apps/frontend/app/layout.tsx` (Root layout)
-*   `apps/frontend/app/(protected)/layout.tsx` (Layout for protected routes)
+*   `apps/frontend/src/app/layout.tsx` (Root)
+*   `apps/frontend/src/app/(protected)/layout.tsx` (Protected section layout)
 
-## Implementation Notes
-*   Start with Navbar and Footer, integrating them into `app/layout.tsx`.
-*   Ensure Navbar correctly reflects authentication state using `useUser`.
-*   Test responsiveness of Navbar (especially mobile menu) and Footer thoroughly.
-*   The `(protected)/layout.tsx` can be very simple initially, primarily serving to group routes.
+## Notes:
+*   The `flex-grow` class on the `<main>` element in `RootLayout` is important if using a flexbox column layout for the body to ensure the footer stays at the bottom.
+*   Mobile menu state can be managed using local React state (`useState`) within `Navbar.tsx` or, if complex interactions are needed across other components, potentially using the `uiStore` from `STATE_MANAGEMENT_PLAN.md`.

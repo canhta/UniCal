@@ -1,94 +1,161 @@
-# Notifications Module Plan
+# Notifications Module Plan (Backend)
 
-## 1. Overview
+**Overall Goal:** Manage and dispatch various types of notifications within UniCal, initially focusing on system-level alerts (account, sync status) and later expanding to user-facing notifications (event reminders, booking confirmations if features are added).
 
-This module will be responsible for handling and dispatching various types of notifications within the UniCal system. Initially, it will focus on basic status updates related to account and sync activities, as outlined in the FRD. More advanced notification features (e.g., event reminders triggered by UniCal, booking notifications) are considered for future phases.
+**Alignment:** Supports Backend AGENT_PLAN by providing feedback mechanisms for async operations (Phase 3) and user communication (Phase 4/5).
 
-This module will likely need to integrate with a User service (to get user preferences and contact details) and potentially an Email service for dispatching emails.
+## 1. Core Infrastructure & Setup
+*Goal: Establish the foundational components for creating, storing, and retrieving notifications.*
 
-## 2. Core Requirements (Based on FRD & System Needs)
-
-*   **FRD 3.11.3 Sync Status/Error Notifications (Initial Product - Basic):**
-    *   The primary focus for the initial phase is to support the display of connection issues on the \'Connected Accounts\' page. While the FRD states "No proactive alerts," this module might lay the groundwork for future proactive alerts by centralizing notification logic.
-    *   This module could provide endpoints or services that other modules (like `SyncModule` or `AccountsModule`) can call to log notification-worthy events.
-
-*   **User Account Notifications (Potential - Implied by FRD 3.1.1, 3.3):**
-    *   Email Verification: Sending verification emails upon registration.
-    *   Password Reset: Sending password reset links.
-    *   (Though these might be handled directly within the `AuthModule` initially, a centralized `NotificationsModule` could eventually take over the dispatch.)
-
-## 3. Phase 1: Foundational Setup & Basic Event Logging
-
-*   **[ ] Module Setup:**
+*   [ ] **Module Setup (`notifications.module.ts`):**
     *   Create `NotificationsService`.
-    *   Create `NotificationsController` (if any direct API interaction is needed, e.g., for fetching notification history, though unlikely for MVP).
-    *   Define `Notification` entity/interface (e.g., `userId`, `type`, `message`, `readStatus`, `createdAt`).
-*   **[ ] Notification Service Core Logic:**
-    *   `NotificationsService.createNotification(userId, type, message)`: Method to create and store a notification.
-    *   `NotificationsService.getUserNotifications(userId)`: Method to retrieve notifications for a user (for potential future display in-app).
-    *   `NotificationsService.markAsRead(notificationId, userId)`: Method to mark a notification as read.
-*   **[ ] Integration Points (Internal):**
-    *   `AccountsModule` and `SyncModule` should be ables to call `NotificationsService.createNotification` when significant events occur (e.g., connection success/failure, sync error).
-*   **[ ] Data Model (`schema.prisma` - if storing notifications):**
-    ```prisma
-    // In schema.prisma
-    model Notification {
-      id        String   @id @default(cuid())
-      userId    String
-      user      User     @relation(fields: [userId], references: [id])
-      type      String // e.g., 'SYNC_ERROR', 'ACCOUNT_CONNECTED', 'ACCOUNT_REAUTH_REQUIRED'
-      message   String
-      isRead    Boolean  @default(false)
-      createdAt DateTime @default(now())
-      updatedAt DateTime @updatedAt
-    }
-    ```
-    *   Add relation to `User` model.
-*   **[ ] Email Dispatch (Future Integration - Placeholder):**
-    *   Define an interface for an `EmailService`.
-    *   `NotificationsService` might have a method like `sendEmailNotification(userId, subject, template, context)` which would use the `EmailService`.
-    *   For MVP, actual email sending for sync errors might be out of scope, focusing on in-app display or logging.
+    *   Create `NotificationsController` (for in-app notification retrieval).
+    *   Import `PrismaModule`.
+    *   Import `forwardRef(() => UserModule)` (if user preferences for notifications are fetched).
+    *   (Future) Import `EmailModule` or a shared `MessagingModule`.
+*   [ ] **Prisma Schema (`schema.prisma` - within this module's logical scope, defined in global schema):**
+    *   [ ] **Define `NotificationType` Enum:**
+        ```prisma
+        enum NotificationType {
+          // Account Management
+          ACCOUNT_CONNECTED_SUCCESS
+          ACCOUNT_CONNECTION_FAILED
+          ACCOUNT_REAUTH_REQUIRED
+          ACCOUNT_DELETED_CONFIRMATION
+          // Sync Status
+          SYNC_INITIATED
+          SYNC_COMPLETED_SUCCESS
+          SYNC_COMPLETED_PARTIAL_SUCCESS // Some calendars failed
+          SYNC_COMPLETED_WITH_ERRORS
+          SYNC_WEBHOOK_ERROR
+          // Event Related (Future)
+          // EVENT_REMINDER
+          // EVENT_INVITATION
+          // EVENT_UPDATE
+          // Booking Related (Future)
+          // BOOKING_CONFIRMED
+          // BOOKING_CANCELLED
+          // General System
+          GENERAL_INFO
+          GENERAL_WARNING
+          GENERAL_ERROR
+        }
+        ```
+    *   [ ] **Define `NotificationChannel` Enum (Future - for user preferences):**
+        ```prisma
+        // enum NotificationChannel {
+        //   IN_APP
+        //   EMAIL
+        //   PUSH // Mobile/Desktop Push
+        // }
+        ```
+    *   [ ] **Define `Notification` Model:**
+        ```prisma
+        model Notification {
+          id        String            @id @default(cuid())
+          userId    String
+          user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+          type      NotificationType
+          title     String?           // Short title for the notification
+          message   String            @db.Text
+          isRead    Boolean           @default(false)
+          readAt    DateTime?
+          linkTo    String?           // Optional URL for the notification to link to in the frontend (e.g., /settings/accounts)
+          metadata  Json?             // For additional context, e.g., { accountId: "...", calendarName: "..." }
+          createdAt DateTime          @default(now())
+          updatedAt DateTime          @updatedAt
 
-## 4. Phase 2: Email Notifications (Post-MVP)
+          @@index([userId, createdAt(sort: Desc)])
+          @@index([userId, isRead])
+        }
+        ```
+    *   Ensure `User` model has `notifications Notification[]` relation.
 
-*   **[ ] Email Service Integration:**
-    *   Implement a concrete `EmailService` (e.g., using SendGrid, Nodemailer).
-    *   Configure email templates.
-*   **[ ] User Preferences for Notifications:**
-    *   Extend `User` model or create a `NotificationPreference` model.
-    *   Allow users to opt-in/out of certain types of email notifications.
-*   **[ ] Triggering Email Notifications:**
-    *   `AuthModule` calls `NotificationsService` to send:
-        *   Email verification links (FRD 3.1.1).
-        *   Password reset links (FRD 3.3).
-    *   `NotificationsService` sends email digests or immediate alerts for critical issues based on preferences.
+## 2. Service Implementation (`notifications.service.ts`)
+*Goal: Implement business logic for managing notifications.*
 
-## 5. API Endpoints (Illustrative - Primarily for internal use or future in-app display)
+*   [ ] **Create `NotificationsService`, inject `PrismaService`.**
+*   [ ] **`createNotification(data: CreateNotificationDto): Promise<Notification>`:**
+    *   `CreateNotificationDto`: `userId: string`, `type: NotificationType`, `message: string`, `title?: string`, `linkTo?: string`, `metadata?: Prisma.JsonValue`.
+    *   Creates and stores a notification in Prisma.
+    *   (Future) Based on `type` and user preferences, may also trigger dispatch via other channels (email, push).
+*   [ ] **`getUserNotifications(userId: string, query: GetNotificationsQueryDto): Promise<{ notifications: Notification[], totalCount: number, unreadCount: number }>`:**
+    *   `GetNotificationsQueryDto`: `isRead?: boolean`, `type?: NotificationType`, `limit?: number`, `page?: number`.
+    *   Retrieves notifications for a user with pagination and filtering.
+    *   Calculates `totalCount` for pagination and `unreadCount`.
+*   [ ] **`markNotificationAsRead(userId: string, notificationId: string): Promise<Notification | null>`:**
+    *   Marks a single notification as read, sets `readAt`. Ensures `userId` matches.
+*   [ ] **`markAllNotificationsAsRead(userId: string): Promise<{ count: number }>`:**
+    *   Marks all unread notifications for a user as read.
+*   [ ] **`deleteNotification(userId: string, notificationId: string): Promise<void>`:**
+    *   Deletes a notification. Ensures `userId` matches. (Consider if soft delete is needed).
 
-*   `GET /notifications`: Get notifications for the authenticated user.
-    *   Supports optional query parameters:
-        *   `context?: string` (e.g., 'integrations', 'account') - to filter notifications by a specific area of the application.
-        *   `status?: 'read' | 'unread' | 'all'` (defaults to 'unread' or 'all' depending on use case) - to filter by read status.
-        *   `limit?: number` - to limit the number of notifications returned.
-        *   `offset?: number` or `cursor?: string` - for pagination.
-*   `POST /notifications/{id}/read`: Mark a specific notification as read. (Consider changing to PATCH for consistency, or deprecating in favor of the bulk endpoint).
-*   `PATCH /notifications`: Bulk update notifications.
-    *   Request Body: `{ ids: string[], isRead: boolean }`
-    *   Allows marking multiple notifications as read or unread.
+## 3. Controller Implementation (`notifications.controller.ts`)
+*Goal: Expose API endpoints for frontend to retrieve and manage notifications.*
 
-## 6. Security Considerations
+*   [ ] Create `NotificationsController` (`@Controller('notifications')`, `@ApiTags('Notifications')`). Inject `NotificationsService`.
+*   [ ] `@UseGuards(AuthGuard)` for all routes. Extract `userId` from `req.user`.
+*   [ ] **`GET /` (`getNotifications`):**
+    *   Query params: `isRead?`, `type?`, `limit?`, `page?`.
+    *   Calls `notificationsService.getUserNotifications(userId, query)`.
+    *   Returns `NotificationListResponseDto` (includes `notifications`, `totalCount`, `unreadCount`, `currentPage`, `totalPages`).
+*   [ ] **`PATCH /:notificationId/read` (`markAsRead`):**
+    *   Calls `notificationsService.markNotificationAsRead(userId, notificationId)`.
+*   [ ] **`POST /read-all` (`markAllAsRead`):** (Using POST as it's an action changing state for multiple items)
+    *   Calls `notificationsService.markAllNotificationsAsRead(userId)`.
+*   [ ] **`DELETE /:notificationId` (`deleteNotification`):**
+    *   Calls `notificationsService.deleteNotification(userId, notificationId)`.
+*   [ ] Add Swagger decorators for all endpoints and DTOs.
 
-*   Ensure that users can only access their own notifications.
-*   Rate limiting if any endpoints are public-facing.
-*   Sanitize any user-generated content that might become part of a notification message (less likely for system-generated ones).
+## 4. Integration with Other Modules (Notification Creation)
+*Goal: Allow other services to easily create notifications.*
 
-## 7. Future Considerations
+*   **`AccountsService` calls `NotificationsService.createNotification` for:**
+    *   `ACCOUNT_CONNECTED_SUCCESS`
+    *   `ACCOUNT_CONNECTION_FAILED` (with error details in `metadata` or `message`)
+    *   `ACCOUNT_REAUTH_REQUIRED`
+*   **`SyncService` calls `NotificationsService.createNotification` for:**
+    *   `SYNC_INITIATED`
+    *   `SYNC_COMPLETED_SUCCESS`
+    *   `SYNC_COMPLETED_PARTIAL_SUCCESS`
+    *   `SYNC_COMPLETED_WITH_ERRORS` (with error summary in `message` or `metadata`)
+    *   `SYNC_WEBHOOK_ERROR`
+*   **(Future) `AuthService` calls for email verification, password reset notifications (if these are also logged as in-app notifications).**
 
-*   **In-app Notification Center:** A UI to display notifications.
-*   **Real-time Notifications:** Using WebSockets to push notifications to the client.
-*   **Push Notifications:** For mobile or desktop.
-*   **Customizable Notification Preferences:** Granular control over what notifications to receive and via which channels (email, in-app, push).
-*   **UniCal-Generated Event Reminders:** (FRD 3.11.1 is currently passthrough).
-*   **Booking Notifications:** (FRD 3.11.2).
+## 5. Phase 2: Email & Other Channel Dispatch (Post-MVP)
+*Goal: Extend notifications to other channels like email.*
 
-This plan will be updated as the project progresses and requirements become more refined.
+*   [ ] **Define `IEmailService` / `IMessagingService` interface.**
+*   [ ] **Implement `EmailService` (e.g., using SendGrid, Nodemailer).**
+*   [ ] **`NotificationsService` enhancement:**
+    *   When `createNotification` is called:
+        1.  Check `NotificationType`.
+        2.  (Future) Fetch `User.notificationPreferences` for the `userId` and `type`.
+        3.  If email channel is enabled for this type:
+            *   Fetch `User.email` (requires `UserService` injection).
+            *   Format email content (using templates).
+            *   Call `EmailService.sendEmail(...)`.
+*   [ ] **User Notification Preferences:**
+    *   New Prisma model: `UserNotificationPreference { userId, notificationType, channel (IN_APP | EMAIL), isEnabled }`.
+    *   API endpoints to manage these preferences.
+
+## 6. Testing
+*Goal: Ensure reliability of notification creation and retrieval.*
+
+*   [ ] **Unit Tests (`NotificationsService`):**
+    *   Mock `PrismaService`. Test all service methods: create, get (with filters/pagination), mark as read, delete.
+*   [ ] **Integration Tests (`NotificationsController`):**
+    *   Mock auth. Test API endpoints, DTO validation, interaction with mocked `NotificationsService`.
+
+## 7. Dependencies
+*   `PrismaModule`
+*   `ConfigModule` (for EmailService API keys in Phase 2)
+*   `UserModule` (for user email/preferences in Phase 2)
+*   (Future) `EmailModule` / Shared `MessagingModule`.
+
+## Notes & Considerations:
+*   **Scalability:** For very high volume, consider a dedicated message queue for dispatching notifications to different channels, rather than handling synchronously in `NotificationsService.createNotification`.
+*   **Content Management:** For more complex email templates, use a templating engine (e.g., Handlebars, Pug).
+*   **Localization:** Plan for localized notification messages if multi-language support is a future goal.
+*   **Rate Limiting:** Apply rate limiting to controller endpoints.
+*   **Security:** Rigorous `userId` checks in all service methods to ensure users only access their own notifications.

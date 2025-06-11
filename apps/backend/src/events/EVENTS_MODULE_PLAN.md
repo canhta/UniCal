@@ -1,81 +1,161 @@
-# Events Plan
+# Events Module Plan (Backend)
 
-This plan outlines the development tasks for the Events module.
+**Overall Goal:** Manage calendar events within UniCal, including creating, reading, updating, and deleting (CRUD) events, and handling their synchronization with external calendar platforms. This module is central to the user's calendar experience.
 
-## Phase 1: Setup & Core Infrastructure
-- [ ] TODO: Define `CalendarEvent` schema in `schema.prisma` (e.g., `id`, `userId`, `connectedAccountId`, `nativeCalendarId` (ID of the calendar on the source platform), `platformEventId` (unique per platform account for the event itself), `title`, `description`, `startTime`, `endTime`, `isAllDay`, `location`, `sourcePlatform`, `privacy` (e.g., public, private), `recurrenceRule` (string, e.g., RRULE), `nativeReminderInfo` (JSON or structured), `lastSyncedFromPlatformAt`).
-- [ ] TODO: Create `EventsService` and `EventsController`.
-- [ ] TODO: Define DTOs for event management (e.g., `CreateEventDto`, `UpdateEventDto`, `EventResponseDto`, `EventQueryDto`) with validation. Include fields for FRD 3.4.1.
-- [ ] TODO: Ensure `EventsService` can use `PrismaService` and services from `CalendarsModule` and `AccountsModule`.
+**Alignment:** This plan primarily aligns with Backend AGENT_PLAN Phase 3 (Core Features - Calendar Sync & Integrations) and Phase 4 (Advanced Features - Event Management).
 
-## Phase 2: Staged Feature Implementation
+## 1. Prisma Schema (`prisma/schema.prisma`)
+*Goal: Define the database structure for storing UniCal's representation of calendar events, linked to users and their connected accounts.*
 
-### Core Scheduling Functionalities (Unified View & Event Management)
-- [ ] TODO: `EventsService.createEvent()`:
-    - Validate input DTO (FRD 3.4.1).
-    - Determine target native calendar. The frontend will provide the `nativeCalendarId` of the target calendar, selected by the user from a list provided by `CalendarsModule`'s `/calendars/targetable` endpoint.
-    - Call appropriate service in `CalendarsModule` (e.g., `GoogleCalendarService.createEvent()`).
-    - Store UniCal's representation of the event in Prisma, linking to `ConnectedAccount` and `User`.
-- [ ] TODO: `EventsService.getEventsForUser()`:
-    - Fetch events from Prisma (which are populated by `SyncModule`).
-    - Implement filtering by date range, connected accounts, etc. (FRD 3.3.1).
-    - Transform into `EventResponseDto`, ensuring privacy indication (FRD 3.7.1) and reminder display info (FRD 3.9.1) are included.
-    - Handle visual differentiation data if needed by frontend (FRD 3.3.2).
-- [ ] TODO: `EventsService.getEventById()`: Fetch a single event from Prisma (FRD 3.4.2, FRD 3.3.4).
-- [ ] TODO: `EventsService.updateEvent()`:
-    - Validate input DTO.
-    - Call appropriate service in `CalendarsModule` to update the event on the native platform (FRD 3.4.3).
-    - Update UniCal's representation in Prisma.
-- [ ] TODO: `EventsService.deleteEvent()`:
-    - Call appropriate service in `CalendarsModule` to delete the event on the native platform (FRD 3.4.4).
-    - Delete/mark as deleted in UniCal's representation in Prisma.
-- [ ] TODO: `EventsController`: Implement CRUD endpoints for events.
-- [ ] TODO: Ensure time zone handling: store in UTC, assume local input from user, display in local (FRD 3.3.5).
-- [ ] TODO: Basic recurrence display: ensure `EventResponseDto` can represent recurring events read from platform (FRD 3.4.5). Actual instance generation might be frontend or a more advanced backend task.
-
-## Phase 3: System Challenges & Hardening
-- [ ] TODO: Refine event aggregation logic for performance if fetching directly from platforms; primarily rely on synced Prisma data.
-- [ ] TODO: Handle potential data inconsistencies between UniCal store and platforms (conflict resolution is `SyncModule`'s job, but `EventsService` might need to reflect this).
-- [ ] TODO: Advanced recurrence: single instance modification sync (FRD 3.4.5) - ensure `UpdateEventDto` can signal this and `CalendarsModule` services can handle it.
-
-## Phase 4: Integration & Refinement
-- [ ] TODO: Write comprehensive unit tests for `EventsService`.
-- [ ] TODO: Write integration tests for event CRUD operations and data aggregation/retrieval.
-- [ ] TODO: Ensure Swagger documentation is complete and accurate for all `EventsController` endpoints and DTOs.
-
-## 3. Data Models
-
-*   **Event:** Represents an event within UCS, aggregated from native calendars.
-    *   `ucsEventId` (Primary Key, UUID)
-    *   `nativeEventId` (String, ID from the source platform)
-    *   `nativeCalendarId` (String, ID of the source native calendar)
-    *   `userId` (Foreign Key to User table)
+*   [ ] **Define `CalendarEvent` Model:**
+    *   `id` (String, PK, `@default(uuid())`)
+    *   `userId` (String) - Foreign Key to `User` model.
+    *   `user` (User, `@relation(fields: [userId], references: [id], onDelete: Cascade)`)
+    *   `connectedAccountId` (String) - Foreign Key to `ConnectedAccount` model.
+    *   `connectedAccount` (ConnectedAccount, `@relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)`)
+    *   `nativeCalendarId` (String) - ID of the calendar on the source platform (e.g., Google Calendar ID).
+    *   `platformEventId` (String) - Unique ID of the event on the source platform for this specific account.
     *   `title` (String)
-    *   `description` (String, plain text)
-    *   `startTime` (DateTime, ISO 8601 in UTC)
-    *   `endTime` (DateTime, ISO 8601 in UTC)
-    *   `isAllDay` (Boolean)
-    *   `location` (String, plain text)
-    *   `nativePrivacySetting` (String, e.g., 'public', 'private', 'confidential' - as per source)
-    *   `nativeColorId` (String, optional, from source)
-    *   `nativeOrganizer` (JSON, optional, { email, name } from source)
-    *   `nativeAttendees` (JSON array, optional, [{ email, name, status }, ...] from source)
-    *   `recurrenceRule` (String, optional, e.g., iCalendar RRULE string)
-    *   `recurringEventId` (String, optional, ID of the master recurring event if this is an instance/exception)
-    *   `isException` (Boolean, true if this instance is an exception to a recurring series)
-    *   `exceptionOriginalStartTime` (DateTime, optional, ISO 8601 in UTC, if `isException` is true, this is the original start time of the instance that was modified/deleted)
-    *   `createdAt` (DateTime)
-    *   `updatedAt` (DateTime)
-    *   `lastSyncedAt` (DateTime)
-    *   `sourcePlatform` (String, e.g., 'google', 'microsoft')
+    *   `description` (String?, `@db.Text`)
+    *   `startTime` (DateTime) - Stored in UTC.
+    *   `endTime` (DateTime) - Stored in UTC.
+    *   `isAllDay` (Boolean, `@default(false)`)
+    *   `timeZone` (String?) - Original timezone of the event from the provider, if available. Primarily for display or round-tripping.
+    *   `location` (String?)
+    *   `sourcePlatform` (String) - e.g., "GOOGLE", "OUTLOOK_CALENDAR". Matches `ConnectedAccount.provider`.
+    *   `privacy` (String?, e.g., "public", "private", "confidential")
+    *   `colorId` (String?, platform-specific)
+    *   `organizer` (Json?) - e.g., `{ email, name, self }`
+    *   `attendees` (Json?) - e.g., `[{ email, name, status, self }, ...]`
+    *   `recurrenceRule` (String[]?) - Array of iCalendar RRULE/EXDATE/RDATE strings.
+    *   `recurringEventId` (String?) - If this is an instance of a recurring series, this is the `platformEventId` of the master recurring event.
+    *   `isException` (Boolean, `@default(false)`) - True if this instance is an exception to a recurring series.
+    *   `exceptionOriginalStartTime` (DateTime?) - If `isException` is true, this is the original start time of the instance that was modified/deleted (in UTC).
+    *   `platformLastModifiedAt` (DateTime) - Timestamp of when the event was last modified on the source platform (UTC).
+    *   `lastSyncedFromPlatformAt` (DateTime) - Timestamp of when UniCal last synced this event from the platform.
+    *   `createdAt` (DateTime, `@default(now())`)
+    *   `updatedAt` (DateTime, `@updatedAt`) - UniCal's internal last modification timestamp.
 
-## 5. Sync Logic Details
+    *   `@@unique([connectedAccountId, platformEventId])` - Ensures unique event per account.
+    *   `@@index([userId, startTime, endTime])`
+    *   `@@index([connectedAccountId])`
+    *   `@@index([platformEventId])`
+    *   `@@index([recurringEventId])`
 
-*   **Recurrence Handling:**
-    *   **Reading:** When fetching events from native platforms, if an event is recurring, its recurrence rule (e.g., RRULE) will be fetched and stored in `recurrenceRule`.
-    *   **Expanding for API:** When the `GET /events` endpoint is called, the backend will need to expand recurring events within the requested time range. This means calculating all occurrences of a recurring event that fall between `start_date` and `end_date`.
-        *   Individual occurrences will be returned as separate event objects, but can share a common `recurringEventId` (pointing to a conceptual master or the first instance's ID).
-        *   Exceptions (single instances of a recurring event that have been modified or deleted) must be correctly handled. If an instance is modified, it becomes an exception. If deleted, it should not appear in the expanded list.
-    *   **Storing Exceptions:** If a single instance of a recurring event is modified via UCS, this modification will be sent to the native platform. The native platform typically handles this by creating an exception. UCS will store this modified instance as a separate event record with `isException` set to true, `recurringEventId` linking to the master series, and `exceptionOriginalStartTime` indicating the original time of the instance that was changed. The original `recurrenceRule` remains on the master event.
-    *   **Deleting Single Instance:** If a single instance is deleted via UCS, this is also an exception. The native platform is instructed to delete that instance. UCS might mark this instance as deleted or simply not return it during expansion.
-    *   **Updating Series:** Modifying the entire series (e.g., changing the RRULE) is complex and might be deferred post-initial product, as per FRD's focus on "single instance modification."
+## 2. DTOs (Data Transfer Objects)
+*Goal: Define data structures for API requests/responses and internal service communication, ensuring clear contracts.*
+
+*   [ ] **`EventResponseDto.ts`:**
+    *   `id`, `userId`, `connectedAccountId`, `nativeCalendarId`, `platformEventId`, `title`, `description`, `startTime` (ISO String), `endTime` (ISO String), `isAllDay`, `timeZone`, `location`, `sourcePlatform`, `privacy`, `colorId`, `organizer`, `attendees`, `recurrenceRule`, `recurringEventId`, `isException`, `exceptionOriginalStartTime`, `createdAt` (ISO String), `updatedAt` (ISO String).
+*   [ ] **`CreateEventRequestDto.ts` (for API):**
+    *   `connectedAccountId`: Target account for creation.
+    *   `nativeCalendarId`: Target calendar on the provider.
+    *   `title` (String, non-empty).
+    *   `startTime` (DateTime ISO String).
+    *   `endTime` (DateTime ISO String).
+    *   `timeZone` (String, IANA, e.g., "America/New_York") - User's current timezone for interpreting `startTime`/`endTime`.
+    *   `description` (String?, optional).
+    *   `location` (String?, optional).
+    *   `isAllDay` (Boolean, optional, default `false`).
+    *   `attendees` (Array of emails/objects?, optional).
+    *   `recurrenceRule` (String[]?, optional).
+    *   Validation: `startTime` before `endTime`.
+*   [ ] **`UpdateEventRequestDto.ts` (for API):**
+    *   All fields from `CreateEventRequestDto` (except `connectedAccountId`, `nativeCalendarId`) as optional.
+    *   `updateScope` (Enum: `SINGLE_INSTANCE`, `ALL_FOLLOWING`, `ENTIRE_SERIES`, default `SINGLE_INSTANCE`) - For recurring events.
+    *   `instanceOriginalStartTime` (DateTime ISO String, required if `updateScope` is `SINGLE_INSTANCE` or `ALL_FOLLOWING` for an exception).
+*   [ ] **`GetEventsQueryDto.ts` (for API):**
+    *   `startDate` (DateTime ISO String).
+    *   `endDate` (DateTime ISO String).
+    *   `connectedAccountIds` (String[]?, optional).
+    *   `nativeCalendarIds` (String[]?, optional).
+    *   `timeZone` (String, IANA) - For expanding all-day events correctly if needed, and for interpreting date boundaries.
+*   [ ] **`InternalCreateEventDto.ts` (for `SyncService` use):**
+    *   All fields from `CalendarEvent` model that come from the platform.
+    *   `userId`, `connectedAccountId`.
+*   [ ] **`InternalUpdateEventDto.ts` (for `SyncService` use):**
+    *   Subset of `CalendarEvent` fields that can be updated from platform.
+
+## 3. Module Setup (`events.module.ts`)
+*Goal: Configure the NestJS module for events.*
+
+*   [ ] Create `EventsModule`.
+*   [ ] Import `PrismaModule`.
+*   [ ] Import `forwardRef(() => CalendarsModule)` (to break circular dependency if `CalendarsService` needs `EventsService`).
+*   [ ] Import `forwardRef(() => SyncModule)` (if `SyncService` needs to be called from `EventsService`).
+*   [ ] Declare and Export `EventsService`.
+*   [ ] Declare `EventsController`.
+
+## 4. Service Implementation (`events.service.ts`)
+*Goal: Implement business logic for managing events, including interaction with external platforms via `CalendarsService` and conflict resolution via `SyncService`.*
+
+*   [ ] Create `EventsService`, inject `PrismaService`, `CalendarsService`, `SyncService`.
+*   [ ] **`createEventForUser(userId: string, dto: CreateEventRequestDto): Promise<EventResponseDto>`:**
+    *   Convert `startTime`, `endTime` from `dto.timeZone` to UTC.
+    *   Call `CalendarsService.createPlatformEvent(dto.connectedAccountId, dto.nativeCalendarId, platformEventData)` to create on provider.
+    *   Use returned `platformEventId` and other details to create `CalendarEvent` in Prisma.
+    *   Map to `EventResponseDto`.
+*   [ ] **`getEventsForUser(userId: string, query: GetEventsQueryDto): Promise<EventResponseDto[]>`:**
+    *   Fetch `CalendarEvent`s from Prisma based on `userId` and filters.
+    *   **Recurrence Expansion:** For recurring events in range, generate instances using a library (e.g., `rrule.js`). Handle exceptions.
+    *   Map to `EventResponseDto[]`.
+*   [ ] **`getEventByIdForUser(userId: string, eventId: string): Promise<EventResponseDto | null>`:**
+    *   Fetch `CalendarEvent` by `id` and `userId`. Map to `EventResponseDto`.
+*   [ ] **`updateEventForUser(userId: string, eventId: string, dto: UpdateEventRequestDto): Promise<EventResponseDto>`:**
+    *   Fetch existing `CalendarEvent`. Verify ownership.
+    *   Convert `startTime`, `endTime` (if present) from `dto.timeZone` to UTC.
+    *   Call `CalendarsService.updatePlatformEvent(...)` with appropriate parameters for recurring instances.
+    *   Update `CalendarEvent` in Prisma with new details from platform response.
+    *   Map to `EventResponseDto`.
+*   [ ] **`deleteEventForUser(userId: string, eventId: string, deleteScope?: string, instanceOriginalStartTime?: string): Promise<void>`:**
+    *   Fetch existing `CalendarEvent`. Verify ownership.
+    *   Call `CalendarsService.deletePlatformEvent(...)`.
+    *   Delete `CalendarEvent` from Prisma (or mark as deleted if it's an exception to a recurring series that still exists).
+*   [ ] **`createOrUpdateEventFromPlatform(dto: InternalCreateEventDto): Promise<CalendarEvent>` (Called by `SyncService`):**
+    *   Logic to find existing event by `connectedAccountId` and `platformEventId`.
+    *   Conflict resolution: Compare `dto.platformLastModifiedAt` with existing `CalendarEvent.platformLastModifiedAt`.
+    *   If new or platform is newer: Create or update Prisma `CalendarEvent`. Set `lastSyncedFromPlatformAt`.
+    *   Return the saved `CalendarEvent`.
+*   [ ] **`deleteEventFromPlatform(connectedAccountId: string, platformEventId: string): Promise<void>` (Called by `SyncService`):**
+    *   Find and delete `CalendarEvent` by `connectedAccountId` and `platformEventId`.
+
+## 5. Controller Implementation (`events.controller.ts`)
+*Goal: Expose API endpoints for event management.*
+
+*   [ ] Create `EventsController` (`@Controller('events')`, `@ApiTags('Events')`). Inject `EventsService`.
+*   [ ] `POST /` (`createEvent`): `@UseGuards(AuthGuard)`, `userId` from `req.user`. Body: `CreateEventRequestDto`.
+*   [ ] `GET /` (`getEvents`): `@UseGuards(AuthGuard)`, `userId` from `req.user`. Query: `GetEventsQueryDto`.
+*   [ ] `GET /:id` (`getEventById`): `@UseGuards(AuthGuard)`, `userId` from `req.user`.
+*   [ ] `PATCH /:id` (`updateEvent`): `@UseGuards(AuthGuard)`, `userId` from `req.user`. Body: `UpdateEventRequestDto`.
+*   [ ] `DELETE /:id` (`deleteEvent`): `@UseGuards(AuthGuard)`, `userId` from `req.user`. Query params for `deleteScope`, `instanceOriginalStartTime`.
+*   [ ] Add Swagger decorators for all endpoints and DTOs.
+
+## 6. Recurrence Handling
+*Goal: Robustly manage recurring events, including series, instances, and exceptions.*
+
+*   [ ] **Library:** Use `rrule.js` (or similar) for parsing `RRULE` strings and generating occurrences.
+*   [ ] **Storage:** Store `recurrenceRule` as an array of strings (RRULE, EXDATE, RDATE).
+*   [ ] **Expansion:** `getEventsForUser` must expand recurring events within the query date range, applying exceptions.
+*   [ ] **Updates/Deletions:** Handle `updateScope` and `deleteScope` correctly for single instances, future instances, or entire series, propagating to `CalendarsService`.
+    *   Modifying/deleting a single instance of a recurring event often creates an "exception" on the platform. This should be reflected by creating a new `CalendarEvent` record with `isException=true`, `recurringEventId` pointing to the master, and `exceptionOriginalStartTime`. The master event's `recurrenceRule` might get an `EXDATE` added.
+    *   `SyncService` needs to understand these platform representations.
+
+## 7. Testing
+*Goal: Ensure reliability and correctness of event management logic.*
+
+*   [ ] **Unit Tests (`EventsService`):**
+    *   Mock `PrismaService`, `CalendarsService`, `SyncService`.
+    *   Test CRUD operations, UTC conversions, recurrence expansion logic, conflict resolution calls.
+*   [ ] **Integration Tests (`EventsController`):**
+    *   Mock auth. Test API endpoints, DTO validation, interaction with mocked `EventsService`.
+
+## 8. Dependencies & Libraries
+*   `@nestjs/swagger`, `class-validator`, `class-transformer`
+*   `rrule` (e.g., `npm install rrule`)
+*   `date-fns` or `date-fns-tz` (for reliable date/time/timezone manipulation)
+
+## Notes & Considerations:
+*   **Time Zones:** Store all `startTime`/`endTime` in UTC. `CreateEventRequestDto` and `UpdateEventRequestDto` should accept a `timeZone` to correctly convert user input to UTC. `EventResponseDto` returns UTC; frontend handles display in user's local time.
+*   **Conflict Resolution:** Primarily handled by `SyncService` for incoming changes. `EventsService` might initiate a re-sync via `SyncService` if an outgoing operation fails due to a conflict on the platform.
+*   **Performance:** Recurrence expansion can be intensive. Optimize queries.
+*   **Idempotency:** Ensure platform operations via `CalendarsService` are idempotent where possible, or that `EventsService` can handle retries or already-processed scenarios.

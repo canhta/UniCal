@@ -1,137 +1,138 @@
-<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/lib/state/STATE_MANAGEMENT_PLAN.md -->
-# State Management Plan
+# State Management Plan (Frontend)
 
-This plan outlines the strategy for state management in the UniCal frontend application.
+**Overall Goal:** Implement a clear, performant, and scalable state management strategy for the UniCal frontend, leveraging appropriate tools for different types of state.
 
-## Core Principles
-*   **Minimize Global State:** Prefer React Context for localized state or simple prop drilling where appropriate. Use a global state manager only when truly necessary for state shared across distant parts of the component tree or for complex state logic.
-*   **Simplicity & Performance:** Choose a library that is simple, performant, and has a small bundle size.
-*   **Developer Experience:** The chosen solution should integrate well with Next.js (App Router) and TypeScript, offering good devtools support.
-*   **SSR Compatibility:** Ensure clear patterns for server-side rendering or initialization if global state needs to be accessed or hydrated on the server.
-*   **Clear Separation:** Distinguish clearly between client-side UI state and server cache state.
+## 1. Core Principles & AI Agent Actionables
 
-## State Categories
+*   **[ ] Goal:** Minimize unnecessary global state.
+    *   **Action:** AI will prioritize React Context for localized sharing and prop drilling for simple cases. Global state managers will be used judiciously.
+*   **[ ] Goal:** Ensure simplicity, performance, and good developer experience.
+    *   **Action:** AI will select and configure libraries (TanStack Query, Zustand) that are lightweight, integrate well with Next.js App Router & TypeScript, and offer good devtools.
+*   **[ ] Goal:** Maintain clear separation between server cache and client UI state.
+    *   **Action:** AI will use TanStack Query exclusively for server-cached data and Zustand for global client-side UI state.
 
-### 1. Server Cache State (Remote State)
-*   **Description:** Data fetched from the backend API, including user data, calendar events, integration settings, etc. This state is asynchronous and needs mechanisms for fetching, caching, revalidation, and mutation.
-*   **Chosen Solution:** **TanStack Query (React Query)**
-    *   **Reasoning:** Robust features for managing server state, including caching, automatic refetching, optimistic updates, and excellent devtools. It significantly simplifies data fetching logic and reduces the need to store API data in global client stores.
-    *   **Integration:**
-        *   Will be set up as per `SETUP_PLAN.md` and used in conjunction with the API client defined in `API_CLIENT_PLAN.md`.
-        *   A global `QueryClientProvider` will be added to `app/layout.tsx`.
-        *   Custom hooks (e.g., `useEvents`, `useUserSettings`) will encapsulate TanStack Query logic for specific data types.
-*   **Tasks:**
-    *   [ ] **Install TanStack Query:** `npm install @tanstack/react-query @tanstack/react-query-devtools`
-    *   [ ] **Setup `QueryClientProvider`:** In `app/layout.tsx` (or a dedicated client component provider).
-        ```tsx
-        // Example: components/providers/ReactQueryProvider.tsx
-        'use client';
-        import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-        import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-        import React from 'react';
+## 2. State Categories & Chosen Solutions
 
-        export default function ReactQueryProvider({ children }: { children: React.ReactNode }) {
-          const [queryClient] = React.useState(() => new QueryClient({
-            defaultOptions: {
-              queries: {
-                staleTime: 1000 * 60 * 5, // 5 minutes
-                refetchOnWindowFocus: false, // Optional: adjust as needed
+### A. Server Cache State (Remote Data)
+*   **Description:** Data fetched from the backend API (user info, events, accounts, etc.).
+*   **[ ] Solution:** **TanStack Query (React Query)**
+    *   **Reasoning:** Robust for caching, refetching, optimistic updates, and devtools.
+    *   **AI Actions:**
+        *   **[ ] Task:** Install `@tanstack/react-query` and `@tanstack/react-query-devtools`.
+        *   **[ ] Task:** Create `apps/frontend/src/components/providers/ReactQueryProvider.tsx`.
+            ```typescript
+            // apps/frontend/src/components/providers/ReactQueryProvider.tsx
+            'use client';
+            import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+            import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+            import React from 'react';
+
+            // Create a single QueryClient instance (singleton)
+            const queryClient = new QueryClient({
+              defaultOptions: {
+                queries: {
+                  staleTime: 1000 * 60 * 5, // 5 minutes
+                  refetchOnWindowFocus: false,
+                  retry: 1, // Retry failed requests once
+                },
               },
-            },
-          }));
+            });
 
-          return (
-            <QueryClientProvider client={queryClient}>
-              {children}
-              <ReactQueryDevtools initialIsOpen={false} />
-            </QueryClientProvider>
-          );
-        }
+            export default function ReactQueryProvider({ children }: { children: React.ReactNode }) {
+              return (
+                <QueryClientProvider client={queryClient}>
+                  {children}
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </QueryClientProvider>
+              );
+            }
+            ```
+        *   **[ ] Task:** Integrate `ReactQueryProvider` into `apps/frontend/src/app/layout.tsx`.
+            ```tsx
+            // apps/frontend/src/app/layout.tsx
+            // ... other imports
+            import ReactQueryProvider from '@/components/providers/ReactQueryProvider';
 
-        // Then use <ReactQueryProvider> in app/layout.tsx
-        ```
-    *   [ ] Define custom hooks for API interactions (e.g., `useEvents`, `useUserIntegrations`).
+            export default function RootLayout(
+              { children }: { children: React.ReactNode }
+            ) {
+              return (
+                <html lang="en">
+                  <body>
+                    <UserProvider> { /* Auth0 Provider */}
+                      <ReactQueryProvider>
+                        {/* ... other providers like ThemeProvider ... */}
+                        {children}
+                      </ReactQueryProvider>
+                    </UserProvider>
+                  </body>
+                </html>
+              );
+            }
+            ```
+        *   **[ ] Task:** Define custom hooks abstracting TanStack Query logic (e.g., `useUser`, `useEvents`) within feature directories or a shared `hooks` directory, using the `apiClient` from `API_CLIENT_PLAN.md`.
 
-### 2. Global Client State (UI State)
-*   **Description:** State that is purely client-side, often related to UI, and needs to be shared across multiple, potentially distant, components. Examples: mobile menu open/close state, current theme (if user-selectable), global notification messages.
-*   **Chosen Solution:** **Zustand**
-    *   **Reasoning:** Simple API, small bundle size, good performance, and easy integration with React hooks. It avoids the complexity of Redux for scenarios where a lighter solution is sufficient.
-*   **Tasks:**
-    *   [ ] **Install Zustand:** `npm install zustand` (if not already done as per `SETUP_PLAN.md`).
-    *   [ ] **Create Stores Directory:** `apps/frontend/src/lib/state/stores/`
-    *   [ ] **Define Initial Stores:**
-        *   **`uiStore.ts`:** For general UI state.
+### B. Global Client State (UI State)
+*   **Description:** Client-side UI state shared across distant components (e.g., mobile menu visibility, theme, global notifications queue).
+*   **[ ] Solution:** **Zustand**
+    *   **Reasoning:** Simple, small, performant, good for Next.js & TypeScript.
+    *   **AI Actions:**
+        *   **[ ] Task:** Install `zustand`.
+        *   **[ ] Task:** Create `apps/frontend/src/lib/state/stores/` directory.
+        *   **[ ] Task:** Implement `apps/frontend/src/lib/state/stores/uiStore.ts` for common UI states (e.g., mobile menu, active modal).
             ```typescript
             // apps/frontend/src/lib/state/stores/uiStore.ts
             import { create } from 'zustand';
+            import { devtools } from 'zustand/middleware';
 
             interface UIState {
               isMobileMenuOpen: boolean;
               openMobileMenu: () => void;
               closeMobileMenu: () => void;
               toggleMobileMenu: () => void;
-              // Add other global UI states here, e.g., active modal, global loading indicators
+              // Example: active modal management
+              activeModal: string | null;
+              openModal: (modalId: string) => void;
+              closeModal: () => void;
             }
 
-            export const useUIStore = create<UIState>((set) => ({
-              isMobileMenuOpen: false,
-              openMobileMenu: () => set({ isMobileMenuOpen: true }),
-              closeMobileMenu: () => set({ isMobileMenuOpen: false }),
-              toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
-            }));
+            export const useUIStore = create<UIState>()(
+              devtools(
+                (set) => ({
+                  isMobileMenuOpen: false,
+                  openMobileMenu: () => set({ isMobileMenuOpen: true }, false, 'ui/openMobileMenu'),
+                  closeMobileMenu: () => set({ isMobileMenuOpen: false }, false, 'ui/closeMobileMenu'),
+                  toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen }), false, 'ui/toggleMobileMenu'),
+                  activeModal: null,
+                  openModal: (modalId) => set({ activeModal: modalId }, false, 'ui/openModal'),
+                  closeModal: () => set({ activeModal: null }, false, 'ui/closeModal'),
+                }),
+                { name: 'UIStore', store: 'ui' } // Unique name for devtools
+              )
+            );
             ```
-        *   **(Optional) `notificationStore.ts`:** For managing a queue of global notifications/toasts.
-    *   [ ] **Integrate with Components:** Use hooks like `useUIStore()` in components (e.g., Navbar for mobile menu).
+        *   **[ ] Task (Phase 2 of Notifications):** Implement `apps/frontend/src/lib/state/stores/notificationStore.ts` if a global notification queue is needed (as per `NOTIFICATIONS_FEATURE_PLAN.md`).
 
-### 3. Local Component State
-*   **Description:** State confined to a single component or a small group of closely related components.
-*   **Chosen Solution:** **React `useState`, `useReducer`**
-    *   **Reasoning:** Built-in React features, perfectly suited for local state management without adding external dependencies.
-*   **Usage:** Standard React practice.
+### C. Local Component State
+*   **[ ] Solution:** React `useState`, `useReducer`.
+    *   **Reasoning:** Built-in, suitable for component-specific state.
+    *   **AI Action:** AI will use these as standard React practice.
 
-### 4. URL State
-*   **Description:** State managed via URL query parameters or path segments, making it shareable and bookmarkable. Examples: active filters, current page in pagination, selected date in a calendar.
-*   **Chosen Solution:** **Next.js App Router (`useRouter`, `useSearchParams`, `usePathname`)**
-    *   **Reasoning:** Built-in Next.js capabilities for managing URL-based state.
-*   **Usage:** Use Next.js routing hooks to read and update URL state.
+### D. URL State
+*   **[ ] Solution:** Next.js App Router (`useRouter`, `useSearchParams`, `usePathname` from `next/navigation`).
+    *   **Reasoning:** Built-in for shareable/bookmarkable state (filters, pagination, selected dates).
+    *   **AI Action:** AI will use these hooks for managing URL-based state.
 
-### 5. Authentication State
-*   **Description:** User authentication status and profile information.
-*   **Chosen Solution:** **`@auth0/nextjs-auth0` (`UserProvider`, `useUser`, `getSession`)**
-    *   **Reasoning:** Dedicated library for authentication, handles session management and provides user context.
-*   **Usage:** As per Auth0 SDK documentation and `SETUP_PLAN.md`.
+### E. Authentication State
+*   **[ ] Solution:** `@auth0/nextjs-auth0` (`UserProvider`, `useUser`, `getSession`).
+    *   **Reasoning:** Dedicated library for auth, session management, user context.
+    *   **AI Action:** AI will ensure `UserProvider` wraps the application (as shown in `ReactQueryProvider` example) and use `useUser` or `getSession` as needed, following `AUTH_FEATURE_PLAN.md`.
 
-## Devtools
-*   **TanStack Query Devtools:** Will be integrated for inspecting query cache, statuses, and data.
-*   **Redux Devtools (for Zustand):** Zustand can be connected to Redux Devtools via its middleware for easier debugging of global client state.
-    *   [ ] **Setup Zustand with Redux Devtools:**
-        ```typescript
-        // Example in a store like uiStore.ts
-        import { create } from 'zustand';
-        import { devtools } from 'zustand/middleware';
+## 3. Devtools Integration
 
-        interface UIState { /* ... */ }
-
-        export const useUIStore = create<UIState>()(
-          devtools(
-            (set) => ({
-              // ... store definition
-              isMobileMenuOpen: false,
-              openMobileMenu: () => set({ isMobileMenuOpen: true }, false, 'openMobileMenu'),
-              closeMobileMenu: () => set({ isMobileMenuOpen: false }, false, 'closeMobileMenu'),
-              toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen }), false, 'toggleMobileMenu'),
-            }),
-            { name: 'UIStore' } // Name for the devtools
-          )
-        );
-        ```
+*   **[ ] TanStack Query Devtools:** Already included in `ReactQueryProvider` setup.
+*   **[ ] Zustand with Redux Devtools:** Achieved using `devtools` middleware from `zustand/middleware` as shown in `uiStore.ts` example.
+    *   **AI Action:** AI will ensure all Zustand stores are wrapped with `devtools` for debugging capabilities.
 
 ## Conclusion
-The state management strategy is layered:
-1.  **TanStack Query** for server state.
-2.  **Zustand** for global client-side UI state.
-3.  **React local state** for component-specific needs.
-4.  **Next.js Router** for URL-driven state.
-5.  **Auth0 SDK** for authentication state.
-
-This approach aims for a balance of power, simplicity, and performance, using specialized tools for each category of state.
+This layered strategy (TanStack Query for server data, Zustand for global UI, React local state, Next.js for URL, Auth0 for auth) provides a robust and maintainable approach to state management in UniCal.

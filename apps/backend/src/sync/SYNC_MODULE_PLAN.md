@@ -1,192 +1,165 @@
-<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/backend/src/sync/SYNC_MODULE_PLAN.md -->
-# Sync Module Plan
+# Sync Module Plan (Backend)
 
-This plan outlines the development tasks for the Sync module, responsible for two-way synchronization of calendar events between UniCal and connected calendar platforms (Google, Microsoft).
+**Overall Goal:** Ensure reliable two-way synchronization of calendar events between UniCal and connected third-party calendar platforms. This involves initial sync, real-time updates via webhooks, periodic fallback syncs, and conflict resolution.
 
-## Phase 1: Setup & Core Infrastructure
+**Alignment:** This plan is central to Backend AGENT_PLAN Phase 3 (Core Features - Calendar Sync & Integrations).
 
-*   [ ] **Module Setup:**
-    *   Create `SyncService`.
-    *   Create `SyncController` (primarily for webhook ingestion).
-    *   Define `ISyncStrategy` interface (if different strategies per platform are needed beyond what `CalendarsModule` provides).
-*   [ ] **Prisma Schema Review:**
-    *   Ensure `CalendarEvent` schema has `lastSyncedFromPlatformAt`, `platformEventId`, `connectedAccountId`, `version` (for optimistic locking or conflict detection).
-    *   Ensure `ConnectedAccount` schema has `lastSyncAt`, `syncToken` (e.g., Google's `nextSyncToken`), `selectedNativeCalendarIds`.
-*   [ ] **Dependencies:**
-    *   Ensure `SyncService` can access `PrismaService`, `AccountsService`, `EventsService`, and `CalendarsModule` services (e.g., `GoogleCalendarService`).
-*   [ ] **Configuration:**
-    *   Webhook validation secrets (if any) in `.env`.
-    *   Sync interval configurations.
+## 1. Core Infrastructure & Setup
+*Goal: Establish the foundational components for the sync process.*
 
-## Phase 2: Initial Sync & Webhook Ingestion
+*   [ ] **Module Setup (`sync.module.ts`):**
+    *   Create `SyncService` (main orchestration).
+    *   Create `SyncController` (for webhook ingestion).
+    *   Create `SyncProcessor` (if using BullMQ for background jobs).
+    *   Import `PrismaModule`.
+    *   Import `forwardRef(() => AccountsModule)`.
+    *   Import `forwardRef(() => EventsModule)`.
+    *   Import `forwardRef(() => CalendarsModule)`.
+    *   Import `forwardRef(() => NotificationsModule)`.
+    *   Import `ConfigModule`.
+    *   **Job Queue (Recommended: BullMQ):**
+        *   `BullModule.forRootAsync(...)` (global config).
+        *   `BullModule.registerQueue({ name: 'sync-jobs' })`.
+*   [ ] **Prisma Schema Enhancements (Verify/Add in respective modules):**
+    *   **`ConnectedAccount` (`AccountsModule`):**
+        *   `syncStatus` (Enum: `IDLE`, `SYNC_IN_PROGRESS`, `INITIAL_SYNC_PENDING`, `ERROR`, `DISABLED`, `WEBHOOK_ACTIVE`).
+        *   `lastSyncAttemptAt` (DateTime?).
+        *   `lastSuccessfulSyncAt` (DateTime?).
+        *   `initialSyncCompletedAt` (DateTime?).
+        *   `syncErrorDetails` (String?, `@db.Text`).
+        *   `webhookSubscriptions` (Json?, `[{ nativeCalendarId: string, platformWebhookId: string, uniCalChannelId: string, expiresAt: DateTime, resourceId?: string (Google) }]`).
+        *   `platformSyncTokens` (Json?, `[{ nativeCalendarId: string, token: string }]`).
+    *   **`CalendarEvent` (`EventsModule`):** (Already well-defined, ensure `platformLastModifiedAt` and `updatedAt` are key for conflict resolution).
+*   [ ] **Configuration (`.env` & `ConfigService`):**
+    *   Webhook base URL for UniCal.
+    *   Secrets for validating incoming webhooks (if applicable beyond `clientState` or channel tokens).
+    *   Default sync intervals (fallback, webhook renewal).
+    *   Job queue settings.
+*   [ ] **Define Sync Job Types & Payloads (if using a queue):**
+    *   `INITIAL_SYNC`: `{ connectedAccountId: string }`
+    *   `PROCESS_WEBHOOK`: `{ platform: string, payload: any, headers: any }` (or more specific per platform)
+    *   `SYNC_SINGLE_EVENT_TO_PLATFORM`: `{ uniCalEventId: string, operation: 'create' | 'update' | 'delete' }`
+    *   `PERIODIC_FALLBACK_SYNC`: `{ connectedAccountId: string }`
+    *   `RENEW_WEBHOOKS`: `{ connectedAccountId: string }`
 
-*   [ ] **Initial Sync Logic (`SyncService.performInitialSync(connectedAccountId)`):**
-    *   Triggered after a new account is connected and native calendars are selected (FRD 3.5.1).
-    *   **Status Update:** Set `ConnectedAccount.syncStatus` to `INITIAL_SYNC_IN_PROGRESS`.
-    *   For each selected native calendar on the `ConnectedAccount`:
-        *   **Batch Processing:** Fetch platform events in batches if the API supports pagination or if a very large number of events is anticipated, to manage memory and avoid timeouts.
-        *   Fetch all existing events from the platform using the relevant `CalendarsModule` service (e.g., `GoogleCalendarService.fetchEvents(..., { initialSync: true, pageToken: nextPageToken })`).
-        *   For each platform event in the current batch:
-            *   Transform to UniCal's `CalendarEvent` format.
-            *   Save to Prisma via `EventsService.createOrUpdateEventFromPlatform(platformEventData, connectedAccountId)` (this service method needs to handle upsert logic based on `platformEventId` and `connectedAccountId`, and be idempotent).
-        *   **Error Handling (per calendar):** If fetching or processing a specific native calendar fails, log the error, store relevant error information (e.g., on a per-native-calendar-sync-status basis if that granularity is introduced, or as part of `ConnectedAccount.lastSyncErrorDetails`), and attempt to continue with the next selected native calendar. A decision needs to be made if a single calendar failure should halt the entire initial sync for the account or allow partial success. For now, assume continuation.
-        *   Store `nextSyncToken` (if provided by platform for this native calendar) on `ConnectedAccount` (or a more granular entity if `syncToken` is per-native-calendar).
-    *   **Final Status Update:**
-        *   If all selected calendars synced successfully: Update `ConnectedAccount.lastSyncAt` to current time, `ConnectedAccount.initialSyncCompletedAt` to current time, and `ConnectedAccount.syncStatus` to `IDLE` (or `ACTIVE_LISTENING` if webhooks are immediately established). Clear `ConnectedAccount.lastSyncErrorDetails`.
-        *   If some calendars failed: Update `ConnectedAccount.lastSyncAt` (to reflect the attempt), potentially set `ConnectedAccount.syncStatus` to `ERROR_PARTIAL` or `IDLE_WITH_ERRORS`, and ensure `ConnectedAccount.lastSyncErrorDetails` contains information about the failures.
-*   [ ] **Webhook Ingestion (`SyncController`):**
-    *   `POST /sync/webhook/google`: Endpoint for Google Calendar push notifications (FRD 3.5.2).
-        *   Validate request (e.g., signature, token).
-        *   Extract necessary info (e.g., `channelId`, `resourceId`, `resourceState`).
-        *   Queue a job for processing (e.g., using BullMQ) to avoid blocking the webhook response. Job should contain `connectedAccountId` and sync details.
-    *   `POST /sync/webhook/microsoft`: Endpoint for Microsoft Outlook Calendar push notifications (FRD 3.5.2).
-        *   Similar validation and queuing logic.
-*   [ ] **Webhook Processing Logic (`SyncService.processWebhookNotification(jobData)`):**
-    *   Retrieve `connectedAccountId`.
-    *   Fetch changes from the platform since `lastSyncToken` using `CalendarsModule` service (e.g., `GoogleCalendarService.fetchEvents(..., { syncToken: currentSyncToken })`).
-    *   For each changed/new/deleted platform event:
-        *   If new/updated: `EventsService.createOrUpdateEventFromPlatform()`.
-        *   If deleted: `EventsService.deleteEventFromPlatform(platformEventId, connectedAccountId)`.
-    *   Update `nextSyncToken` and `lastSyncAt` on `ConnectedAccount`.
+## 2. Initial Sync
+*Goal: Fetch all existing events from a newly connected account's selected calendars.*
 
-## Phase 3: Two-Way Sync & Conflict Resolution
+*   [ ] **`SyncService.triggerInitialSync(connectedAccountId: string): Promise<void>`:**
+    *   Called by `AccountsService` after a user selects native calendars for syncing.
+    *   Update `ConnectedAccount.syncStatus` to `INITIAL_SYNC_PENDING`.
+    *   Add `INITIAL_SYNC` job to the queue.
+*   [ ] **Job Handler: `SyncProcessor.handleInitialSync(job: Job<{ connectedAccountId: string }>): Promise<void>`:**
+    *   Fetch `ConnectedAccount` and its selected `nativeCalendarIds` (from `User.preferences` or similar).
+    *   Update `ConnectedAccount.syncStatus` to `SYNC_IN_PROGRESS`, `lastSyncAttemptAt`.
+    *   For each `nativeCalendarId`:
+        1.  `pageToken = null`, `allEvents = []`.
+        2.  Loop (while `pageToken` or first run):
+            *   `platformEventsData = await calendarsService.fetchPlatformEvents(connectedAccountId, nativeCalendarId, { pageToken, /* other params like date range if desired for initial */ })`.
+            *   For each `platformEvent` in `platformEventsData.events`:
+                *   `await eventsService.createOrUpdateEventFromPlatform({ userId, connectedAccountId, nativeCalendarId, ...platformEvent })`.
+            *   Store `platformEventsData.nextSyncToken` in `ConnectedAccount.platformSyncTokens` for this `nativeCalendarId`.
+            *   `pageToken = platformEventsData.nextPageToken`.
+        3.  `await this.subscribeToPlatformCalendar(connectedAccountId, nativeCalendarId)`.
+    *   Update `ConnectedAccount.syncStatus` to `WEBHOOK_ACTIVE` (or `IDLE` if webhooks not primary), `initialSyncCompletedAt`, `lastSuccessfulSyncAt`.
+    *   Handle errors: update `syncStatus` to `ERROR`, log `syncErrorDetails`.
+    *   Send notification via `NotificationsService`.
 
-*   [ ] **Outgoing Sync Logic (UniCal -> Platform):**
-    *   Triggered when an event is created/updated/deleted in UniCal via `EventsService`.
-    *   `SyncService.syncEventToPlatform(uniCalEventId, operationType)`:
-        *   Fetch the `CalendarEvent` and its `ConnectedAccount`.
-        *   Determine the target platform service from `CalendarsModule`.
-        *   If `operationType` is create: Call `PlatformService.createEvent()`.
-            *   Update `CalendarEvent.platformEventId` and `lastSyncedFromPlatformAt` with response.
-        *   If `operationType` is update: Call `PlatformService.updateEvent()`.
-            *   Update `CalendarEvent.lastSyncedFromPlatformAt`.
-        *   If `operationType` is delete: Call `PlatformService.deleteEvent()`.
-*   [ ] **Conflict Resolution Strategy (FRD 3.5.3 - "Last Update Wins"):**
-    The "Last Update Wins" strategy dictates that the version of an event with the most recent modification timestamp (from the authoritative source of that update) will prevail. Timestamps must be handled in UTC.
+## 3. Webhook Handling (Real-time Updates from Platform)
+*Goal: Process incoming changes from platforms immediately.*
 
-    **Key `CalendarEvent` fields for conflict resolution:**
-    *   `platformEventId: String?` - The event's ID on the external platform.
-    *   `platformLastModifiedAt: DateTime?` - Stores the `updated` timestamp *from the provider* for the version of the event UniCal currently holds. This is critical for comparing incoming platform changes.
-    *   `uniCalUpdatedAt: DateTime` - Standard Prisma `updatedAt` field, indicating when the UniCal record was last modified by a user or an internal process (excluding syncs that only update platform-related metadata).
+*   [ ] **`SyncController` Endpoints:**
+    *   `POST /sync/webhook/:platform` (e.g., `/google`, `/microsoft`):
+        *   Validate request (signature, token, `clientState`).
+        *   Add `PROCESS_WEBHOOK` job to queue with raw payload and necessary identifiers.
+        *   Return 200/202 Accepted quickly.
+    *   `GET /sync/webhook/microsoft` (for MS Graph subscription validation).
+*   [ ] **Job Handler: `SyncProcessor.handleProcessWebhook(job: Job<WebhookPayload>): Promise<void>`:**
+    *   Parse webhook payload to identify `connectedAccountId`, `nativeCalendarId`, change type.
+        *   Google: Use `uniCalChannelId` from webhook headers/URL to find `ConnectedAccount`.
+        *   Microsoft: Use `clientState` or `subscriptionId` to find `ConnectedAccount`.
+    *   Update `ConnectedAccount.syncStatus` to `SYNC_IN_PROGRESS`, `lastSyncAttemptAt`.
+    *   Fetch `syncToken` for the `nativeCalendarId` from `ConnectedAccount.platformSyncTokens`.
+    *   `platformEventsData = await calendarsService.fetchPlatformEvents(connectedAccountId, nativeCalendarId, { syncToken })`.
+    *   For each `platformEvent` in `platformEventsData.events` (these are the changes):
+        *   If event status is `cancelled` or indicates deletion:
+            *   `await eventsService.deleteEventFromPlatform(connectedAccountId, platformEvent.id)`.
+        *   Else (new or updated):
+            *   `await eventsService.createOrUpdateEventFromPlatform({ userId, connectedAccountId, nativeCalendarId, ...platformEvent })`.
+    *   Store new `platformEventsData.nextSyncToken` in `ConnectedAccount.platformSyncTokens`.
+    *   Update `ConnectedAccount.syncStatus` to `WEBHOOK_ACTIVE`, `lastSuccessfulSyncAt`.
+    *   Handle errors: update `syncStatus` to `ERROR`, log `syncErrorDetails`. Send notification.
 
-    **Incoming Sync (Platform -> UniCal):**
-    *   This logic is primarily handled within `EventsService.createOrUpdateEventFromPlatform(platformEventData, connectedAccountId)`.
-    *   When a platform event is received (via webhook or polling):
-        1.  Extract `platformEventId` and `newPlatformTimestamp` (the event's `updated` timestamp from the platform).
-        2.  Attempt to find an existing UniCal `CalendarEvent` using `platformEventId` and `connectedAccountId`.
-        3.  **If no UniCal event exists:** This is a new event from the platform. Create a new `CalendarEvent` in UniCal, store `platformEventData`, set `platformLastModifiedAt = newPlatformTimestamp`.
-        4.  **If a UniCal event exists:**
-            *   Compare `newPlatformTimestamp` with the existing `uniCalEvent.platformLastModifiedAt`.
-            *   If `newPlatformTimestamp > uniCalEvent.platformLastModifiedAt`, the platform's version is newer. Update the UniCal `CalendarEvent` with `platformEventData` and set `uniCalEvent.platformLastModifiedAt = newPlatformTimestamp`.
-            *   If `newPlatformTimestamp <= uniCalEvent.platformLastModifiedAt`, UniCal already has this version or a newer one from the platform. No action needed for this specific update, but log for audit if timestamps are identical (potential duplicate notification).
+## 4. Outgoing Sync (UniCal Changes to Platform)
+*Goal: Propagate changes made within UniCal to the external platforms.*
 
-    **Outgoing Sync (UniCal -> Platform):**
-    *   This logic is handled by `SyncService.syncEventToPlatform(uniCalEventId, operationType)`.
-    *   When a `CalendarEvent` is created, updated, or deleted by a user in UniCal:
-        1.  The `uniCalUpdatedAt` timestamp for the event is updated.
-        2.  `SyncService` pushes the change (create, update, delete) to the corresponding external platform.
-        3.  **If the platform API supports conditional updates (e.g., using ETags or If-Match with `platformLastModifiedAt`):** This is the preferred approach for updates/deletes to prevent overwriting concurrent platform changes unknowingly.
-            *   Send the `platformLastModifiedAt` (or ETag if stored) with the update/delete request.
-            *   If the platform rejects the change due to a conflict (e.g., 412 Precondition Failed), it means the event was modified on the platform since UniCal last synced.
-                *   **Action:** Trigger an immediate fetch of this event from the platform to get the latest version and apply the "Incoming Sync" logic. The user's change in UniCal is effectively "lost" in favor of the platform's more recent change, adhering to "Last Update Wins".
-        4.  **If conditional updates are not used (simpler initial approach):**
-            *   UniCal sends the create/update/delete operation to the platform.
-            *   If the operation is successful, the platform will provide its own new `updated` timestamp for the event (or UniCal can use the current UTC time if not provided). UniCal should update `uniCalEvent.platformLastModifiedAt` with this new timestamp.
-            *   **Concurrency Issue:** If the event was modified on the platform between UniCal's last sync and this push, UniCal's change might overwrite the platform's change. However, if the platform modification was later, its webhook notification (or the next poll) will eventually arrive at UniCal. The "Incoming Sync" logic will then apply, potentially overwriting UniCal's change if the platform's version is deemed newer by timestamp. This eventually respects "Last Update Wins" but might lead to temporary divergence.
-        5.  For deletes originating from UniCal, if the event is already deleted on the platform, the operation should ideally succeed idempotently or be ignored.
+*   [ ] **`EventsService` calls `SyncService.requestSyncToPlatform(uniCalEventId, operation)` after its CUD operations.**
+*   [ ] **`SyncService.requestSyncToPlatform(uniCalEventId: string, operation: 'create' | 'update' | 'delete'): Promise<void>`:**
+    *   Add `SYNC_SINGLE_EVENT_TO_PLATFORM` job to queue.
+*   [ ] **Job Handler: `SyncProcessor.handleSyncToPlatform(job: Job<SyncToPlatformPayload>): Promise<void>`:**
+    *   Fetch `CalendarEvent` by `uniCalEventId`. Get `connectedAccountId`, `nativeCalendarId`, `platformEventId`.
+    *   Update `ConnectedAccount.syncStatus` to `SYNC_IN_PROGRESS`, `lastSyncAttemptAt`.
+    *   Transform `CalendarEvent` to `CreatePlatformEventDto` or `UpdatePlatformEventDto`.
+    *   If `operation` is 'create':
+        *   `newPlatformEvent = await calendarsService.createPlatformEvent(connectedAccountId, nativeCalendarId, dto)`.
+        *   `await eventsService.updateEventWithPlatformData(uniCalEventId, newPlatformEvent)` (updates `platformEventId`, `platformLastModifiedAt`).
+    *   If 'update':
+        *   `updatedPlatformEvent = await calendarsService.updatePlatformEvent(connectedAccountId, nativeCalendarId, platformEventId, dto, /* scope for recurring */)`.
+        *   `await eventsService.updateEventWithPlatformData(uniCalEventId, updatedPlatformEvent)`.
+    *   If 'delete':
+        *   `await calendarsService.deletePlatformEvent(connectedAccountId, nativeCalendarId, platformEventId, /* scope for recurring */)`.
+        *   (Event already deleted in UniCal by `EventsService`).
+    *   Update `ConnectedAccount.syncStatus` to `WEBHOOK_ACTIVE`, `lastSuccessfulSyncAt`.
+    *   Handle conflicts/errors: If platform rejects (e.g., 412 Precondition Failed), log, potentially trigger a fetch for that event from platform to reconcile. Update `syncStatus` to `ERROR`. Send notification.
 
-    **Note on `version` field:** The `version` field mentioned in "Prisma Schema Review" can be used for optimistic concurrency control within UniCal's own API operations (e.g., multiple users editing the same event in UniCal), but `platformLastModifiedAt` is key for platform sync conflicts.
-*   [ ] **Periodic/Fallback Sync (`SyncService.performPeriodicSync()`):**
-    *   Scheduled job (e.g., daily or every few hours) for all connected accounts.
-    *   For each account, call `SyncService.processWebhookNotification()` or a similar function that fetches changes since `lastSyncToken` to catch missed webhooks or ensure consistency.
+## 5. Conflict Resolution ("Last Update Wins")
+*Goal: Consistently handle concurrent modifications.*
 
-### 3.2 Polling Strategy (Fallback & Special Cases)
+*   **Strategy:** Compare `CalendarEvent.platformLastModifiedAt` (from platform) with `CalendarEvent.updatedAt` (UniCal's internal timestamp).
+*   **Incoming (Platform -> UniCal - in `EventsService.createOrUpdateEventFromPlatform`):**
+    1.  Receive `platformEventData` with `newPlatformTimestamp = platformEventData.updated`.
+    2.  Find existing `uniCalEvent` by `platformEventId`.
+    3.  If new, or if `newPlatformTimestamp` is significantly later than `uniCalEvent.platformLastModifiedAt`: Update/create UniCal event. Set `uniCalEvent.platformLastModifiedAt = newPlatformTimestamp`.
+    4.  Else: Platform data is older or same, UniCal change might be more recent. Log and investigate if UniCal change hasn't synced out yet. For now, platform change is ignored if older.
+*   **Outgoing (UniCal -> Platform - in `SyncProcessor.handleSyncToPlatform`):**
+    1.  When sending update/delete, `CalendarsService` (platform-specific services) should use conditional requests (ETags or If-Match with `CalendarEvent.platformLastModifiedAt`) if supported by the platform API.
+    2.  If platform rejects due to conflict (e.g., 412 Precondition Failed):
+        *   The event changed on the platform since UniCal last synced it.
+        *   **Action:** Trigger an immediate fetch for that specific event: `await this.fetchAndProcessSingleEventFromPlatform(connectedAccountId, nativeCalendarId, platformEventId)`. This will apply the "incoming" logic, effectively letting the platform's latest change win. The UniCal change that failed is discarded/overridden.
+    3.  If platform accepts, `EventsService.updateEventWithPlatformData` updates `uniCalEvent.platformLastModifiedAt` with the new timestamp from the platform response.
 
-*   **Purpose:** Polling is a secondary mechanism to webhooks, used for:
-    *   **Fallback:** To catch events missed by webhooks (e.g., due to temporary webhook delivery failures from the provider, or if a webhook subscription was briefly inactive).
-    *   **Platforms without Webhooks:** If UniCal were to integrate with a calendar platform that doesn't offer reliable webhook notifications.
-    *   **Initial Consistency Check:** Can be part of an initial sync or a periodic deep check to ensure alignment, though `nextSyncToken` based fetching is generally preferred for efficiency after initial full sync.
-*   **Mechanism:**
-    *   A scheduled job (e.g., every 1 to 4 hours, configurable per platform or globally) iterates through all `ConnectedAccount`s that are active and have `syncEnabled` calendars.
-    *   For each account, it fetches events since the `lastSyncAt` timestamp or using the `nextSyncToken` (if available and reliable for polling). This is similar to `processWebhookNotification` but triggered by a schedule, not an incoming notification.
-    *   **Avoiding Redundancy with Webhooks:**
-        *   The primary mechanism for fetching changes should be `nextSyncToken` (or equivalent delta token provided by the platform API). Both webhook-triggered syncs and poll-triggered syncs should use this token.
-        *   If a platform event is processed via a webhook, its `updatedAt` timestamp (or a UniCal-managed `lastProcessedFromPlatformAt` on the `CalendarEvent` model) is updated. If the same event is fetched again via polling before the `nextSyncToken` has advanced past it, the system should recognize it has already been processed (based on `platformEventId` and its timestamp) and not re-process it.
-        *   The `EventsService.createOrUpdateEventFromPlatform()` method must be idempotent and handle this comparison gracefully.
-*   **Frequency:** Polling frequency should be configurable and set to a reasonable interval to balance near real-time updates with API rate limits and system load. It should be less frequent than webhook-driven updates.
-*   **Scope:** Polling might initially focus on a shorter time window (e.g., changes in the last 24-48 hours) for regular checks, with a less frequent, deeper sync (e.g., weekly) if deemed necessary for data integrity, though `nextSyncToken` usage should ideally make deep re-syncs rare.
+## 6. Webhook Lifecycle & Fallback Sync
+*Goal: Maintain webhook subscriptions and ensure data consistency with periodic checks.*
 
-## Phase 4: Robustness & Monitoring
+*   [ ] **`SyncService.subscribeToPlatformCalendar(connectedAccountId: string, nativeCalendarId: string): Promise<void>`:**
+    *   Generate a unique `uniCalChannelId` (UUID).
+    *   `webhookSub = await calendarsService.registerWebhook(connectedAccountId, nativeCalendarId, uniCalChannelId, webhookBaseUrl)`.
+    *   Store `webhookSub` details (platform ID, UniCal ID, expiry) in `ConnectedAccount.webhookSubscriptions`.
+*   [ ] **`SyncService.renewWebhookSubscriptions(connectedAccountId?: string)` (Scheduled Job or Triggered):**
+    *   Iterate `ConnectedAccount.webhookSubscriptions`. If expiring soon, call `subscribeToPlatformCalendar` again (some platforms might have explicit renew).
+*   [ ] **`SyncService.unsubscribeFromPlatformCalendar(connectedAccountId: string, nativeCalendarId: string)`:**
+    *   Fetch webhook details from `ConnectedAccount`.
+    *   `await calendarsService.stopWebhook(connectedAccountId, platformWebhookId, resourceId)`.
+    *   Remove from `ConnectedAccount.webhookSubscriptions`.
+*   [ ] **Periodic Fallback Sync (Scheduled Job - e.g., `SyncProcessor.handlePeriodicFallbackSync`):**
+    *   Iterate through `ConnectedAccount`s with `WEBHOOK_ACTIVE` or `ERROR` status.
+    *   For each `nativeCalendarId` with a `syncToken`:
+        *   Perform steps similar to `handleProcessWebhook` (fetch changes using `syncToken`).
+    *   This catches missed webhooks or reconciles errors.
+    *   Log notifications.
 
-*   [ ] **Error Handling & Retries:**
-    *   Implement robust error handling for all platform API calls within `SyncService` and `CalendarsModule`.
-    *   Use a job queue (e.g., BullMQ) for sync operations with automatic retries for transient errors.
-    *   Dead-letter queue for persistent failures.
-    *   **[ ] TODO: Design for stateless, horizontally scalable sync workers (if using a job queue like BullMQ).**
-    *   **[ ] TODO: Implement detailed error tracking and retry policies within the job queue for individual sync tasks.**
-*   [ ] **Idempotency:**
-    *   Ensure webhook processing and sync operations are idempotent (processing the same notification multiple times doesn\'t cause issues).
-*   [ ] **Rate Limiting:**
-    *   Respect platform rate limits. Implement backoff strategies.
-*   [ ] **Sync Status & Monitoring (FRD 3.9.3):**
-    *   `AccountsService.getSyncStatus(connectedAccountId)`: Provide data like `lastSuccessfulSyncAt`, `syncInProgress`, `lastError`.
-    *   Logging: Detailed logging for sync operations, errors, and conflicts.
-*   [ ] **Testing:**
-    *   Unit tests for `SyncService` logic (mocking platform services and `EventsService`).
-    *   Integration tests for webhook handling and initial sync flows (mocking external platform APIs).
-*   [ ] **Swagger Documentation:** Document webhook endpoints.
+## 7. Testing
+*Goal: Ensure sync reliability.*
 
-## Future Considerations:
-*   More sophisticated conflict resolution strategies (e.g., three-way merge, user prompts).
-*   Delta sync for platforms that don't provide sync tokens (less efficient).
-*   Allowing users to trigger manual sync for an account.
+*   [ ] **Unit Tests:** `SyncService`, `SyncController`, `SyncProcessor` methods. Mock dependencies extensively. Test conflict scenarios, different sync flows.
+*   [ ] **Integration Tests:** Test job queuing and processing. Test interaction between services (e.g., `EventsService` triggering `SyncService`). Mock platform APIs at `CalendarsService` boundary.
 
-### 3. Webhook Handling
-*   Implement controllers/services to receive webhook notifications from Google and Microsoft.
-*   Validate incoming webhooks (e.g., signature verification, source validation).
-*   Queue incoming webhook events for asynchronous processing to avoid timeouts and handle bursts.
-*   Process queued events: fetch changed data from the native platform using its API, update UniCal's database.
+## Dependencies:
+*   All core modules: `PrismaModule`, `AccountsModule`, `EventsModule`, `CalendarsModule`, `NotificationsModule`, `ConfigModule`.
+*   `@nestjs/bull`, `bull` (if using BullMQ).
 
-#### 3.1 Webhook Lifecycle Management & Security
-
-*   **Subscription Process:**
-    *   **Google Calendar API:**
-        *   Initial setup requires domain verification for the webhook notification endpoint.
-        *   Programmatically create notification channels (`watch` requests) for each connected Google account, specifying the `type: webhook`, a unique `id` (e.g., UUID), and the `address` (your HTTPS notification URL).
-        *   Store the `channelId` and `resourceId` returned by Google, associated with the user's connected account, for renewal and stopping channels.
-    *   **Microsoft Graph API:**
-        *   Create subscriptions for calendar change notifications (`/subscriptions` endpoint).
-        *   Specify `changeType` (e.g., `created,updated,deleted`), `notificationUrl`, `resource` (e.g., `users/{id}/events`), `expirationDateTime` (max typically a few days), and a `clientState` (secret string for validation).
-        *   Store the `subscriptionId` for renewal and deletion.
-*   **Renewal Mechanisms:**
-    *   **Google Calendar API:** Notification channels have an expiration time. The system must have a scheduled job (e.g., daily) to check for channels nearing expiration and renew them by re-issuing a `watch` request.
-    *   **Microsoft Graph API:** Subscriptions expire. The system must have a scheduled job to renew subscriptions before their `expirationDateTime` by sending a `PATCH` request to the `/subscriptions/{id}` endpoint with a new `expirationDateTime`.
-*   **Security & Validation:**
-    *   **Unique Callback URLs:** Consider using unique, unguessable callback URLs per user or per subscription if the platform allows, or include a unique identifier in the path that can be validated.
-    *   **Google Calendar API:**
-        *   Validate `X-Goog-Channel-ID` and `X-Goog-Resource-ID` headers in incoming notifications against stored values.
-        *   Validate `X-Goog-Resource-State` (e.g., `sync`, `exists`, `not_exists`).
-    *   **Microsoft Graph API:**
-        *   Immediately respond to the subscription validation request with the `validationToken` found in the query parameters.
-        *   For actual notifications, validate the `clientState` parameter in the notification payload against the one sent during subscription creation.
-    *   **General:**
-        *   Always use HTTPS for notification URLs.
-        *   Log webhook receipt and validation outcomes.
-        *   Consider rate limiting for incoming webhooks if abuse is a concern.
-*   **Error Handling & Idempotency:**
-    *   Webhook handlers should be idempotent. If a notification is received multiple times (e.g., due to retries from the provider), it should not cause duplicate processing or data corruption.
-    *   If processing a webhook fails, implement a retry mechanism with backoff, potentially moving failed events to a dead-letter queue after several attempts for manual inspection.
-*   **Stopping/Deleting Subscriptions:**
-    *   When a user disconnects an account, the system must explicitly stop/delete the corresponding Google notification channels (using `channels/stop`) and Microsoft Graph subscriptions (using `DELETE /subscriptions/{id}`).
-*   [ ] **Sync Status Granularity & Updates by Sync Module:**
-    *   The `SyncModule` is responsible for updating `ConnectedAccount.syncStatus`, `ConnectedAccount.lastSyncAt`, `ConnectedAccount.initialSyncCompletedAt`, and `ConnectedAccount.lastSyncErrorDetails`.
-    *   `syncStatus` can be one of: `PENDING_INITIAL_SYNC`, `INITIAL_SYNC_IN_PROGRESS`, `IDLE`, `SYNCING`, `ERROR_FULL`, `ERROR_PARTIAL`, `DISABLED`.
-    *   **`PENDING_INITIAL_SYNC`**: Set when a `ConnectedAccount` is created but initial sync hasn't started (e.g., user hasn't selected native calendars yet).
-    *   **`INITIAL_SYNC_IN_PROGRESS`**: Set at the beginning of `performInitialSync`.
-    *   **`IDLE`**: Set after successful initial sync or successful ongoing sync operation. Implies the system is ready for the next sync cycle (polling) or is actively listening (webhooks).
-    *   **`SYNCING`**: Set when an ongoing sync operation (webhook-triggered or poll-triggered) is actively processing changes.
-    *   **`ERROR_FULL`**: Set if the entire sync process for an account fails catastrophically (e.g., auth token revoked, cannot connect to platform). All subsequent sync attempts might be paused until the issue is resolved.
-    *   **`ERROR_PARTIAL`**: Set if some parts of the sync failed (e.g., one out of three native calendars couldn't be synced) but others succeeded during an initial or ongoing sync.
-    *   **`DISABLED`**: Set if the user manually disables sync for the account or if a persistent, unrecoverable error (like auth revocation) occurs, requiring user intervention.
-    *   `lastSyncErrorDetails` (JSON or Text field) should store structured information about the last error(s), e.g., `{ "timestamp": "...", "scope": "calendar_id_xyz" or "account", "message": "...", "platformErrorCode": "..." }`.
-    *   The `CalendarsModule` might update a more granular, per-native-calendar sync status if that level of detail is implemented (e.g., `UserNativeCalendar.syncStatus`, `UserNativeCalendar.lastSyncError`). The `SyncModule` would then aggregate these statuses to determine the overall `ConnectedAccount.syncStatus`.
+## Notes:
+*   All date/time comparisons **MUST** be in UTC and handle potential clock skew with a small tolerance.
+*   Idempotency is key for all job handlers.
+*   Detailed logging throughout the sync process is crucial for debugging.
+*   `EventsService` needs `updateEventWithPlatformData(uniCalEventId, platformEventDto)` to update an existing UniCal event with fresh data from the platform (especially `platformEventId` after creation, and `platformLastModifiedAt`).

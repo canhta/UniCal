@@ -29,7 +29,7 @@ This page will likely be a mix of Server and Client Components. The main calenda
     *   **[ ] View Selector:** Buttons/Dropdown (`components/ui/Dropdown.tsx` or `Button.tsx` group) for Day, Week, Month views.
     *   **[ ] Navigation:** "Previous", "Next", "Today" buttons.
     *   **[ ] Date Display:** Show current view's date range or selected date.
-    *   **[ ] Event Fetching:** Fetch events from backend API (e.g., `GET /api/events?start_date=...&end_date=...&calendar_ids=...`) based on current view, date range, and selected native calendar visibility.
+    *   **[ ] Event Fetching:** Fetch events from backend API (e.g., `GET /api/events?start_date=...&end_date=...&calendar_ids=...&tz=...`) based on current view, date range, and selected native calendar visibility.
         *   This will be a client-side fetch, likely managed by the `UniCalendar` component or a custom hook.
 *   **FR3.3.2 Visual Differentiation:**
     *   **[ ] Event Styling:** Apply fixed, non-customizable colors to events based on their source platform (e.g., Google=blue, Outlook=green). This mapping will be done in the frontend based on event data from the API.
@@ -90,19 +90,19 @@ This page will likely be a mix of Server and Client Components. The main calenda
 *   **Similar to Create Event Modal, but pre-filled with existing event data.**
 *   **FR3.4.3 Update Event:**
     *   **[ ] Form Fields:** Same as Create Event, pre-filled.
-        *   Target Native Calendar field might be read-only or not present if events cannot be moved between native calendars via UniCal update.
+        *   Target Native Calendar (dropdown): Allows changing the native calendar for the event. This field should be editable.
     *   **[ ] Actions:**
-        *   "Save Changes" button: Makes API call (`PUT /api/events/{eventId}`) with updated event data.
-        *   "Cancel" button.
+        *   \"Save Changes\" button: Makes API call (`PUT /api/events/{eventId}`) with updated event data.
+        *   \"Cancel\" button.
 *   **FR3.4.5 Recurring Events (Single Instance Edit - if supported by backend/library for MVP):**
-    *   If editing a single instance of a recurring event, the modal might need to ask "Edit this instance only or the entire series?" (Series editing is Post-MVP from UniCal, but single instance modification should sync).
+    *   If editing an instance of a recurring event, the modal will ask "Edit this instance only or the entire series?". Editing only the current instance (creating an exception) is the MVP behavior. Series editing is Post-MVP.
 
 ### 6. Delete Event Flow
 *   **FR3.4.4 Delete Event:**
     *   **[ ] Confirmation Modal (`components/ui/Modal.tsx`):** Triggered by "Delete Event" button in Event Details Modal. Show message like "Are you sure you want to delete this event? This action will also remove it from your native calendar."
     *   **[ ] Action:** On confirmation, make API call (`DELETE /api/events/{eventId}`).
 *   **FR3.4.5 Recurring Events (Single Instance Delete - if supported for MVP):**
-    *   If deleting a single instance, confirmation might ask "Delete this instance only or the entire series?"
+    *   If deleting an instance of a recurring event, the confirmation will ask "Delete this instance only or the entire series?". Deleting only the current instance (creating an exception) is the MVP behavior. Series deletion is Post-MVP.
 
 ## State Management Considerations:
 *   **Current View/Date:** Local state within `UniCalendar.tsx` or a shared context/store.

@@ -1,3 +1,4 @@
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/AGENT_PLAN.md -->
 # AI Agent Implementation Plan: UniCal Frontend (Next.js)
 
 This plan guides frontend development, aligning with backend phases, FRD.md, BRD.md, Challenges.md, and SETUP_PLAN.md.
@@ -5,120 +6,84 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 **Core Principles:**
 *   **Component-Based:** Reusable components, clear separation of concerns.
 *   **Best Practices:** React/Next.js standards, state management, performance, A11y, testing.
-*   **TODO-Driven:** Use `[MODULE_OR_FEATURE_NAME]_PLAN.md` in relevant directories for detailed tasks.
-*   **Iterative Refinement:** Address UI/UX challenges progressively, informed by the Challenges.md.
-*   **Phased Rollout:** Align with FRD and backend capabilities, focusing on initial product features first.
+*   **TODO-Driven:** Use `[MODULE_OR_FEATURE_NAME]_PLAN.md` in relevant directories for detailed tasks. Populate these from this master plan.
+*   **Iterative Refinement:** Address UI/UX challenges progressively, informed by Challenges.md.
+*   **Phased Rollout:** Align with FRD and backend capabilities.
 
-**Note on FRD Alignment:** The initial product focuses on simplified email-only login, then SSO (Google/Microsoft), unified calendar view, core event CRUD, and two-way sync for Google/Outlook. Advanced features are post-initial product.
+**Note on FRD Alignment:** Initial product: simplified/SSO login, unified calendar, core event CRUD, Google/Outlook sync. Advanced features post-initial product.
 
 ## Phase 1: Core Setup & Foundational UI (Aligns with SETUP_PLAN Phases 1-2)
+**Goal:** Establish a runnable Next.js project with basic layout, UI component structure, and environment setup.
 
-1.  **Project Setup Verification:** Confirm Next.js 15 (App Router), TypeScript, Tailwind CSS, ESLint, Prettier are correctly configured as per `SETUP_PLAN.md`.
-2.  **Environment Variables:** Setup `.env.local` with `NEXT_PUBLIC_API_BASE_URL` and placeholders for Auth0 variables (to be filled in Phase 2).
-3.  **Basic Layout & Global Styles (`apps/frontend/app/layout.tsx`, `apps/frontend/app/globals.css`):**
-    *   Implement main application layout using Tailwind CSS.
-    *   Define global styles and integrate custom fonts (as per `SETUP_PLAN.md`).
-4.  **UI Component Library Structure (`apps/frontend/src/components/ui/UI_COMPONENTS_PLAN.md`):**
-    *   Create initial plan for common UI components (Button, Input, Modal, Card, Dropdowns, Toggles).
-    *   Implement a few basic components (e.g., Button, Input) using Tailwind CSS and @headlessui/react.
-5.  **Core Directory Structure:**
-    *   `apps/frontend/src/components/` (for UI, features, layout)
-    *   `apps/frontend/src/lib/` (for API client, utils, hooks, auth)
-    *   `apps/frontend/src/app/` (for pages/routes)
-    *   `apps/frontend/src/styles/` (if more specific global styles needed beyond `globals.css`)
-    *   `apps/frontend/src/contexts/` (for React Context if not using a global state manager initially)
+*   [ ] **Project Setup Verification:** Confirm Next.js 15 (App Router), TypeScript, Tailwind CSS, ESLint, Prettier (per `SETUP_PLAN.md`).
+*   [ ] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_API_BASE_URL`, Auth0 placeholders (fill in Phase 2).
+*   [ ] **Basic Layout & Global Styles (`app/layout.tsx`, `app/globals.css`):** Implement main layout (Tailwind), global styles, custom fonts (per `SETUP_PLAN.md`).
+*   [ ] **UI Component Library Structure (`src/components/ui/UI_COMPONENTS_PLAN.md`):** Plan common UI components. Implement basic Button, Input (Tailwind, @headlessui/react).
+*   [ ] **Core Directory Structure:** Establish `src/components/`, `src/lib/`, `src/app/`, `src/styles/`, `src/contexts/`.
 
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
+**Goal:** Implement user authentication (primarily Auth0 SSO) and create basic page structure with protected routes.
 
-1.  **Authentication Setup (`apps/frontend/src/lib/auth/AUTH_FEATURE_PLAN.md`):
-    *   **FR3.1.0 Simplified Email-Only Login (UI Focus):** Implement UI for email-only login. This will initially be a placeholder or a direct call to a simplified backend endpoint if available. *Defer full Auth0 integration for this step if backend supports a simpler JWT mechanism first, otherwise proceed with Auth0 for simplified flow.* 
-    *   **FR3.1.3 Single Sign-On (SSO) - Google & Microsoft:**
-        *   Integrate `@auth0/nextjs-auth0` as per `SETUP_PLAN.md` (environment variables, API route, UserProvider).
-        *   Implement UI for "Sign in with Google" and "Sign in with Microsoft" buttons.
-        *   Handle Auth0 callback (`/api/auth/callback`).
-        *   Implement basic logout functionality.
-        *   Create `apps/frontend/src/lib/auth/AUTH_FEATURE_PLAN.md` with detailed steps.
-2.  **API Client Setup (`apps/frontend/src/lib/api/API_CLIENT_PLAN.md`):
-    *   Create a basic API client service/utility functions for making requests to the backend (`NEXT_PUBLIC_API_BASE_URL`).
-    *   Plan for handling authenticated requests (attaching Auth0 access token).
-    *   Create `apps/frontend/src/lib/api/API_CLIENT_PLAN.md`.
-3.  **Initial Page Structure (`apps/frontend/app/`):
-    *   `app/page.tsx` (Public landing page).
-    *   `app/(protected)/dashboard/page.tsx` (Placeholder for main dashboard after login - protected route).
-    *   `app/(auth)/login/page.tsx` (If implementing a dedicated login page for simplified/SSO flow).
-    *   Implement basic protected route logic using `useUser` or `getSession`.
-    *   Utilize `loading.tsx` and `error.tsx` conventions.
-4.  **Layout Components (`apps/frontend/src/components/layout/LAYOUT_COMPONENTS_PLAN.md`):
-    *   Develop Navbar and Footer components.
-    *   Integrate authentication status (display user info, login/logout buttons).
-    *   Create `apps/frontend/src/components/layout/LAYOUT_COMPONENTS_PLAN.md`.
+*   [ ] **Authentication Setup (`src/lib/auth/AUTH_FEATURE_PLAN.md`):
+    *   **FR3.1.3 SSO (Google & Microsoft):** Integrate `@auth0/nextjs-auth0` (env vars, API route, UserProvider). Implement UI for "Sign in with Google/Microsoft" buttons. Handle Auth0 callback. Implement logout.
+    *   **FR3.1.0 Simplified Email-Only Login (UI Focus):** UI for email login. *If backend supports non-Auth0 simple JWT, implement; otherwise, Auth0 handles this via its email/passwordless options or by users selecting Google/Microsoft.* Update `AUTH_FEATURE_PLAN.md`.
+*   [ ] **API Client Setup (`src/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
+*   [ ] **Initial Page Structure (`app/`):
+    *   `app/page.tsx` (Public landing).
+    *   `app/(protected)/dashboard/page.tsx` (Placeholder dashboard - protected).
+    *   `app/(auth)/login/page.tsx` (If dedicated login page for simplified/SSO).
+    *   Implement protected route logic (`useUser` or `getSession`). Use `loading.tsx`, `error.tsx`.
+*   [ ] **Layout Components (`src/components/layout/LAYOUT_COMPONENTS_PLAN.md`):** Develop Navbar, Footer. Integrate auth status (user info, login/logout). Update `LAYOUT_COMPONENTS_PLAN.md`.
 
 ## Phase 3: Core Calendar Functionality (Aligns with SETUP_PLAN Phase 4 & FRD Core Features)
+**Goal:** Implement UI for connecting calendar accounts, viewing aggregated calendars, and managing events.
 
-1.  **Integrations Management UI (`apps/frontend/src/app/(protected)/integrations/INTEGRATIONS_FEATURE_PLAN.md`):
-    *   **FR3.2.1 & FR3.2.2 Connect Google/Microsoft Calendar:** UI to initiate OAuth flow (buttons linking to backend endpoints).
-    *   **FR3.2.5 Manage Connected Accounts:** UI to display connected calendar accounts and a "Disconnect" option.
-    *   **FR3.5.4 Sync Control (Calendar Selection):** UI to list user's calendars from a connected account and allow selection for syncing (checkboxes).
-    *   Create `apps/frontend/src/app/(protected)/integrations/INTEGRATIONS_FEATURE_PLAN.md`.
-2.  **Unified Calendar View UI (`apps/frontend/src/app/(protected)/calendar/CALENDAR_FEATURE_PLAN.md`):
-    *   **FR3.3.1 Standard Calendar Views:** Integrate `@event-calendar/core` (and plugins like daygrid, timegrid, list, interaction) as per `SETUP_PLAN.md`.
-        *   Implement Day, Week, Month views with navigation.
-        *   Fetch and display aggregated event data from the backend API.
-    *   **FR3.3.2 Visual Differentiation:** Implement basic, fixed color-coding for events from different sources (Google/Outlook).
-    *   **FR3.3.3 Calendar Visibility Toggle:** UI to show/hide events from specific selected native calendars.
-    *   **FR3.3.4 Event Display & Details Modal:** Display essential event info in views. On click, show a modal with Title, Start/End, Description, Location, Source. Include Edit/Delete buttons (stubbed initially).
-    *   **FR3.3.5 Time Zone Support:** Ensure frontend displays events in the user's browser local time zone (backend provides UTC).
-    *   Create `apps/frontend/src/app/(protected)/calendar/CALENDAR_FEATURE_PLAN.md`.
-3.  **Event Management UI (within `CALENDAR_FEATURE_PLAN.md`):
-    *   **FR3.4.1 Create Event:** Modal/form for Title, Start/End, All-day, Target Calendar (dropdown of user's connected native calendars), Description, Location. API call to create.
-    *   **FR3.4.3 Update Event:** Modal/form (pre-filled) to edit core event fields. API call to update.
-    *   **FR3.4.4 Delete Event:** Confirmation dialog and API call to delete.
-    *   **FR3.4.5 Recurring Events (Display):** Ensure recurring events (master and instances/exceptions fetched from backend) are displayed correctly. (Creation/editing of recurrence rules from UniCal is Post-Initial Product).
-    *   **FR3.7.1 Privacy Indication (Display):** Visually indicate "private" events if this information is provided by the backend.
-    *   **FR3.9.1 Event Reminders (Display):** Display reminder information from native events in the event details modal (text only).
+*   [ ] **Integrations Management UI (`src/app/(protected)/integrations/INTEGRATIONS_FEATURE_PLAN.md`):
+    *   **FR3.2.1 & FR3.2.2 Connect Google/Microsoft Calendar:** UI to initiate OAuth (buttons to backend endpoints).
+    *   **FR3.2.5 Manage Connected Accounts:** UI to display connected accounts, "Disconnect" option.
+    *   **FR3.5.4 Sync Control (Calendar Selection):** UI to list user's native calendars, allow selection for syncing.
+    *   Update `INTEGRATIONS_FEATURE_PLAN.md`.
+*   [ ] **Unified Calendar View UI (`src/app/(protected)/calendar/CALENDAR_FEATURE_PLAN.md`):
+    *   **FR3.3.1 Standard Calendar Views:** Integrate `@event-calendar/core` (daygrid, timegrid, list, interaction). Implement Day, Week, Month views. Fetch/display aggregated events.
+    *   **FR3.3.2 Visual Differentiation:** Basic color-coding for event sources.
+    *   **FR3.3.3 Calendar Visibility Toggle:** UI to show/hide events from specific native calendars.
+    *   **FR3.3.4 Event Display & Details Modal:** Display event info. On click, show modal (Title, Start/End, Description, Location, Source). Edit/Delete buttons (stubbed).
+    *   **FR3.3.5 Time Zone Support:** Display events in user's local time (backend provides UTC).
+    *   Update `CALENDAR_FEATURE_PLAN.md`.
+*   [ ] **Event Management UI (within `CALENDAR_FEATURE_PLAN.md`):
+    *   **FR3.4.1 Create Event:** Modal/form (Title, Start/End, All-day, Target Calendar, Description, Location). API call.
+    *   **FR3.4.3 Update Event:** Modal/form (pre-filled). API call.
+    *   **FR3.4.4 Delete Event:** Confirmation dialog. API call.
+    *   **FR3.4.5 Recurring Events (Display):** Display recurring events (master/instances).
+    *   **FR3.7.1 Privacy Indication (Display):** Visually indicate "private" events.
+    *   **FR3.9.1 Event Reminders (Display):** Display reminder info in details modal.
 
 ## Phase 4: State Management, Refinement & Testing Setup (Aligns with SETUP_PLAN Phase 5, 8, 9, 10)
+**Goal:** Implement robust state management, refine UI/UX, ensure error handling, and set up testing infrastructure.
 
-1.  **State Management (`apps/frontend/src/lib/state/STATE_MANAGEMENT_PLAN.md`):
-    *   Evaluate and implement a global state manager (e.g., Zustand, Jotai) if React Context becomes insufficient for calendar state, user preferences, etc.
-    *   Manage calendar view state, event data, selected filters, UI states.
-    *   Create `apps/frontend/src/lib/state/STATE_MANAGEMENT_PLAN.md`.
-2.  **UI Refinement & Responsiveness:**
-    *   Thoroughly test and fix responsiveness across common screen sizes.
-    *   Improve overall look and feel, transitions, and micro-interactions.
-3.  **Error Handling & Loading States:**
-    *   Implement global error display (e.g., toasts/notifications for API errors).
-    *   Ensure consistent loading indicators for data fetching and mutations.
-4.  **Accessibility (A11y) Review:**
-    *   Perform an initial A11y audit using browser tools and linters. Address critical issues.
-5.  **Linting & Formatting:** Ensure ESLint and Prettier are consistently applied.
-6.  **Testing Setup (`TESTING_SETUP_PLAN.md`):
-    *   Configure Jest and React Testing Library as per `SETUP_PLAN.md`.
-    *   Write initial unit/integration tests for key components and utility functions.
-    *   Create `TESTING_SETUP_PLAN.md`.
-7.  **SSR/Optimization Review:** Review usage of Server Components, Client Components, and Next.js optimization features (`next/image`, `next/font`).
+*   [ ] **State Management (`src/lib/state/STATE_MANAGEMENT_PLAN.md`):
+    *   Implement global state manager (e.g., Zustand, Jotai) for calendar state, user preferences. Update `STATE_MANAGEMENT_PLAN.md`.
+*   [ ] **UI Refinement & Responsiveness:** Test/fix responsiveness. Improve look & feel, transitions.
+*   [ ] **Error Handling & Loading States:** Implement global error display (toasts/notifications). Consistent loading indicators.
+*   [ ] **Accessibility (A11y) Review:** Initial A11y audit. Address critical issues.
+*   [ ] **Linting & Formatting:** Ensure consistent ESLint, Prettier application.
+*   [ ] **Testing Setup (`TESTING_SETUP_PLAN.md`):
+    *   Configure Jest & React Testing Library. Write initial unit/integration tests. Update `TESTING_SETUP_PLAN.md`.
+*   [ ] **SSR/Optimization Review:** Review Server/Client Components, Next.js optimizations.
 
-## Phase 5: Advanced Features (Post-Initial Product - Placeholder for Future)
-
-*   This phase will cover features marked as "Later Phase" or "Post-Initial Product" in the FRD, such as:
-    *   Full Email/Password User Account Management (Registration, Password Reset, Profile Management - FR3.1.1, FR3.1.2, FR3.1.4, FR3.1.5)
-    *   Advanced Calendar View Features (Agenda view, customizable colors)
-    *   Advanced Event Management (Multi-calendar event creation, rich text, attendee management from UCS, creating/editing recurrence rules from UCS)
-    *   Personal Booking Page
-    *   Granular Privacy Controls within UCS
-    *   AI-Driven Features
-    *   Task Integration
-    *   (Each will have its own `[FEATURE_NAME]_PLAN.md`)
+## Phase 5: Advanced Features (Post-Initial Product - Placeholder)
+**Goal:** Implement features beyond the initial product scope, as defined in FRD.
+*   Features: Full Email/Password Account Management (FR3.1.1, FR3.1.2, FR3.1.4, FR3.1.5), Advanced Calendar Views, Advanced Event Management, Personal Booking Page, Granular Privacy, AI Features, Task Integration.
+*   (Each will have its own `[FEATURE_NAME]_PLAN.md`)
 
 ## General Agent Workflow:
+1.  **Understand Phase Goals:** Internalize objectives for each phase.
+2.  **Create/Update Detailed Plans:** For items referencing `*_PLAN.md`, create/update that file with detailed, actionable TODOs, linking to FRD requirements.
+3.  **Implement Incrementally:** Execute TODOs. Create/update components, pages, services. Integrate with backend APIs (mock if necessary, mark for later real integration).
+4.  **Testing:** Write unit/integration tests concurrently.
+5.  **Commit Frequently:** Small, logical commits with clear messages.
+6.  **Address Challenges:** Refer to `Challenges.md` for guidance.
+7.  **Iterate:** Refine UI/UX based on visual output and usability.
+8.  **Seek Clarification:** If a task is ambiguous, ask before proceeding.
 
-1.  **Understand Phase Goals:** For each phase, understand the objectives based on this plan and the FRD.
-2.  **Create/Update Detailed Plans:** For each numbered item that refers to a `*_PLAN.md` file, create that Markdown file in the specified directory. Populate it with detailed TODOs, breaking down the feature/module into smaller, actionable tasks. These plans should reference specific FRD requirements (e.g., "Implement FR3.2.1 UI button").
-3.  **Implement Incrementally:** Work through the TODOs in the detailed plans. Create/update components, pages, services, and types.
-4.  **API Integration:** Integrate with backend API endpoints as they become available. Mock data or use a mock server if the backend is not ready for a specific feature, but clearly mark this for later integration.
-5.  **Testing:** Write unit and integration tests for new UI components and logic.
-6.  **Commit Frequently:** Make small, logical commits.
-7.  **Address Challenges:** Refer to `Challenges.md` for guidance on technical hurdles (e.g., time zone handling, API rate limits from a frontend perspective like managing loading states during polling).
-8.  **Iterate:** UI/UX is iterative. Be prepared to refine based on visual output and usability.
-
-*(Agent: Start by creating the directory structure and the initial set of `*_PLAN.md` files mentioned in Phase 1 and 2, then proceed with implementation.)*
+*(Agent: Start by creating directory structure and initial `*_PLAN.md` files for Phase 1 & 2, then proceed with implementation.)*

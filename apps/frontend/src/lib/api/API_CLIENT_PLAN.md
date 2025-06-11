@@ -1,51 +1,50 @@
-# API Client Plan (Phase 2)
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/lib/api/API_CLIENT_PLAN.md -->
+# API Client Plan (Frontend)
 
-This plan outlines the setup and structure for the API client service in the UniCal frontend. This service will be responsible for all communication with the backend API.
+**Overall Goal:** Establish a robust, typed, and centralized API client for all frontend communication with the backend, handling authentication seamlessly.
 
-## Core Principles
-*   **Centralized:** A single point of contact for all API interactions.
-*   **Typed:** Leverage TypeScript for request and response types to ensure type safety.
-*   **Error Handling:** Implement consistent error handling and reporting.
-*   **Authenticated Requests:** Seamlessly handle the inclusion of authentication tokens for protected endpoints.
-*   **Extensible:** Easy to add new API endpoints and methods.
+## 1. Core Principles & AI Agent Actionables
 
-## Technology Choices
-*   **Primary Fetching Mechanism:** Native `fetch` API.
-*   **Data Fetching/Caching (Client Components):** Consider SWR or TanStack Query (React Query) for client-side data fetching, caching, mutations, and revalidation. This will be evaluated further in `STATE_MANAGEMENT_PLAN.md` or as part of component implementation. For Server Components, direct `async/await` with `fetch` is standard.
-*   **Authentication Token Retrieval:** `@auth0/nextjs-auth0` for getting access tokens.
+*   **[ ] Goal:** Centralize API interactions.
+    *   **Action:** AI will create a primary API client module.
+*   **[ ] Goal:** Ensure type safety for requests and responses.
+    *   **Action:** AI will define and use TypeScript types for all API DTOs, co-locating them with feature plans or in a shared types directory.
+*   **[ ] Goal:** Implement consistent error handling.
+    *   **Action:** AI will create a custom `ApiError` class and ensure the client throws this for non-successful responses.
+*   **[ ] Goal:** Handle authenticated requests securely.
+    *   **Action:** AI will integrate `@auth0/nextjs-auth0` for token retrieval and implement a Backend-for-Frontend (BFF) approach for client-side authenticated requests.
+*   **[ ] Goal:** Make the client extensible for new endpoints.
+    *   **Action:** AI will structure the client to allow easy addition of new API methods, likely grouped by resource/feature.
 
-## Phase 2: Initial Setup & Core Functionality
+## 2. Technology Choices
 
-1.  **[ ] Directory Structure:**
-    *   Create `apps/frontend/src/lib/api/`
-    *   `index.ts`: Exports the main API client instance or core functions.
-    *   `config.ts`: Stores base URL and other configurations.
-    *   `types.ts` (or feature-specific types): Define common request/response types. As features are built, types specific to those features (e.g., `CalendarEvent`, `ConnectedAccount`) will be defined, possibly co-located with feature modules or in a shared types directory.
-    *   `client.ts` (or `instance.ts`): Contains the core fetch wrapper.
+*   **[ ] Fetching:** Native `fetch` API.
+*   **[ ] Client-Side Data Management:** TanStack Query (React Query) for caching, mutations, revalidation in Client Components (details in `STATE_MANAGEMENT_PLAN.md`). Server Components will use direct `fetch`.
+*   **[ ] Auth Token Retrieval:** `@auth0/nextjs-auth0`.
 
-2.  **[ ] Configuration (`apps/frontend/src/lib/api/config.ts`):**
+## 3. Phase 1: Setup & Core Functionality
+
+*   **[ ] Goal:** Establish directory structure and configuration.
+    *   **Action:** AI will create `apps/frontend/src/lib/api/` with:
+        *   `index.ts`: Exports core client functions/instances.
+        *   `config.ts`: Defines `API_BASE_URL` (e.g., `process.env.NEXT_PUBLIC_API_BASE_URL || '/api/proxy'`).
+        *   `client.ts`: Contains the core fetch wrapper.
+        *   `types.ts` (or `dtos.ts`): Central location for API DTOs if not co-located.
+*   **[ ] Goal:** Implement the core `apiClient` fetch wrapper (`apps/frontend/src/lib/api/client.ts`).
+    *   **Action:** AI will create a function that:
+        *   Prepends `API_BASE_URL`.
+        *   Sets default headers (`Content-Type: application/json`).
+        *   Handles JSON parsing and `ApiError` for non-2xx responses.
+        *   Accepts `RequestInit` options.
+        *   Handles 204 No Content responses appropriately.
     ```typescript
-    // apps/frontend/src/lib/api/config.ts
-    export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1'; // Fallback for local dev if backend is proxied via Next.js
-    ```
-    *   Ensure `NEXT_PUBLIC_API_BASE_URL` is set in `.env.local`.
-
-3.  **[ ] Core Fetch Wrapper (`apps/frontend/src/lib/api/client.ts`):**
-    *   Create a wrapper function around `fetch` that:
-        *   Prepends `API_BASE_URL` to requests.
-        *   Sets default headers (e.g., `Content-Type: application/json`).
-        *   Handles JSON parsing for responses.
-        *   Implements basic error handling (e.g., throws an error for non-2xx responses with error details from the backend).
-        *   Accepts options for method, body, custom headers, etc.
-
-    ```typescript
-    // apps/frontend/src/lib/api/client.ts (Simplified Example)
+    // Example structure for apps/frontend/src/lib/api/client.ts
     import { API_BASE_URL } from './config';
 
-    interface ApiErrorData {
+    export interface ApiErrorData {
       message: string;
       statusCode?: number;
-      // other potential error fields
+      details?: any; // For validation errors etc.
     }
 
     export class ApiError extends Error {
@@ -60,140 +59,81 @@ This plan outlines the setup and structure for the API client service in the Uni
       }
     }
 
-    async function apiClient<T>(
+    export async function apiClient<T>(
       endpoint: string,
-      options: RequestInit = {}
+      options: RequestInit = {},
+      isBffRequest: boolean = false // Flag to indicate if request is to our BFF
     ): Promise<T> {
-      const url = `${API_BASE_URL}${endpoint}`;
+      const baseUrl = isBffRequest ? '' : API_BASE_URL; // BFF routes are absolute
+      const url = `${baseUrl}${endpoint}`;
       
-      const defaultHeaders: HeadersInit = {
-        'Content-Type': 'application/json',
-        // Authorization header will be added by a separate utility or wrapper for authenticated requests
-        ...options.headers,
-      };
-
       const config: RequestInit = {
         ...options,
-        headers: defaultHeaders,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
       };
 
-      try {
-        const response = await fetch(url, config);
-        
-        if (!response.ok) {
-          let errorData: ApiErrorData | undefined;
-          try {
-            errorData = await response.json();
-          } catch (e) {
-            // Ignore if response is not JSON
-          }
-          throw new ApiError(
-            errorData?.message || response.statusText || 'An API error occurred',
-            response.status,
-            errorData
-          );
-        }
+      const response = await fetch(url, config);
 
-        // Handle cases where response might be empty (e.g., 204 No Content)
-        if (response.status === 204) {
-          return undefined as T; // Or handle as appropriate for your app
-        }
-        
-        return await response.json() as T;
-      } catch (error) {
-        if (error instanceof ApiError) {
-          throw error;
-        }
-        // Handle network errors or other unexpected errors
-        throw new ApiError( (error as Error).message || 'A network error occurred');
+      if (!response.ok) {
+        let errorData: ApiErrorData | undefined;
+        try {
+          errorData = await response.json();
+        } catch (e) { /* Ignore if response is not JSON */ }
+        throw new ApiError(
+          errorData?.message || response.statusText || 'An API error occurred',
+          response.status,
+          errorData
+        );
       }
+      if (response.status === 204) return undefined as T;
+      return response.json() as T;
     }
-
-    export default apiClient;
     ```
-
-4.  **[ ] Authenticated API Requests:**
-    *   **Strategy:** For requests requiring authentication, the access token needs to be retrieved and added to the `Authorization` header.
+*   **[ ] Goal:** Implement authenticated request handling.
     *   **Server-Side (Route Handlers, Server Components):**
-        *   Use `getAccessToken` from `@auth0/nextjs-auth0`.
-        *   Create a helper function or modify `apiClient` to accept an optional token or a flag to fetch it.
+        *   **Action:** AI will use `getAccessToken` from `@auth0/nextjs-auth0` and pass the token in the `Authorization` header when calling `apiClient` directly (targeting the actual backend API, not the BFF proxy).
+    *   **Client-Side (Client Components - BFF Approach):**
+        *   **Action:** AI will create Next.js Route Handlers under `apps/frontend/src/app/api/proxy/[...path]/route.ts`.
+        *   **Action:** These BFF handlers will:
+            *   Receive requests from client components.
+            *   Use `getAccessToken` server-side to get the Auth0 token.
+            *   Forward the request to the actual backend API (e.g., `process.env.INTERNAL_API_BASE_URL`) using the `apiClient` or a direct `fetch`, including the Auth0 token.
+            *   Return the backend's response to the client component.
+        *   **Action:** Client components will call these BFF proxy endpoints using `apiClient(endpoint, options, true)`. The `Authorization` header for these calls to the BFF itself will be handled by Auth0's session cookie.
+*   **[ ] Goal:** Define initial API service methods (grouped by resource).
+    *   **Action:** AI will create files like `apps/frontend/src/lib/api/services/user.ts`, `integrations.ts`, etc.
+    *   Example `user.ts`:
         ```typescript
-        // Example in a Server Component or Route Handler
-        import { getSession, getAccessToken } from '@auth0/nextjs-auth0';
-        import apiClient from '@/lib/api/client'; // Adjust path
+        // apps/frontend/src/lib/api/services/user.ts
+        import { apiClient } from '../client';
+        import { User } from '../types'; // Or feature-specific types
 
-        // ...
-        // const session = await getSession();
-        // if (!session?.user) { /* handle unauthenticated */ }
-        // const { accessToken } = await getAccessToken();
-        // const data = await apiClient('/protected-data', {
-        //   headers: {
-        //     Authorization: `Bearer ${accessToken}`,
-        //   },
-        // });
-        // ...
+        export const userService = {
+          getMe: async (): Promise<User> => {
+            // This call goes through the BFF proxy
+            return apiClient<User>('/api/proxy/users/me', {}, true);
+          },
+          // Example for a Server Component call (direct to backend, token handled by caller)
+          // getMeServer: async (accessToken: string): Promise<User> => {
+          //   return apiClient<User>('/users/me', { headers: { Authorization: `Bearer ${accessToken}` } });
+          // }
+        };
         ```
-    *   **Client-Side (Client Components):**
-        *   **Option 1 (Recommended for security): Backend For Frontend (BFF) Route Handler.**
-            *   Create a Next.js Route Handler (e.g., `app/api/proxy/[...path]/route.ts`).
-            *   This handler receives the request from the client component.
-            *   Server-side, it retrieves the access token using `getAccessToken`.
-            *   It then forwards the request to the actual backend API with the token.
-            *   This keeps the access token from being exposed directly to the browser for long periods.
-        *   **Option 2 (If BFF is too complex for initial setup): Fetch token on demand.**
-            *   Create a client-side utility that calls a Route Handler dedicated to exposing the access token.
-            *   The client component calls this utility to get the token, then makes the API request.
-            *   This is less secure than BFF as the token is handled more in client-side code.
-            ```typescript
-            // Example: app/api/auth/token/route.ts
-            // import { getAccessToken, withApiAuthRequired } from '@auth0/nextjs-auth0';
-            // export const GET = withApiAuthRequired(async function token(req) {
-            //   const { accessToken } = await getAccessToken();
-            //   return new Response(JSON.stringify({ accessToken }), {
-            //     headers: { 'Content-Type': 'application/json' },
-            //   });
-            // });
-            ```
-            And in client component:
-            ```typescript
-            // async function getClientAccessToken() {
-            //   const response = await fetch('/api/auth/token');
-            //   if (!response.ok) throw new Error('Failed to get access token');
-            //   const { accessToken } = await response.json();
-            //   return accessToken;
-            // }
-            // const token = await getClientAccessToken();
-            // const data = await apiClient('/protected-data', { headers: { Authorization: `Bearer ${token}` } });
-            ```
-    *   **[ ] Task:** Decide on the client-side token strategy (BFF preferred) and implement the necessary helpers/wrappers.
+*   **[ ] Goal:** Define initial DTOs.
+    *   **Action:** AI will create/update `apps/frontend/src/lib/api/types.ts` or co-locate types (e.g., `User`, `ConnectedAccount`, `CalendarEvent`).
 
-5.  **[ ] Initial API Endpoint Implementations (Examples - to be expanded as features are built):**
-    *   `auth.ts` (if simple email login is implemented separately from Auth0 initially):
-        *   `simpleLogin(email: string): Promise<AuthResponse>`
-    *   `user.ts`:
-        *   `getMe(): Promise<User>`
-    *   `integrations.ts`:
-        *   `getConnectedAccounts(): Promise<ConnectedAccount[]>`
-        *   `connectGoogleCalendar(): Promise<RedirectResponse>` (backend handles OAuth redirect)
-        *   `disconnectAccount(accountId: string): Promise<void>`
-    *   `calendar.ts`:
-        *   `getEvents(params: GetEventsParams): Promise<CalendarEvent[]>`
-        *   `createEvent(eventData: NewEventData): Promise<CalendarEvent>`
+## 4. Phase 2: Integration & Enhancements
 
-6.  **[ ] Type Definitions (`apps/frontend/src/lib/api/types.ts` or feature-specific):**
-    *   Start defining basic types for API responses (e.g., `User`, `AuthResponse`, `ConnectedAccount`, `CalendarEvent`). These will evolve.
-
-## Phase 3 & Beyond: Enhancements
-
-*   **[ ] Integration with SWR/TanStack Query:**
-    *   If chosen, wrap `apiClient` calls with SWR/React Query hooks for client-side data fetching, caching, optimistic updates, etc.
-*   **[ ] Advanced Error Handling:**
-    *   Global error handling (e.g., redirect to login on 401, display notifications for other errors). This might tie into a global state solution.
-*   **[ ] Request Cancellation:**
-    *   Implement request cancellation if needed for complex scenarios.
-*   **[ ] Mocking for Tests:**
-    *   Develop a strategy for easily mocking API requests during testing (e.g., using `msw` - Mock Service Worker).
+*   **[ ] Goal:** Integrate with TanStack Query for Client Components.
+    *   **Action:** AI will create custom hooks using TanStack Query that wrap `apiClient` calls to BFF endpoints (e.g., `useUserMe`, `useConnectedAccounts`).
+*   **[ ] Goal:** Implement advanced global error handling.
+    *   **Action:** AI will configure TanStack Query's global error handlers or use a React Error Boundary to catch `ApiError` instances and display appropriate UI (e.g., toast notifications, redirect on 401).
+*   **[ ] Goal:** Set up API mocking for tests.
+    *   **Action:** AI will integrate `msw` (Mock Service Worker) to mock API responses during Jest/RTL tests and potentially for Storybook. Refer to `TESTING_SETUP_PLAN.md`.
 
 ## Notes:
-*   The `apiClient` should be flexible enough to be used in Server Components, Client Components (potentially via SWR/React Query or BFF), and Route Handlers.
-*   Security is paramount for authenticated requests. Prioritize keeping access tokens secure (server-side or short-lived on the client).
+*   The `API_BASE_URL` in `config.ts` should point to the BFF proxy base path (e.g., `/api/proxy`) for client-side calls that go through the BFF. Server-side calls or direct backend calls will use a different base URL (e.g., from `process.env.INTERNAL_API_BASE_URL`).
+*   The BFF proxy (`/api/proxy/[...path]/route.ts`) is crucial for security, preventing Auth0 access tokens from being exposed directly in the browser.
