@@ -14,7 +14,7 @@ The Dashboard will serve as the primary landing page for authenticated users, pr
 
 *   **[ ] Component Structure:**
     *   Create `DashboardPage` component (`app/(protected)/dashboard/page.tsx`).
-    *   Create `UpcomingEvents` component (e.g., `src/components/dashboard/UpcomingEvents.tsx`).
+    *   Create `UpcomingEvents` component (e.g., `/components/dashboard/UpcomingEvents.tsx`).
 *   **[ ] Data Fetching:**
     *   `DashboardPage` (as a Server Component) will fetch upcoming events (e.g., for the next 7 days) using the API client.
     *   The API endpoint might be something like `GET /api/events?view=upcoming&days=7` or similar.

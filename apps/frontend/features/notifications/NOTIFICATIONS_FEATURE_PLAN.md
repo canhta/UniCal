@@ -1,4 +1,4 @@
-<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/features/notifications/NOTIFICATIONS_FEATURE_PLAN.md -->
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/features/notifications/NOTIFICATIONS_FEATURE_PLAN.md -->
 # Notifications Feature Plan (Frontend)
 
 **Overall Goal:** Implement a frontend system to display relevant notifications to the user, initially focusing on sync status and errors, and evolving towards a comprehensive notification center.
@@ -16,7 +16,7 @@
     *   **Action:** AI will develop this component with props for `message`, `type` (error, warning, info, success), `timestamp`, and an optional `onDismiss` handler.
     *   **Action:** AI will style the component to visually differentiate notification types.
 *   **[ ] Goal:** Display notifications on the "Connected Accounts" page (`/integrations`).
-    *   **Action:** AI will modify `apps/frontend/src/app/(protected)/integrations/page.tsx` to fetch and display notifications related to account connections or sync statuses.
+    *   **Action:** AI will modify `apps/frontend/app/(protected)/integrations/page.tsx` to fetch and display notifications related to account connections or sync statuses.
     *   **Action:** AI will ensure notifications are displayed prominently, potentially near affected accounts.
 *   **[ ] Goal:** Implement data fetching for contextual notifications.
     *   **Action:** AI will use the API client (from `API_CLIENT_PLAN.md`) to call `GET /api/notifications?context=integrations`.

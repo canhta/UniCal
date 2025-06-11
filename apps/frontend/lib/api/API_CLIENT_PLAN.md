@@ -1,4 +1,4 @@
-<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/lib/api/API_CLIENT_PLAN.md -->
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/lib/api/API_CLIENT_PLAN.md -->
 # API Client Plan (Frontend)
 
 **Overall Goal:** Establish a robust, typed, and centralized API client for all frontend communication with the backend, handling authentication seamlessly.
@@ -25,12 +25,12 @@
 ## 3. Phase 1: Setup & Core Functionality
 
 *   **[ ] Goal:** Establish directory structure and configuration.
-    *   **Action:** AI will create `apps/frontend/src/lib/api/` with:
+    *   **Action:** AI will create `apps/frontend/lib/api/` with:
         *   `index.ts`: Exports core client functions/instances.
         *   `config.ts`: Defines `API_BASE_URL` (e.g., `process.env.NEXT_PUBLIC_API_BASE_URL || '/api/proxy'`).
         *   `client.ts`: Contains the core fetch wrapper.
         *   `types.ts` (or `dtos.ts`): Central location for API DTOs if not co-located.
-*   **[ ] Goal:** Implement the core `apiClient` fetch wrapper (`apps/frontend/src/lib/api/client.ts`).
+*   **[ ] Goal:** Implement the core `apiClient` fetch wrapper (`apps/frontend/lib/api/client.ts`).
     *   **Action:** AI will create a function that:
         *   Prepends `API_BASE_URL`.
         *   Sets default headers (`Content-Type: application/json`).
@@ -38,7 +38,7 @@
         *   Accepts `RequestInit` options.
         *   Handles 204 No Content responses appropriately.
     ```typescript
-    // Example structure for apps/frontend/src/lib/api/client.ts
+    // Example structure for apps/frontend/lib/api/client.ts
     import { API_BASE_URL } from './config';
 
     export interface ApiErrorData {
@@ -96,7 +96,7 @@
     *   **Server-Side (Route Handlers, Server Components):**
         *   **Action:** AI will use `getAccessToken` from `@auth0/nextjs-auth0` and pass the token in the `Authorization` header when calling `apiClient` directly (targeting the actual backend API, not the BFF proxy).
     *   **Client-Side (Client Components - BFF Approach):**
-        *   **Action:** AI will create Next.js Route Handlers under `apps/frontend/src/app/api/proxy/[...path]/route.ts`.
+        *   **Action:** AI will create Next.js Route Handlers under `apps/frontend/app/api/proxy/[...path]/route.ts`.
         *   **Action:** These BFF handlers will:
             *   Receive requests from client components.
             *   Use `getAccessToken` server-side to get the Auth0 token.
@@ -104,10 +104,10 @@
             *   Return the backend's response to the client component.
         *   **Action:** Client components will call these BFF proxy endpoints using `apiClient(endpoint, options, true)`. The `Authorization` header for these calls to the BFF itself will be handled by Auth0's session cookie.
 *   **[ ] Goal:** Define initial API service methods (grouped by resource).
-    *   **Action:** AI will create files like `apps/frontend/src/lib/api/services/user.ts`, `integrations.ts`, etc.
+    *   **Action:** AI will create files like `apps/frontend/lib/api/services/user.ts`, `integrations.ts`, etc.
     *   Example `user.ts`:
         ```typescript
-        // apps/frontend/src/lib/api/services/user.ts
+        // apps/frontend/lib/api/services/user.ts
         import { apiClient } from '../client';
         import { User } from '../types'; // Or feature-specific types
 
@@ -123,7 +123,7 @@
         };
         ```
 *   **[ ] Goal:** Define initial DTOs.
-    *   **Action:** AI will create/update `apps/frontend/src/lib/api/types.ts` or co-locate types (e.g., `User`, `ConnectedAccount`, `CalendarEvent`).
+    *   **Action:** AI will create/update `apps/frontend/lib/api/types.ts` or co-locate types (e.g., `User`, `ConnectedAccount`, `CalendarEvent`).
 
 ## 4. Phase 2: Integration & Enhancements
 

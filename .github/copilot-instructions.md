@@ -49,3 +49,10 @@ UniCal is a unified calendar portal aggregating Google/Outlook calendars. Monore
 - Prioritize security, accessibility, performance
 - Follow established patterns and conventions
 - Use yarn workspaces for dependencies
+
+## Workspace CLI
+- Use `yarn workspace @unical/{frontend,backend} <command>` for workspace commands
+- Use `yarn workspace @unical/core <command>` for shared core commands
+- Use `yarn workspace @unical/{module} <command>` for module-specific commands (e.g. Add dependencies, run scripts)
+- Use `yarn <command>` for root-level commands
+- Use `yarn dev` for local development

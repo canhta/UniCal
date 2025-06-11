@@ -15,7 +15,7 @@
 
 ## 2. Components
 
-### A. Navbar (`apps/frontend/src/components/layout/Navbar.tsx`)
+### A. Navbar (`apps/frontend/components/layout/Navbar.tsx`)
 
 *   **[ ] Goal:** Implement Navbar with branding, navigation, and user profile section.
     *   **Action (Branding):** AI will display the UniCal logo/name, linking to `/`.
@@ -32,14 +32,14 @@
         *   AI will ensure all interactive elements are accessible (ARIA attributes, keyboard navigation, focus management).
         *   AI will use Next.js `<Link>` for client-side navigation.
 
-### B. Footer (`apps/frontend/src/components/layout/Footer.tsx`)
+### B. Footer (`apps/frontend/components/layout/Footer.tsx`)
 
 *   **[ ] Goal:** Implement a simple and clean Footer.
     *   **Action:** AI will display copyright information (e.g., "© {new Date().getFullYear()} UniCal. All rights reserved.").
     *   **Action (Optional Links):** AI will include placeholder links for "Privacy Policy" (`/privacy-policy`) and "Terms of Service" (`/terms-of-service`).
     *   **Action (Styling & Responsiveness):** AI will use Tailwind CSS and ensure it adapts to screen sizes.
 
-### C. Root Layout (`apps/frontend/src/app/layout.tsx`)
+### C. Root Layout (`apps/frontend/app/layout.tsx`)
 
 *   **[ ] Goal:** Integrate Navbar and Footer into the root application layout.
     *   **Action:** AI will ensure `UserProvider` (from `@auth0/nextjs-auth0/client`) and `ReactQueryProvider` (from `STATE_MANAGEMENT_PLAN.md`) wrap the main content.
@@ -47,7 +47,7 @@
     *   **Action:** AI will wrap `{children}` in a `<main>` HTML element.
     *   **Action:** AI will confirm `globals.css` and `next/font` configurations are correctly applied.
     ```tsx
-    // Example structure for apps/frontend/src/app/layout.tsx
+    // Example structure for apps/frontend/app/layout.tsx
     // ... other imports
     import { UserProvider } from '@auth0/nextjs-auth0/client';
     import ReactQueryProvider from '@/components/providers/ReactQueryProvider'; // Path based on actual location
@@ -77,14 +77,14 @@
     }
     ```
 
-### D. Protected Route Layout (`apps/frontend/src/app/(protected)/layout.tsx`)
+### D. Protected Route Layout (`apps/frontend/app/(protected)/layout.tsx`)
 
 *   **[ ] Goal:** Create a layout for routes within the `(protected)` group, primarily for shared UI or structure.
-    *   **Action:** AI will create `apps/frontend/src/app/(protected)/layout.tsx`.
+    *   **Action:** AI will create `apps/frontend/app/(protected)/layout.tsx`.
     *   **Action:** This layout will, at a minimum, provide consistent padding/margin for the content area of protected pages.
     *   **Constraint:** Authentication enforcement is primarily handled by `middleware.ts` using `@auth0/nextjs-auth0/edge`'s `withMiddlewareAuthRequired`.
     ```tsx
-    // Example: apps/frontend/src/app/(protected)/layout.tsx
+    // Example: apps/frontend/app/(protected)/layout.tsx
     export default function ProtectedLayout({
       children,
     }: {
@@ -102,10 +102,10 @@
 
 ## 3. Directory Structure
 
-*   `apps/frontend/src/components/layout/Navbar.tsx`
-*   `apps/frontend/src/components/layout/Footer.tsx`
-*   `apps/frontend/src/app/layout.tsx` (Root)
-*   `apps/frontend/src/app/(protected)/layout.tsx` (Protected section layout)
+*   `apps/frontend/components/layout/Navbar.tsx`
+*   `apps/frontend/components/layout/Footer.tsx`
+*   `apps/frontend/app/layout.tsx` (Root)
+*   `apps/frontend/app/(protected)/layout.tsx` (Protected section layout)
 
 ## Notes:
 *   The `flex-grow` class on the `<main>` element in `RootLayout` is important if using a flexbox column layout for the body to ensure the footer stays at the bottom.

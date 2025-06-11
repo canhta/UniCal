@@ -1,4 +1,4 @@
-<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/components/ui/UI_COMPONENTS_PLAN.md -->
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/components/ui/UI_COMPONENTS_PLAN.md -->
 # UI Components Plan (Frontend)
 
 **Overall Goal:** Develop a comprehensive, reusable, accessible, and consistently styled set of UI components using Tailwind CSS and Headless UI to build the UniCal frontend.
@@ -18,7 +18,7 @@
 
 ## 2. Component Development Plan
 
-**Directory:** `apps/frontend/src/components/ui/`
+**Directory:** `apps/frontend/components/ui/`
 
 **General AI Actions for Each Component:**
 *   Create the component file (e.g., `Button.tsx`).

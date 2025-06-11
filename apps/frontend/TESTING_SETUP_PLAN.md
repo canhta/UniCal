@@ -49,7 +49,7 @@ This plan outlines the setup for testing the UniCal frontend, covering unit, int
       // transformIgnorePatterns: [
       //   '/node_modules/(?!@event-calendar)/.+',
       // ],
-      moduleDirectories: ['node_modules', '<rootDir>/'], // <rootDir>/ allows absolute imports from src/
+      moduleDirectories: ['node_modules', '<rootDir>/'], // <rootDir>/ allows absolute imports from /
     };
 
     module.exports = createJestConfig(customJestConfig);
@@ -119,9 +119,9 @@ This plan outlines the setup for testing the UniCal frontend, covering unit, int
 ### 4. Writing Initial Tests
 *   **Convention:** `*.test.ts(x)`. Co-locate or use `__tests__`.
 *   [ ] **Unit Tests (Utilities, Hooks):** Test pure functions and custom hooks in isolation.
-    *   Example: `src/lib/utils/formatDate.test.ts` for `formatDate.ts`.
+    *   Example: `/lib/utils/formatDate.test.ts` for `formatDate.ts`.
 *   [ ] **Component Tests (RTL):** Test behavior from user's perspective. Use accessible queries. Simulate interactions with `@testing-library/user-event`.
-    *   Example: `src/components/ui/Button.test.tsx` for `Button.tsx`.
+    *   Example: `/components/ui/Button.test.tsx` for `Button.tsx`.
     *   **Calendar Components (`@event-calendar/core` based):**
         *   Mock library parts if direct interaction is complex.
         *   Test prop passing and event handling in wrapper components.
@@ -146,7 +146,7 @@ This plan outlines the setup for testing the UniCal frontend, covering unit, int
           // getAccessToken: jest.fn().mockResolvedValue('mocked-access-token'),
         }));
         ```
-    *   **API Client Mock (Example for `src/lib/api/apiClient.ts`):**
+    *   **API Client Mock (Example for `/lib/api/apiClient.ts`):**
         ```typescript
         // jest.mock('@/lib/api/apiClient', () => ({
         //   fetchEvents: jest.fn().mockResolvedValue([]),
@@ -172,6 +172,6 @@ This plan outlines the setup for testing the UniCal frontend, covering unit, int
 
 ## Test Directory Structure
 *   **Co-location (Recommended):** `MyComponent.test.tsx` alongside `MyComponent.tsx`.
-*   **Mocks (If using MSW or extensive global mocks):** `src/mocks/` (e.g., `src/mocks/handlers.ts`, `src/mocks/server.ts`).
+*   **Mocks (If using MSW or extensive global mocks):** `/mocks/` (e.g., `/mocks/handlers.ts`, `/mocks/server.ts`).
 
 This plan provides a foundation. Start with unit/component tests for core UI and utilities, then expand.

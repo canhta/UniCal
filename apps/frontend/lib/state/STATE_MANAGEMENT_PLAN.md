@@ -19,9 +19,9 @@
     *   **Reasoning:** Robust for caching, refetching, optimistic updates, and devtools.
     *   **AI Actions:**
         *   **[ ] Task:** Install `@tanstack/react-query` and `@tanstack/react-query-devtools`.
-        *   **[ ] Task:** Create `apps/frontend/src/components/providers/ReactQueryProvider.tsx`.
+        *   **[ ] Task:** Create `apps/frontend/components/providers/ReactQueryProvider.tsx`.
             ```typescript
-            // apps/frontend/src/components/providers/ReactQueryProvider.tsx
+            // apps/frontend/components/providers/ReactQueryProvider.tsx
             'use client';
             import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
             import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -47,9 +47,9 @@
               );
             }
             ```
-        *   **[ ] Task:** Integrate `ReactQueryProvider` into `apps/frontend/src/app/layout.tsx`.
+        *   **[ ] Task:** Integrate `ReactQueryProvider` into `apps/frontend/app/layout.tsx`.
             ```tsx
-            // apps/frontend/src/app/layout.tsx
+            // apps/frontend/app/layout.tsx
             // ... other imports
             import ReactQueryProvider from '@/components/providers/ReactQueryProvider';
 
@@ -78,10 +78,10 @@
     *   **Reasoning:** Simple, small, performant, good for Next.js & TypeScript.
     *   **AI Actions:**
         *   **[ ] Task:** Install `zustand`.
-        *   **[ ] Task:** Create `apps/frontend/src/lib/state/stores/` directory.
-        *   **[ ] Task:** Implement `apps/frontend/src/lib/state/stores/uiStore.ts` for common UI states (e.g., mobile menu, active modal).
+        *   **[ ] Task:** Create `apps/frontend/lib/state/stores/` directory.
+        *   **[ ] Task:** Implement `apps/frontend/lib/state/stores/uiStore.ts` for common UI states (e.g., mobile menu, active modal).
             ```typescript
-            // apps/frontend/src/lib/state/stores/uiStore.ts
+            // apps/frontend/lib/state/stores/uiStore.ts
             import { create } from 'zustand';
             import { devtools } from 'zustand/middleware';
 
@@ -111,7 +111,7 @@
               )
             );
             ```
-        *   **[ ] Task (Phase 2 of Notifications):** Implement `apps/frontend/src/lib/state/stores/notificationStore.ts` if a global notification queue is needed (as per `NOTIFICATIONS_FEATURE_PLAN.md`).
+        *   **[ ] Task (Phase 2 of Notifications):** Implement `apps/frontend/lib/state/stores/notificationStore.ts` if a global notification queue is needed (as per `NOTIFICATIONS_FEATURE_PLAN.md`).
 
 ### C. Local Component State
 *   **[ ] Solution:** React `useState`, `useReducer`.

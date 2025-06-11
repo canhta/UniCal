@@ -1,4 +1,4 @@
-<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/src/lib/auth/AUTH_FEATURE_PLAN.md -->
+<!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/frontend/lib/auth/AUTH_FEATURE_PLAN.md -->
 # Auth Feature Plan (Frontend - Aligns with Frontend AGENT_PLAN Phase 2)
 
 This plan details frontend authentication using `@auth0/nextjs-auth0`, aligning with `AGENT_PLAN.md` and backend capabilities.
@@ -37,7 +37,7 @@ This plan details frontend authentication using `@auth0/nextjs-auth0`, aligning 
         };
         ```
     *   **Fallback/Granular Check (Client/Server Components):** Use `useUser` or `getSession` with conditional rendering/redirect if not fully covered by middleware.
-8.  [ ] **API Client Integration (`src/lib/api/API_CLIENT_PLAN.md`):
+8.  [ ] **API Client Integration (`/lib/api/API_CLIENT_PLAN.md`):
     *   Ensure API client automatically attaches the Auth0 Access Token (obtained via `getAccessToken` from `@auth0/nextjs-auth0`) to requests to the UniCal backend.
     *   Backend expects this Auth0 token for its `/auth/provider-login` (or similar) endpoint to validate and issue UniCal's internal session tokens.
 9.  [ ] **Error Handling:** Display messages for login errors (e.g., Auth0 callback errors, `useUser` error state).

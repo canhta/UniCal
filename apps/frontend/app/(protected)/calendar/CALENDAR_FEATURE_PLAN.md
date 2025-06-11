@@ -19,11 +19,11 @@ This plan details the UI and interaction for the main Unified Calendar View and 
 ## Core Page: `/calendar` (Protected Route)
 
 This page will likely be a mix of Server and Client Components. The main calendar display and event fetching will benefit from client-side interactivity and libraries.
-`apps/frontend/src/app/(protected)/calendar/page.tsx`
+`apps/frontend/app/(protected)/calendar/page.tsx`
 
 ## UI Elements & Functionality
 
-### 1. Main Calendar View (`apps/frontend/src/components/calendar/UniCalendar.tsx`)
+### 1. Main Calendar View (`apps/frontend/components/calendar/UniCalendar.tsx`)
 *   **Tech:** `@event-calendar/core` with plugins (`@event-calendar/daygrid`, `@event-calendar/timegrid`, `@event-calendar/list`, `@event-calendar/interaction`).
 *   **FR3.3.1 Standard Calendar Views:**
     *   **[ ] View Selector:** Buttons/Dropdown (`components/ui/Dropdown.tsx` or `Button.tsx` group) for Day, Week, Month views.
@@ -46,14 +46,14 @@ This page will likely be a mix of Server and Client Components. The main calenda
     *   **[ ] Date Click/Select:** Clicking on a date/time slot in the calendar should open the Create Event Modal, pre-filling the start/end times.
     *   **[ ] Event Drag & Drop/Resize (Post-MVP or if simple with library):** If the library supports it easily, allow dragging to change event time or resizing to change duration. This would trigger the Update Event flow.
 
-### 2. Calendar Sidebar/Controls (`apps/frontend/src/components/calendar/CalendarControls.tsx`)
+### 2. Calendar Sidebar/Controls (`apps/frontend/components/calendar/CalendarControls.tsx`)
 *   **FR3.3.3 Calendar Visibility Toggle:**
     *   **[ ] Data Fetching:** Fetch the list of user's selected native calendars from connected accounts (e.g., from a global state populated after integrations setup, or a dedicated API call `GET /api/user/settings/calendars-visibility`).
     *   **[ ] UI:** Display a list of these native calendars (e.g., "Google: Personal", "Outlook: Work") with checkboxes (`components/ui/Checkbox.tsx`).
     *   **[ ] Action:** Toggling a checkbox updates a local state that filters the events displayed on the main calendar. This preference should also be saved to the backend (e.g., `PUT /api/user/settings/calendars-visibility`).
 *   **[ ] "Create Event" Button:** A prominent button to open the Create Event Modal.
 
-### 3. Event Details Modal (`apps/frontend/src/components/calendar/EventDetailsModal.tsx`)
+### 3. Event Details Modal (`apps/frontend/components/calendar/EventDetailsModal.tsx`)
 *   **Triggered by clicking an event on the calendar.**
 *   **FR3.3.4 Event Details Display:**
     *   **[ ] Fields:** Display Title, Start Time, End Time, All-day status, Description (plain text), Location (plain text), Source Platform (e.g., "From your Google Calendar").
@@ -66,7 +66,7 @@ This page will likely be a mix of Server and Client Components. The main calenda
     *   **[ ] "Delete Event" Button:** Triggers the Delete Event flow.
     *   **[ ] Close Button.**
 
-### 4. Create Event Modal (`apps/frontend/src/components/calendar/CreateEventModal.tsx`)
+### 4. Create Event Modal (`apps/frontend/components/calendar/CreateEventModal.tsx`)
 *   **Triggered by "Create Event" button or clicking a date/time slot.**
 *   **FR3.4.1 Create Event:**
     *   **[ ] Form Fields (`components/ui/Input.tsx`, `components/ui/Toggle.tsx`, `components/ui/Dropdown.tsx`):
@@ -86,7 +86,7 @@ This page will likely be a mix of Server and Client Components. The main calenda
     *   This dropdown will be populated by calling a backend endpoint (e.g., `GET /calendars/targetable` from the `calendars` module) which lists all native calendars the user has connected and has write permissions for.
     *   The selected `nativeCalendarId` will be sent with the `POST /events` request.
 
-### 5. Edit Event Modal (`apps/frontend/src/components/calendar/EditEventModal.tsx`)
+### 5. Edit Event Modal (`apps/frontend/components/calendar/EditEventModal.tsx`)
 *   **Similar to Create Event Modal, but pre-filled with existing event data.**
 *   **FR3.4.3 Update Event:**
     *   **[ ] Form Fields:** Same as Create Event, pre-filled.

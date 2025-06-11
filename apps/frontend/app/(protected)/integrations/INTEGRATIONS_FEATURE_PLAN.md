@@ -11,7 +11,7 @@ This plan details the UI and interaction for managing calendar integrations (Goo
 
 ## Core Page: `/integrations` (Protected Route)
 
-This page will be a Server Component by default (`apps/frontend/src/app/(protected)/integrations/page.tsx`) to allow server-side data fetching for existing connections.
+This page will be a Server Component by default (`apps/frontend/app/(protected)/integrations/page.tsx`) to allow server-side data fetching for existing connections.
 
 ## UI Elements & Functionality
 
@@ -25,7 +25,7 @@ This page will be a Server Component by default (`apps/frontend/src/app/(protect
             *   **FR3.9.3 Sync Status:** Display a basic status indicator (e.g., "Connected", "Syncing", "Needs Re-authentication", "Error"). This status would come from the backend API response for each account.
             *   "Disconnect" button for each account.
             *   "Manage Calendars" or "Select Calendars to Sync" button/link for each account.
-    *   **Component:** `apps/frontend/src/components/integrations/ConnectedAccountCard.tsx` (Client Component if it has interactive elements like a disconnect button that triggers client-side actions before API call, or if status updates dynamically without full page reload).
+    *   **Component:** `apps/frontend/components/integrations/ConnectedAccountCard.tsx` (Client Component if it has interactive elements like a disconnect button that triggers client-side actions before API call, or if status updates dynamically without full page reload).
 
 2.  **[ ] Connect New Account Section:**
     *   **UI:**
@@ -82,10 +82,10 @@ This page will be a Server Component by default (`apps/frontend/src/app/(protect
 
 ## Components to Create/Use:
 
-*   `apps/frontend/src/app/(protected)/integrations/page.tsx` (Main Server Component)
-*   `apps/frontend/src/components/integrations/ConnectAccountButtons.tsx` (Client Component for the connect buttons, or directly in `page.tsx` if simple links)
-*   `apps/frontend/src/components/integrations/ConnectedAccountCard.tsx` (Client Component for displaying account info and disconnect action)
-*   `apps/frontend/src/components/integrations/SelectCalendarsModal.tsx` or `apps/frontend/src/app/(protected)/integrations/[accountId]/calendars/page.tsx` (for FR3.5.4)
+*   `apps/frontend/app/(protected)/integrations/page.tsx` (Main Server Component)
+*   `apps/frontend/components/integrations/ConnectAccountButtons.tsx` (Client Component for the connect buttons, or directly in `page.tsx` if simple links)
+*   `apps/frontend/components/integrations/ConnectedAccountCard.tsx` (Client Component for displaying account info and disconnect action)
+*   `apps/frontend/components/integrations/SelectCalendarsModal.tsx` or `apps/frontend/app/(protected)/integrations/[accountId]/calendars/page.tsx` (for FR3.5.4)
 *   `components/ui/Button.tsx`
 *   `components/ui/Modal.tsx` (for confirmations, selecting calendars)
 *   `components/ui/Checkbox.tsx`
