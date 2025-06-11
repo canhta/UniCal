@@ -13,6 +13,8 @@
     *   **Action:** AI will use Tailwind CSS for all component styling, following project conventions.
 *   **[ ] Goal:** Define clear, typed props APIs.
     *   **Action:** AI will use TypeScript to define props for each component.
+*   **[ ] Goal:** Prioritize existing libraries over custom implementations.
+    *   **Action:** AI will first check for suitable `@headlessui/react` components before building from scratch. When needed, evaluate and integrate well-maintained libraries (e.g., `react-day-picker`, `@floating-ui/react`) rather than reinventing solutions.
 *   **[ ] Goal (Post-Initial Setup):** Integrate Storybook for development and documentation.
     *   **Action:** AI will set up Storybook and write stories for components once a foundational set is built.
 
@@ -21,13 +23,15 @@
 **Directory:** `apps/frontend/components/ui/`
 
 **General AI Actions for Each Component:**
+*   **Library-First Approach:** Prioritize `@headlessui/react` components for interactive elements (Dialog, Menu, Switch, etc.) to ensure accessibility and reduce maintenance burden.
+*   **Evaluate Third-Party Libraries:** For complex components (DatePicker, RichText, Charts), research and integrate established libraries rather than building custom solutions.
+*   **Wrapper Pattern:** Create wrapper components around third-party libraries to maintain consistent API and styling across the project.
 *   Create the component file (e.g., `Button.tsx`).
 *   Implement functionality and variants as specified.
-*   Apply Tailwind CSS for styling.
+*   Apply Tailwind CSS for styling with consistent design tokens.
 *   Ensure accessibility (ARIA roles, keyboard navigation, focus management).
 *   Define TypeScript props.
-*   Consider `cva` (Class Variance Authority) for managing variant styles if complexity grows.
-*   Consider `tailwind-merge` and `clsx` for robust class name composition.
+*   Use `tailwind-merge` and `clsx` for robust class name composition.
 
 ### Phase 1: Foundational UI Elements
 
@@ -48,21 +52,26 @@
 
 *   **[ ] Component: `Modal.tsx`** (using Headless UI `Dialog`)
     *   **Needs:** Accessible dialog, overlay, ESC/click-outside dismiss, configurable size, header/body/footer sections.
+    *   **Libraries:** `@headlessui/react` Dialog component.
 *   **[ ] Component: `DropdownMenu.tsx`** (using Headless UI `Menu`)
     *   **Needs:** Trigger, accessible menu, items, separators, optional icons.
+    *   **Libraries:** `@headlessui/react` Menu component.
 *   **[ ] Component: `ToggleSwitch.tsx`** (using Headless UI `Switch`)
     *   **Needs:** Accessible switch, label association.
+    *   **Libraries:** `@headlessui/react` Switch component.
 *   **[ ] Component: `Checkbox.tsx`**
     *   **Needs:** Accessible checkbox, optional label, indeterminate state.
 *   **[ ] Component: `Avatar.tsx`**
     *   **Needs:** Image display with fallback to initials, sizes, optional status indicator.
 *   **[ ] Component: `Select.tsx`** (Custom styled select using Headless UI `Listbox` or `Combobox`)
     *   **Needs:** Accessible custom select, searchable option for `Combobox`.
+    *   **Libraries:** `@headlessui/react` Listbox/Combobox components.
 
 ### Phase 3: More Specialized & Utility Components
 
-*   **[ ] Component: `Tooltip.tsx`** (Potentially using Headless UI `Popover` or Floating UI if more control needed)
+*   **[ ] Component: `Tooltip.tsx`**
     *   **Needs:** Contextual info on hover/focus, accessible.
+    *   **Libraries:** `@floating-ui/react` for positioning or `@headlessui/react` Popover.
 *   **[ ] Component: `DatePicker.tsx`**
     *   **Needs:** Date selection (single/range), keyboard navigation, localization.
     *   **AI Action:** AI will evaluate and integrate a library like `react-day-picker` (recommended for its customizability with Tailwind and Headless UI compatibility for popovers) or `react-datepicker`.
@@ -70,18 +79,15 @@
     *   **Needs:** Label association, helper/error text, disabled/readonly states, auto-resize option.
 *   **[ ] Component: `Tabs.tsx`** (using Headless UI `Tab`)
     *   **Needs:** Accessible tab interface.
+    *   **Libraries:** `@headlessui/react` Tab component.
 *   **[ ] Component: `Breadcrumbs.tsx`**
     *   **Needs:** Navigational aid, list of links.
 *   **[ ] Component: `Pagination.tsx`**
     *   **Needs:** For paginated lists.
 *   **[ ] Component: `RadioGroup.tsx`** (using Headless UI `RadioGroup`)
     *   **Needs:** Accessible radio button group, label association.
+    *   **Libraries:** `@headlessui/react` RadioGroup component.
 
-## 3. Storybook Integration (Post-Initial Component Set)
-
-*   **[ ] Goal:** Visually test and document components in isolation.
-    *   **AI Action:** AI will run `npx storybook@latest init`.
-    *   **AI Action:** AI will create `*.stories.tsx` files for each UI component, demonstrating variants and states.
 
 ## Notes:
 *   The AI agent will create these components iteratively, starting with Phase 1.
