@@ -8,7 +8,7 @@ interface AuthErrorDisplayProps {
 }
 
 export function AuthErrorDisplay({ className = '' }: AuthErrorDisplayProps) {
-  const { user, error, isLoading } = useUser();
+  const { error, isLoading } = useUser();
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {

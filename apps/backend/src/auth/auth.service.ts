@@ -18,6 +18,13 @@ interface Auth0User {
   email_verified: boolean;
 }
 
+interface JwtPayload {
+  sub: string;
+  email: string;
+  iat?: number;
+  exp?: number;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -34,7 +41,7 @@ export class AuthService {
     }
 
     // Hash password
-    await bcrypt.hash(registerDto.password, 10);
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
     // Create user (for local auth, we'll generate a dummy auth0Id)
     const user = await this.userService.findOrCreateUserFromProvider({
@@ -44,7 +51,12 @@ export class AuthService {
       emailVerified: false,
     });
 
-    return this.generateTokens(user);
+    // Update with hashed password for local users
+    const updatedUser = await this.userService.updateUser(user.id, {
+      password: hashedPassword,
+    });
+
+    return this.generateTokens(updatedUser);
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
@@ -95,7 +107,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
+      const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 

@@ -36,7 +36,7 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
     });
   }
 
-  async validate(payload: Auth0Payload): Promise<Auth0Payload> {
+  validate(payload: Auth0Payload): Auth0Payload {
     // Additional validation can be added here
     // For now, we just return the validated payload
     return payload;

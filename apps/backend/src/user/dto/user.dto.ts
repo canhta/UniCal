@@ -31,6 +31,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   timeZone?: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
 }
 
 export class UserResponseDto {
