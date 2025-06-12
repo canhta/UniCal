@@ -59,3 +59,17 @@ export interface SuccessResponse {
   message: string;
   timestamp: string;
 }
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    email?: string;
+    [key: string]: any;
+  };
+}
+
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  [key: string]: any;
+}

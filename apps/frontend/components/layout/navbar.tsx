@@ -4,9 +4,12 @@ import Link from "next/link"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
+import { useSession, signIn, signOut } from 'next-auth/react'
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { data: session, status } = useSession()
+  const isAuthenticated = status === 'authenticated'
 
   const publicNavItems = [
     { href: "/", label: "Home" },
@@ -43,14 +46,25 @@ export default function Navbar() {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/auth/login">Login</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/dashboard">Get Started</Link>
-              </Button>
-            </div>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  Welcome, {session.user?.name || session.user?.email}!
+                </span>
+                <Button variant="outline" size="sm" onClick={() => signOut()}>
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" onClick={() => signIn()}>
+                  Login
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/dashboard">Get Started</Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -85,12 +99,25 @@ export default function Navbar() {
               ))}
               
               <div className="border-t border-gray-200 pt-4 flex flex-col space-y-2">
-                <Button variant="outline" size="sm" className="mx-2" asChild>
-                  <Link href="/auth/login">Login</Link>
-                </Button>
-                <Button size="sm" className="mx-2" asChild>
-                  <Link href="/dashboard">Get Started</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600">
+                      Welcome, {session.user?.name || session.user?.email}!
+                    </span>
+                    <Button variant="outline" size="sm" onClick={() => signOut()}>
+                      Logout
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => signIn()}>
+                      Login
+                    </Button>
+                    <Button size="sm" className="mx-2" asChild>
+                      <Link href="/dashboard">Get Started</Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

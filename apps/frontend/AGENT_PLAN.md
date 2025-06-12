@@ -24,10 +24,20 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 *   [x] **Basic Pages:** Create landing page, dashboard, calendar, integrations, and settings pages.
 
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
-**Goal:** Implement user authentication and create basic page structure with protected routes.
+**Goal:** Implement user authentication using next-auth v5 with username/password, Google, and Microsoft providers. Create basic page structure with protected routes.
 
-*   [x] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):
-    *   **FR3.1.0 Simplified Email-Only Login (UI Focus):** UI for email login. *If backend supports non-Auth0 simple JWT, implement; otherwise, Auth0 handles this via its email/passwordless options or by users selecting Google/Microsoft.* Update `AUTH_FEATURE_PLAN.md`.
+*   [ ] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):**
+    *   Use [next-auth v5](https://authjs.dev/getting-started/installation) for authentication.
+    *   Support username/password, Google, and Microsoft providers ([Google setup](https://authjs.dev/getting-started/providers/google)).
+    *   Follow [migration guide](https://authjs.dev/getting-started/migrating-to-v5) if upgrading from previous versions.
+    *   Add environment variables for provider credentials and next-auth secret.
+    *   Create `/auth.ts` config file exporting next-auth handlers and provider configs.
+    *   Create API route at `/api/auth/[...nextauth]/route.ts` to handle auth requests.
+    *   Wrap app in `SessionProvider` from `next-auth/react` ([see guide](https://nextjs.org/learn/dashboard-app/adding-authentication)).
+    *   Update login/logout UI to use next-auth's `signIn`/`signOut` functions.
+    *   Use `useSession` hook in client components and `auth()` in server components to access session/user info.
+    *   Protect routes using session checks in both server and client components.
+    *   Update `AUTH_FEATURE_PLAN.md` with detailed steps and code snippets.
 *   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
 *   [ ] **Initial Page Structure (`app/`):
     *   `app/page.tsx` (Public landing).

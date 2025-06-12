@@ -10,6 +10,7 @@
     *   **Action:** AI will select and configure libraries (TanStack Query, Zustand) that are lightweight, integrate well with Next.js App Router & TypeScript, and offer good devtools.
 *   **[ ] Goal:** Maintain clear separation between server cache and client UI state.
     *   **Action:** AI will use TanStack Query exclusively for server-cached data and Zustand for global client-side UI state.
+*   **[ ] Goal:** Integrate authentication state using next-auth v5's SessionProvider and hooks for user/session state. Reference: [NextAuth.js Installation](https://authjs.dev/getting-started/installation)
 
 ## 2. State Categories & Chosen Solutions
 

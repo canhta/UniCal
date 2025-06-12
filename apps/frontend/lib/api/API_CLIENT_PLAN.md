@@ -12,7 +12,7 @@
 *   **[ ] Goal:** Implement consistent error handling.
     *   **Action:** AI will create a custom `ApiError` class and ensure the client throws this for non-successful responses.
 *   **[ ] Goal:** Handle authenticated requests securely.
-    *   **Action:** AI will implement a Backend-for-Frontend (BFF) approach for client-side authenticated requests.
+    *   **Action:** AI will use session tokens from next-auth v5 for authenticated API requests. Reference: [NextAuth.js Installation](https://authjs.dev/getting-started/installation)
 *   **[ ] Goal:** Make the client extensible for new endpoints.
     *   **Action:** AI will structure the client to allow easy addition of new API methods, likely grouped by resource/feature.
 

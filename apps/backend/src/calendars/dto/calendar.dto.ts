@@ -4,7 +4,7 @@ import {
   BaseResponseDto,
   BaseCreateDto,
   BaseUpdateDto,
-} from '../../common/dto';
+} from '@unical/core';
 import {
   UUIDField,
   StringField,

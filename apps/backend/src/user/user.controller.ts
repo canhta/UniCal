@@ -15,7 +15,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { UpdateUserDto, UserResponseDto } from './dto/user.dto';
+import {
+  UpdateUserDto,
+  UserResponseDto,
+  ChangePasswordDto,
+} from '@unical/core';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@unical/core';
 
@@ -63,5 +67,19 @@ export class UserController {
       updateUserDto,
     );
     return this.userService.toResponseDto(updatedUser);
+  }
+
+  @Put('me/password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change current user password' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiBearerAuth()
+  async changePassword(
+    @Request() req: AuthenticatedRequest,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.userService.changePassword(req.user.id, changePasswordDto);
+    return { message: 'Password changed successfully' };
   }
 }

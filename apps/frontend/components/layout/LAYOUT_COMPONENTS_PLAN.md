@@ -42,10 +42,12 @@
 ### C. Root Layout (`apps/frontend/app/layout.tsx`)
 
 *   **[ ] Goal:** Integrate Navbar and Footer into the root application layout.
-    *   **Action:** AI will ensure `UserProvider` (from `@auth0/nextjs-auth0` v4) and `ReactQueryProvider` (from `STATE_MANAGEMENT_PLAN.md`) wrap the main content.
+    *   **Action:** AI will ensure `SessionProvider` (from `next-auth/react`) and `ReactQueryProvider` (from `STATE_MANAGEMENT_PLAN.md`) wrap the main content.
     *   **Action:** AI will render `<Navbar />` before and `<Footer />` after the `{children}` within the `<body>`.
     *   **Action:** AI will wrap `{children}` in a `<main>` HTML element.
     *   **Action:** AI will confirm `globals.css` and `next/font` configurations are correctly applied.
+    *   **Action:** Navbar and Footer should use next-auth hooks (`useSession`, `signIn`, `signOut`) to display user info and login/logout actions.
+    *   **Reference:** [NextAuth.js Installation](https://authjs.dev/getting-started/installation), [Next.js Auth Guide](https://nextjs.org/learn/dashboard-app/adding-authentication)
     ```tsx
     // Example structure for apps/frontend/app/layout.tsx
     // ... other imports

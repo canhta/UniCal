@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   return (
@@ -16,11 +17,19 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            <Link href="/auth/login" className="w-full">
-              <Button className="w-full">
-                Sign in with Email
-              </Button>
-            </Link>
+            <Button className="w-full" onClick={() => signIn('credentials')}>
+              Sign in with Email
+            </Button>
+            <Button className="w-full" onClick={() => signIn('google')}>
+              Sign in with Google
+            </Button>
+            {/* <Button className="w-full" onClick={() => signIn('microsoft')}>
+              Sign in with Microsoft
+            </Button> */}
+          </div>
+          <div className="text-center mt-4">
+            <span>Don&apos;t have an account? </span>
+            <Link href="/auth/register" className="text-blue-600 hover:underline">Register</Link>
           </div>
         </CardContent>
       </Card>

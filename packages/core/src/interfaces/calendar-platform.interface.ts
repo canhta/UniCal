@@ -119,6 +119,10 @@ export interface ICalendarPlatformService {
   // Calendar management
   getCalendars(accessToken: string): Promise<PlatformCalendarDto[]>;
 
+  // OAuth helpers
+  getAuthorizationUrl(redirectUri: string): string;
+  exchangeCodeForTokens(code: string, redirectUri: string): Promise<PlatformTokenResponseDto>;
+
   // Event management
   getEvents(
     accessToken: string,

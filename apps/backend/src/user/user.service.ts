@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UserResponseDto,
+  ChangePasswordDto,
+} from '@unical/core';
 import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -27,14 +33,14 @@ export class UserService {
       return user;
     }
 
-    // Create new user (add required externalId field with a generated value)
+    // Create new user
     return this.prisma.user.create({
       data: {
         email: userData.email,
         displayName: userData.name,
         avatarUrl: userData.avatarUrl,
         emailVerified: userData.emailVerified || false,
-        externalId: `local_${Date.now()}_${Math.random()}`,
+        // password will be set separately if needed
       },
     });
   }
@@ -72,6 +78,19 @@ export class UserService {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user || !user.password) {
+      throw new Error('User not found or password not set');
+    }
+    const isMatch = await bcrypt.compare(dto.oldPassword, user.password);
+    if (!isMatch) {
+      throw new Error('Old password is incorrect');
+    }
+    const hashed = await bcrypt.hash(dto.newPassword, 10);
+    await this.updateUser(userId, { password: hashed });
   }
 
   // Convert User entity to response DTO

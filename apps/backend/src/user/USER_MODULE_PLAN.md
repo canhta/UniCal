@@ -1,7 +1,7 @@
 <!-- filepath: /Users/canh/Projects/Personals/UniCal/apps/backend/src/user/USER_MODULE_PLAN.md -->
 # User Module Plan
 
-**Overall Goal:** Manage UniCal-specific user profile data. 
+**Overall Goal:** Manage UniCal-specific user profile data and account security.
 
 **Alignment:** This plan aligns with Backend AGENT_PLAN Phase 2.1 (Simplified User Login & Basic Setup) and Phase 2.4 (Full Email/Password - for password field if UniCal manages it).
 
@@ -62,18 +62,18 @@
 *Goal: Expose user management endpoints via API.*
 
 *   [ ] Create `UserController` (`@Controller('users')`, `@ApiTags('Users')`). Inject `UserService`.
-*   [ ] **`GET /me` (`getCurrentUserProfile`):**
+*   [ ] **`GET /user/me` (`getCurrentUserProfile`):**
     *   `@UseGuards(AuthGuard)` (UniCal JWT Guard for session management).
     *   Extract `email` from `req.user` (or `req.auth.payload`).
     *   Call `userService.getUserProfile(email)`. Return `UserResponseDto`.
     *   Swagger: `@ApiOperation`, `@ApiResponse(200, type: UserResponseDto)`, `@ApiResponse(404)`.
-*   [ ] **`PUT /me` (`updateCurrentUserProfile`):**
+*   [ ] **`PUT /user/me` (`updateCurrentUserProfile`):**
     *   `@UseGuards(AuthGuard)`.
     *   Extract `email`.
     *   Validate body with `UpdateUserProfileDto` (`ValidationPipe`).
     *   Call `userService.updateUserProfile(email, dto)`. Return `UserResponseDto`.
     *   Swagger: `@ApiOperation`, `@ApiResponse(200, type: UserResponseDto)`, `@ApiResponse(404)`.
-*   [ ] **`POST /me/change-password` (`changeCurrentUserPassword`) (if UniCal manages passwords):**
+*   [ ] **`PUT /user/me/password` (`changeCurrentUserPassword`) (if UniCal manages passwords):**
     *   `@UseGuards(AuthGuard)`.
     *   Extract `email`.
     *   Validate body with `ChangePasswordDto`.
@@ -84,7 +84,7 @@
 *Goal: Ensure reliability and correctness of the module.*
 
 *   [ ] **Unit Tests (`UserService`):** Mock `PrismaService`. Test all service methods, including find/create paths and error handling.
-*   [ ] **Integration Tests (`UserController`):** Mock auth. Test `GET /me`, `PUT /me`, and `POST /me/change-password` (if applicable), including validation.
+*   [ ] **Integration Tests (`UserController`):** Mock auth. Test `GET /user/me`, `PUT /user/me`, and `PUT /user/me/password` (if applicable), including validation.
 
 ## 7. Dependencies
 *   `PrismaModule`
@@ -98,3 +98,15 @@
 *   **Data Deletion:** Cascade deletes via Prisma schema for related data.
 *   **Admin Endpoints:** User management by admins (list users, change roles) is out of scope for this initial plan but can be added later.
 *   **Password Field:** The `password` field in `User` model and related logic (`ChangePasswordDto`, `updatePassword` service/controller methods, `findByEmail`) are **conditional** on UniCal implementing its own email/password auth stream as per AGENT_PLAN Phase 2.4, rather than solely relying on external providers for this.
+
+## 8. Endpoints
+- [ ] `POST /auth/forgot-password` — Request password reset (send email with token)
+- [ ] `POST /auth/reset-password` — Reset password using token
+
+## 9. Tasks
+- [ ] Implement controller/service methods for above endpoints
+- [ ] Enforce JWT/session validation for protected routes
+- [ ] Add DTOs for profile update, password change, forgot/reset password
+- [ ] Add email sending logic for password reset
+- [ ] Add tests for all new endpoints
+- [ ] Document endpoints in Swagger

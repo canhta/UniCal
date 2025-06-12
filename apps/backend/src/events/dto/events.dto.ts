@@ -1,6 +1,9 @@
 import { IsString, IsOptional, IsBoolean, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseResponseDto, PaginatedDateRangeQueryDto } from '../../common/dto';
+import {
+  BaseResponseDto,
+  PaginatedDateRangeQueryDto,
+} from '@unical/core';
 import {
   UUIDField,
   StringField,

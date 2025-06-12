@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always work under the corresponding *_PLAN.md file, and update the plan when a task is completed or if the plan changes

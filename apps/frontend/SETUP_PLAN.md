@@ -41,29 +41,28 @@ This document outlines the initial steps for the UniCal frontend application.
 
 ## Phase 3: Authentication
 
-*   [ ] **Configure Auth0 Application:**
-    *   Set up a "Regular Web Application" in Auth0 dashboard.
-    *   Note Domain, Client ID, Client Secret.
-    *   Configure Allowed Callback URLs (e.g., `http://localhost:3001/auth/callback`).
-    *   Configure Allowed Logout URLs (e.g., `http://localhost:3000`).
-*   [ ] **Set Environment Variables for Auth0 (in `.env.local`):**
-    *   `AUTH0_SECRET`: Generate with `openssl rand -hex 32`.
-    *   `AUTH0_BASE_URL`: `http://localhost:3000`.
-    *   `AUTH0_ISSUER_BASE_URL`: Your Auth0 domain.
-    *   `AUTH0_CLIENT_ID`: Your Auth0 app Client ID.
-    *   `AUTH0_CLIENT_SECRET`: Your Auth0 app Client Secret.
-*   [ ] **Create Dynamic API Route for Auth0:**
-    *   Create `app/api/auth/[auth0]/route.ts` with `handleAuth()` from `@auth0/nextjs-auth0` v4.
-*   [ ] **Wrap Root Layout with `UserProvider`:**
-    *   Modify `app/layout.tsx` to include `<UserProvider>` from `@auth0/nextjs-auth0` v4.
-*   [ ] **Implement Login/Logout UI:**
-    *   Create components/links for `/api/auth/login` and `/api/auth/logout`.
-*   [ ] **Access User Information:**
-    *   Client-side: `useUser` hook from `@auth0/nextjs-auth0` v4.
-    *   Server-side: `getSession` from `@auth0/nextjs-auth0` v4.
-*   [ ] **Protecting Routes:**
-    *   Server Components: Use `getSession`.
-    *   Client Components: Use `useUser`.
+*   [ ] **Install next-auth v5:**
+    *   `npm install next-auth@beta`
+*   [ ] **Configure Providers:**
+    *   Username/password (CredentialsProvider)
+    *   Google ([docs](https://authjs.dev/getting-started/providers/google))
+    *   Microsoft ([docs](https://authjs.dev/getting-started/providers/microsoft))
+*   [ ] **Set Environment Variables:**
+    *   `NEXTAUTH_SECRET`: Generate with `openssl rand -hex 32`.
+    *   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+    *   `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`
+*   [ ] **Create Auth Config:**
+    *   Create `/auth.ts` in the root or `src` directory with provider configs and export next-auth handlers.
+*   [ ] **Create API Route:**
+    *   Create `app/api/auth/[...nextauth]/route.ts` and export handlers from `/auth.ts`.
+*   [ ] **Wrap App in SessionProvider:**
+    *   Use `SessionProvider` from `next-auth/react` in `app/layout.tsx`.
+*   [ ] **Update Login/Logout UI:**
+    *   Use `signIn`/`signOut` from `next-auth/react`.
+*   [ ] **Access User Info:**
+    *   Use `useSession` in client components, `auth()` in server components.
+*   [ ] **Protect Routes:**
+    *   Check session in server/client components to restrict access.
 
 ## Phase 4: Calendar Integration (@event-calendar/core)
 
