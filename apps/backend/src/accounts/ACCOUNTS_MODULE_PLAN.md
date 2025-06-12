@@ -1,7 +1,7 @@
 \
-# Accounts Module Plan (Backend)
+# Accounts Module Plan
 
-**Overall Goal:** Manage connections to third-party provider accounts (e.g., Google Calendar, Outlook Calendar) for users. This includes storing OAuth tokens securely and associated metadata. This module is critical for calendar synchronization.
+**Overall Goal:** Manage connections to third-party provider accounts (e.g., Google Calendar, Outlook Calendar) for users. This includes storing tokens securely and associated metadata. This module is critical for calendar synchronization.
 
 **Alignment:** This plan primarily aligns with Backend AGENT_PLAN Phase 3 (Core Features - Calendar Sync & Integrations).
 
@@ -14,8 +14,8 @@
     *   `user` (User, `@relation(fields: [userId], references: [id], onDelete: Cascade)`)
     *   `provider` (String, e.g., "GOOGLE", "OUTLOOK_CALENDAR", "APPLE_CALENDAR") - Consider an Enum if providers are fixed.
     *   `providerAccountId` (String) - User's ID on the third-party provider.
-    *   `accessToken` (String, `@db.Text`) - Encrypted OAuth access token.
-    *   `refreshToken` (String?, `@db.Text`) - Encrypted OAuth refresh token (if applicable).
+    *   `accessToken` (String, `@db.Text`) - Encrypted access token.
+    *   `refreshToken` (String?, `@db.Text`) - Encrypted refresh token (if applicable).
     *   `expiresAt` (DateTime?) - Expiry timestamp for the access token.
     *   `scopes` (String[]) - List of scopes granted by the user.
     *   `accountEmail` (String?) - Email associated with the connected account (useful for display).
@@ -103,7 +103,7 @@
     *   Return 204 No Content.
     *   Swagger: `@ApiOperation`, `@ApiResponse(204)`, `@ApiResponse(404)`.
 
-**Note:** The actual connection flow (OAuth dance) will likely be initiated and handled by a dedicated `SyncSetupService` or similar, which would then call `AccountsService.createConnectedAccount` upon successful authorization.
+**Note:** The actual connection flow will likely be initiated and handled by a dedicated `SyncSetupService` or similar, which would then call `AccountsService.createConnectedAccount` upon successful authorization.
 
 ## 6. Testing
 *Goal: Ensure reliability and correctness of the module.*
@@ -127,7 +127,7 @@
 *   `@nestjs/swagger`
 
 ## 8. Security & Data Handling
-*   **Token Encryption:** All stored OAuth tokens (`accessToken`, `refreshToken`) **MUST** be encrypted at rest using strong encryption (e.g., AES-256-GCM). The `EncryptionService` will be responsible for this.
+*   **Token Encryption:** All stored tokens (`accessToken`, `refreshToken`) **MUST** be encrypted at rest using strong encryption (e.g., AES-256-GCM). The `EncryptionService` will be responsible for this.
 *   **Token Exposure:** Decrypted tokens should **NEVER** be exposed via API responses. The `getDecryptedAccessToken` method is for internal server-side use only by trusted services and must be carefully controlled.
 *   **Input Validation:** Rigorously validate all inputs.
 *   **Error Handling:** Implement proper error handling and return appropriate HTTP status codes.
@@ -135,6 +135,4 @@
 
 ## Notes & Considerations:
 *   **Encryption Service:** A robust `EncryptionService` is a prerequisite. This service should handle symmetric encryption/decryption of tokens.
-*   **OAuth Flow Management:** This module focuses on *storing and managing* connected account data. The actual OAuth 2.0/OpenID Connect flows (redirects, token exchange with providers) will be handled by a different module/service (e.g., part of the `SyncModule` or a dedicated `OAuthHandlerService`), which will then use `AccountsService` to persist the connection details.
-*   **Token Refresh:** The `SyncService` will likely be responsible for orchestrating token refresh logic, using `AccountsService.getDecryptedAccessToken` (for the refresh token, if stored and encrypted) and `AccountsService.updateTokens`.
 *   **Provider-Specific Logic:** Keep provider-specific details (e.g., unique API endpoints for token revocation) outside this core module if possible, perhaps in strategies within the `SyncModule`.

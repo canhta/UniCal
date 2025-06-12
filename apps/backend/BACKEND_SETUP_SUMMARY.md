@@ -72,11 +72,10 @@ src/
 ## 🔄 Next Steps
 
 1. Define complete Prisma schemas for User, ConnectedAccount, Calendar, Event models
-2. Implement authentication modules (Auth0 integration)
-3. Create user management endpoints
-4. Set up calendar integration modules (Google Calendar, Outlook)
-5. Implement event CRUD operations
-6. Set up background job queues for calendar sync
+2. Create user management endpoints
+3. Set up calendar integration modules (Google Calendar, Outlook)
+4. Implement event CRUD operations
+5. Set up background job queues for calendar sync
 
 ## 🧪 Testing
 

@@ -6,7 +6,6 @@ This document outlines the plan for the User Settings feature in the frontend. T
 ## 2. Key Features
 -   **Profile Management (Ref: FRD User Profile Management):**
     -   Update display name, avatar.
-        -   *Note: These fields are initially populated from Auth0. After the first sync, UniCal's database becomes the source of truth for `name` and `avatarUrl`. Changes made here are saved to UniCal and are **not** synced back to Auth0 for MVP.*
     -   View email (read-only, linked to auth provider - Auth0).
 -   **Account Management (Ref: FRD Account Security & Management):**
     -   Change password (if using password-based auth - FRD 3.1.5).

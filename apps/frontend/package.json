@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth0/nextjs-auth0": "^4.6.1",
     "@event-calendar/core": "^4.4.0",
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",

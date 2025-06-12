@@ -1,5 +1,3 @@
-import { getAccessToken } from '@auth0/nextjs-auth0';
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface ApiError {
@@ -53,38 +51,6 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  // Exchange Auth0 token for UniCal backend tokens
-  private async exchangeAuth0Token(): Promise<UniCalTokens | null> {
-    try {
-      if (typeof window === 'undefined') return null;
-      
-      // getAccessToken returns a promise that resolves to the access token string
-      const accessToken = await getAccessToken();
-      
-      if (!accessToken) return null;
-
-      const response = await fetch(`${this.baseUrl}/auth/provider-login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      });
-
-      if (response.ok) {
-        const tokens = await response.json();
-        this.uniCalTokens = {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-        };
-        return this.uniCalTokens;
-      }
-    } catch (error) {
-      console.warn('Failed to exchange Auth0 token:', error);
-    }
-    return null;
-  }
-
   // Refresh UniCal tokens
   private async refreshUniCalTokens(): Promise<UniCalTokens | null> {
     try {
@@ -120,11 +86,6 @@ class ApiClient {
     };
 
     if (includeAuth && typeof window !== 'undefined') {
-      // Try to get UniCal tokens, exchange Auth0 token if needed
-      if (!this.uniCalTokens) {
-        await this.exchangeAuth0Token();
-      }
-
       if (this.uniCalTokens?.accessToken) {
         headers['Authorization'] = `Bearer ${this.uniCalTokens.accessToken}`;
       }
@@ -174,13 +135,6 @@ class ApiClient {
   }
 
   // Auth endpoints
-  async providerLogin(providerToken: string) {
-    return this.request('/auth/provider-login', {
-      method: 'POST',
-      body: JSON.stringify({ providerToken }),
-    });
-  }
-
   async refreshToken(refreshToken: string) {
     return this.request('/auth/refresh', {
       method: 'POST',

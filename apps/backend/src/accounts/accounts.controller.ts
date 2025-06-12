@@ -2,9 +2,7 @@ import {
   Controller,
   Get,
   Delete,
-  Post,
   Param,
-  Query,
   UseGuards,
   Request,
   HttpCode,
@@ -15,7 +13,6 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { AccountsService } from './accounts.service';
 import { ConnectedAccountResponseDto } from './dto/accounts.dto';
@@ -74,51 +71,5 @@ export class AccountsController {
     @Param('accountId') accountId: string,
   ): Promise<void> {
     await this.accountsService.deleteConnectedAccount(req.user.id, accountId);
-  }
-
-  @Post('connect/:provider/authorize')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Start OAuth flow to connect a calendar account' })
-  @ApiResponse({
-    status: 200,
-    description: 'OAuth authorization URL generated',
-    schema: {
-      type: 'object',
-      properties: {
-        authorizationUrl: { type: 'string' },
-        state: { type: 'string' },
-      },
-    },
-  })
-  @ApiBearerAuth()
-  async initiateConnection(
-    @Request() req: AuthenticatedRequest,
-    @Param('provider') provider: string,
-  ): Promise<{ authorizationUrl: string; state: string }> {
-    return this.accountsService.initiateOAuthFlow(req.user.id, provider);
-  }
-
-  @Get('connect/:provider/callback')
-  @ApiOperation({ summary: 'Handle OAuth callback from external provider' })
-  @ApiQuery({ name: 'code', description: 'Authorization code from provider' })
-  @ApiQuery({
-    name: 'state',
-    description: 'State parameter for CSRF protection',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Account connected successfully',
-    type: ConnectedAccountResponseDto,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid authorization code or state',
-  })
-  async handleOAuthCallback(
-    @Param('provider') provider: string,
-    @Query('code') code: string,
-    @Query('state') state: string,
-  ): Promise<ConnectedAccountResponseDto> {
-    return this.accountsService.handleOAuthCallback(provider, code, state);
   }
 }

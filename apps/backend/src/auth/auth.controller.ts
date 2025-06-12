@@ -7,7 +7,6 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
@@ -15,15 +14,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import {
-  LoginDto,
-  RegisterDto,
-  AuthResponseDto,
-  RefreshTokenDto,
-  Auth0LoginDto,
-} from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Auth0Request } from '@unical/core';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -36,10 +27,9 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User registered successfully',
-    type: AuthResponseDto,
   })
   @ApiResponse({ status: 409, description: 'User already exists' })
-  async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
+  async register(@Body() registerDto: any): Promise<any> {
     return this.authService.register(registerDto);
   }
 
@@ -49,10 +39,9 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Login successful',
-    type: AuthResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(@Body() loginDto: any): Promise<any> {
     return this.authService.login(loginDto);
   }
 
@@ -62,54 +51,10 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Token refreshed successfully',
-    type: AuthResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refresh(
-    @Body() refreshTokenDto: RefreshTokenDto,
-  ): Promise<AuthResponseDto> {
+  async refresh(@Body() refreshTokenDto: any): Promise<any> {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
-  }
-
-  @Post('auth0/callback')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Auth0 callback for SSO login' })
-  @ApiResponse({
-    status: 200,
-    description: 'Auth0 login successful',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Invalid Auth0 token' })
-  async auth0Callback(
-    @Body() _auth0LoginDto: Auth0LoginDto,
-  ): Promise<AuthResponseDto> {
-    // Extract user info from Auth0 token (simplified version)
-    // In production, you would verify this token with Auth0
-    const auth0User = {
-      sub: 'auth0|placeholder', // This would come from token verification
-      email: 'user@example.com',
-      name: 'User Name',
-      picture: undefined,
-      email_verified: true,
-    };
-
-    return this.authService.loginWithAuth0Provider(auth0User);
-  }
-
-  @Post('provider-login')
-  @UseGuards(AuthGuard('auth0'))
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with Auth0 provider token' })
-  @ApiResponse({
-    status: 200,
-    description: 'Provider login successful',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Invalid provider token' })
-  @ApiBearerAuth()
-  async providerLogin(@Request() req: Auth0Request): Promise<AuthResponseDto> {
-    // The Auth0Strategy will have validated the token and populated req.user
-    return this.authService.loginWithAuth0Provider(req.user);
   }
 
   @Post('logout')

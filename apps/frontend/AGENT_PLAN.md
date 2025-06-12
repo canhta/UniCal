@@ -16,7 +16,7 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 **Goal:** Establish a runnable Next.js project with basic layout, UI component structure, and environment setup.
 
 *   [x] **Project Setup Verification:** Confirm Next.js 15 (App Router), TypeScript, Tailwind CSS, ESLint, Prettier (per `SETUP_PLAN.md`).
-*   [x] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_API_BASE_URL`, Auth0 placeholders (fill in Phase 2).
+*   [x] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_API_BASE_URL`.
 *   [x] **Basic Layout & Global Styles (`app/layout.tsx`, `app/globals.css`):** Implement main layout (Tailwind), global styles, custom fonts (per `SETUP_PLAN.md`).
 *   [x] **UI Component Library Structure (`/components/ui/UI_COMPONENTS_PLAN.md`):** Plan common UI components. Implement basic Button, Input (Tailwind, @headlessui/react).
 *   [x] **Core Directory Structure:** Establish `/components/`, `/lib/`, `/app/`, `/styles/`, `/contexts/`.
@@ -24,10 +24,9 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 *   [x] **Basic Pages:** Create landing page, dashboard, calendar, integrations, and settings pages.
 
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
-**Goal:** Implement user authentication (primarily Auth0 SSO) and create basic page structure with protected routes.
+**Goal:** Implement user authentication and create basic page structure with protected routes.
 
 *   [x] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):
-    *   **FR3.1.3 SSO (Google & Microsoft):** Integrate `@auth0/nextjs-auth0` v4 (env vars, API route, UserProvider). Implement UI for "Sign in with Google/Microsoft" buttons. Handle Auth0 callback. Implement logout.
     *   **FR3.1.0 Simplified Email-Only Login (UI Focus):** UI for email login. *If backend supports non-Auth0 simple JWT, implement; otherwise, Auth0 handles this via its email/passwordless options or by users selecting Google/Microsoft.* Update `AUTH_FEATURE_PLAN.md`.
 *   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
 *   [ ] **Initial Page Structure (`app/`):

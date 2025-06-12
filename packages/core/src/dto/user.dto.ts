@@ -5,7 +5,6 @@ import { BaseResponseDto } from './base.dto';
  */
 
 export interface CreateUserDto {
-  auth0Id: string;
   email: string;
   name?: string;
   avatarUrl?: string;
@@ -20,7 +19,6 @@ export interface UpdateUserDto {
 }
 
 export interface UserResponseDto extends BaseResponseDto {
-  auth0Id: string;
   email: string;
   name?: string | null;
   avatarUrl?: string | null;

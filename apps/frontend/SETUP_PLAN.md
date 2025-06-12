@@ -1,9 +1,6 @@
 # Frontend Setup Plan
 
-This document outlines the initial*   [ ] **Setup Auth0 middleware:**
-    *   Create `middleware.ts` with `auth0.middleware()` - routes auto-mounted.
-*   [ ] **Implement Login/Logout UI:**
-    *   Create components/links for `/auth/login` and `/auth/logout`. steps for the UniCal frontend application.
+This document outlines the initial steps for the UniCal frontend application.
 
 ## Core Technologies & Libraries
 
@@ -11,7 +8,6 @@ This document outlines the initial*   [ ] **Setup Auth0 middleware:**
 *   **Styling:** Tailwind CSS
 *   **UI Components:** @headlessui/react
 *   **Calendar:** @event-calendar/core
-*   **Authentication:** @auth0/nextjs-auth0 v4
 *   **Data Fetching & Server State Management:** TanStack Query (React Query)
 *   **Language:** TypeScript
 *   **Package Manager:** npm
@@ -22,7 +18,7 @@ This document outlines the initial*   [ ] **Setup Auth0 middleware:**
     *   Verify standard Next.js App Router project structure (`app`, `public`, `next.config.ts`, etc.).
 *   [ ] **Environment Variables:**
     *   Create `.env.local` for local development.
-    *   Define initial variables: `NEXT_PUBLIC_API_BASE_URL`, `AUTH0_SECRET`, `AUTH0_BASE_URL`, `AUTH0_ISSUER_BASE_URL`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`.
+    *   Define initial variables: `NEXT_PUBLIC_API_BASE_URL`.
 *   [ ] **Next.js Configuration (`next.config.ts`):**
     *   Review and update as needed (e.g., image optimization domains).
 *   [ ] **TypeScript Configuration (`tsconfig.json`):**
@@ -43,10 +39,8 @@ This document outlines the initial*   [ ] **Setup Auth0 middleware:**
 *   [ ] **Font Setup:**
     *   Integrate custom fonts using `next/font`.
 
-## Phase 3: Authentication (@auth0/nextjs-auth0 v4)
+## Phase 3: Authentication
 
-*   [ ] **Install Auth0 SDK:**
-    *   `npm install @auth0/nextjs-auth0` (v4 - latest stable version).
 *   [ ] **Configure Auth0 Application:**
     *   Set up a "Regular Web Application" in Auth0 dashboard.
     *   Note Domain, Client ID, Client Secret.

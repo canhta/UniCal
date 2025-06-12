@@ -15,7 +15,6 @@ model User {
   timeZone          String?
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
-  auth0Id           String                @unique
   emailVerified     Boolean               @default(false)
   password          String?
   calendars         Calendar[]

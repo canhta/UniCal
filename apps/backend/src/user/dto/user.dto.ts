@@ -1,9 +1,6 @@
 import { IsEmail, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CreateUserDto {
-  @IsString()
-  auth0Id: string;
-
   @IsEmail()
   email: string;
 
@@ -39,7 +36,6 @@ export class UpdateUserDto {
 
 export class UserResponseDto {
   id: string;
-  auth0Id: string;
   email: string;
   name?: string | null;
   avatarUrl?: string | null;

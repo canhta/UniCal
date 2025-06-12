@@ -129,26 +129,6 @@ This plan outlines the setup for testing the UniCal frontend, covering unit, int
 
 ### 5. Mocking
 *   [ ] **Modules (API Client, Auth0 hooks):** Use `jest.mock('module-path')`.
-    *   **Auth0 v4 `useUser` Mock:**
-        ```typescript
-        // In test file or jest.setup.js for global mock
-        jest.mock('@auth0/nextjs-auth0', () => ({
-          useUser: jest.fn().mockReturnValue({
-            user: { name: 'Test User', email: 'test@example.com', sub: 'auth0|123', picture: 'http://example.com/avatar.png' },
-            isLoading: false,
-            error: null,
-            // Add other functions returned by useUser if used:
-            // checkSession: jest.fn(),
-          }),
-          // Mock UserProvider if needed, though usually not directly interacted with in tests
-          // UserProvider: ({ children }) => <>{children}</>,
-          // Mock getAccessToken if your API client calls it directly in components (better to have api client handle this)
-          // getAccessToken: jest.fn().mockResolvedValue('mocked-access-token'),
-          // v4 specific mocks
-          withPageAuthRequired: jest.fn((Component) => Component),
-          withApiAuthRequired: jest.fn((handler) => handler),
-        }));
-        ```
     *   **API Client Mock (Example for `/lib/api/apiClient.ts`):**
         ```typescript
         // jest.mock('@/lib/api/apiClient', () => ({

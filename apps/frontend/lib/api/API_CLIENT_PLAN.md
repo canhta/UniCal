@@ -12,7 +12,7 @@
 *   **[ ] Goal:** Implement consistent error handling.
     *   **Action:** AI will create a custom `ApiError` class and ensure the client throws this for non-successful responses.
 *   **[ ] Goal:** Handle authenticated requests securely.
-    *   **Action:** AI will integrate `@auth0/nextjs-auth0` v4 for token retrieval and implement a Backend-for-Frontend (BFF) approach for client-side authenticated requests.
+    *   **Action:** AI will implement a Backend-for-Frontend (BFF) approach for client-side authenticated requests.
 *   **[ ] Goal:** Make the client extensible for new endpoints.
     *   **Action:** AI will structure the client to allow easy addition of new API methods, likely grouped by resource/feature.
 
@@ -20,7 +20,6 @@
 
 *   **[ ] Fetching:** Native `fetch` API.
 *   **[ ] Client-Side Data Management:** TanStack Query (React Query) for caching, mutations, revalidation in Client Components (details in `STATE_MANAGEMENT_PLAN.md`). Server Components will use direct `fetch`.
-*   **[ ] Auth Token Retrieval:** `@auth0/nextjs-auth0` v4.
 
 ## 3. Phase 1: Setup & Core Functionality
 
@@ -94,12 +93,11 @@
     ```
 *   **[ ] Goal:** Implement authenticated request handling.
     *   **Server-Side (Route Handlers, Server Components):**
-        *   **Action:** AI will use `getAccessToken` from `@auth0/nextjs-auth0` v4 and pass the token in the `Authorization` header when calling `apiClient` directly (targeting the actual backend API, not the BFF proxy).
+        *   **Action:** AI will pass the token in the `Authorization` header when calling `apiClient` directly (targeting the actual backend API, not the BFF proxy).
     *   **Client-Side (Client Components - BFF Approach):**
         *   **Action:** AI will create Next.js Route Handlers under `apps/frontend/app/api/proxy/[...path]/route.ts`.
         *   **Action:** These BFF handlers will:
             *   Receive requests from client components.
-            *   Use `getAccessToken` server-side to get the Auth0 token.
             *   Forward the request to the actual backend API (e.g., `process.env.INTERNAL_API_BASE_URL`) using the `apiClient` or a direct `fetch`, including the Auth0 token.
             *   Return the backend's response to the client component.
         *   **Action:** Client components will call these BFF proxy endpoints using `apiClient(endpoint, options, true)`. The `Authorization` header for these calls to the BFF itself will be handled by Auth0's session cookie.
@@ -136,4 +134,4 @@
 
 ## Notes:
 *   The `API_BASE_URL` in `config.ts` should point to the BFF proxy base path (e.g., `/api/proxy`) for client-side calls that go through the BFF. Server-side calls or direct backend calls will use a different base URL (e.g., from `process.env.INTERNAL_API_BASE_URL`).
-*   The BFF proxy (`/api/proxy/[...path]/route.ts`) is crucial for security, preventing Auth0 access tokens from being exposed directly in the browser.
+*   The BFF proxy (`/api/proxy/[...path]/route.ts`) is crucial for security, preventing access tokens from being exposed directly in the browser.

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar, Footer } from "@/components/layout";
-import { AuthErrorDisplay, AuthErrorBoundary } from '@/components/auth';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,16 +28,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthErrorBoundary>
-          <div className="min-h-screen flex flex-col">
-            <AuthErrorDisplay className="mx-4 mt-4" />
-            <Navbar />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </AuthErrorBoundary>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </body>
     </html>
   );

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
 import { User } from '@prisma/client';
@@ -12,9 +8,9 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async findOrCreateUserFromProvider(userData: CreateUserDto): Promise<User> {
-    // First try to find user by auth0Id
+    // First try to find user by email
     let user = await this.prisma.user.findUnique({
-      where: { auth0Id: userData.auth0Id },
+      where: { email: userData.email },
     });
 
     if (user) {
@@ -31,25 +27,14 @@ export class UserService {
       return user;
     }
 
-    // Check if email already exists with different auth0Id
-    const existingUserByEmail = await this.prisma.user.findUnique({
-      where: { email: userData.email },
-    });
-
-    if (existingUserByEmail) {
-      throw new ConflictException(
-        'User with this email already exists with different auth provider',
-      );
-    }
-
-    // Create new user
+    // Create new user (add required externalId field with a generated value)
     return this.prisma.user.create({
       data: {
-        auth0Id: userData.auth0Id,
         email: userData.email,
         displayName: userData.name,
         avatarUrl: userData.avatarUrl,
         emailVerified: userData.emailVerified || false,
+        externalId: `local_${Date.now()}_${Math.random()}`,
       },
     });
   }
@@ -57,12 +42,6 @@ export class UserService {
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
-    });
-  }
-
-  async findByAuth0Id(auth0Id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { auth0Id },
     });
   }
 
@@ -99,7 +78,6 @@ export class UserService {
   toResponseDto(user: User): UserResponseDto {
     return {
       id: user.id,
-      auth0Id: user.auth0Id,
       email: user.email,
       name: user.displayName,
       avatarUrl: user.avatarUrl,

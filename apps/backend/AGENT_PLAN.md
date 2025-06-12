@@ -9,8 +9,6 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 *   **TODO-Driven:** Use `[MODULE_NAME]_PLAN.md` for detailed task checklists. Populate these from this master plan.
 *   **Iterative Refinement:** Address system challenges progressively.
 
-**Note on FRD Deviation:** Initial simplified login, then SSO, differs from FRD order for faster core feature access.
-
 ## Phase 1: Setup & Core Infrastructure
 
 **Goal:** Establish a runnable NestJS project with database, basic configuration, core module structure, and essential services.
@@ -22,7 +20,7 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
     *   Run migration: `prisma migrate dev --name initial_schema`.
     *   Create `PrismaService`.
 *   [x] **Configuration (`@nestjs/config`):**
-    *   Setup `.env`: `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`. (Platform client IDs/secrets, Auth0 domain/keys added in relevant milestones).
+    *   Setup `.env`: `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`.
     *   Implement `ConfigService`.
 *   [x] **Module Structure:**
     *   Create skeleton module/controller/service files for `AuthModule`, `UserModule`, `CalendarPlatformModule`, `ConnectedAccountModule`, `EventModule`, `SyncModule`.
@@ -37,23 +35,22 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 
 ---
 **Sub-Phase 2.1: Simplified User Login & Basic Setup**
-*Goal: Enable basic user interaction with the system post-authentication, focusing on Auth0/SSO as the primary mechanism.*
+*Goal: Enable basic user interaction with the system post-authentication, focusing on standard username/password mechanism.*
 
-*   [x] **`UserModule` (Simplified - `USER_MODULE_PLAN.md`):** Implement user profile management (`GET /me`, `PUT /me`). User creation/linking primarily handled by Auth0/SSO flow.
-*   [x] **`AuthModule` (SSO Focused - `AUTH_MODULE_PLAN.md`):** Implement Auth0 (or other OIDC/OAuth2 provider) integration. Handle callbacks, JWT validation (Auth0 JWKS). Minimal local strategy only if essential for pre-Auth0 testing, marked for deprecation.
+*   [x] **`UserModule` (Simplified - `USER_MODULE_PLAN.md`):** Implement user profile management (`GET /me`, `PUT /me`). User creation/linking primarily handled by standard registration flow.
+*   [x] **`AuthModule` (Username/Password Focused - `AUTH_MODULE_PLAN.md`):** Implement standard username/password authentication. Include JWT validation and refresh logic.
 
 ---
-**Sub-Phase 2.2: Single Sign-On (SSO) & Account Connection**
-*Goal: Robust Auth0 (or Google/Microsoft direct) SSO for user login, and ability to connect external calendar accounts.*
+**Sub-Phase 2.2: Account Connection**
+*Goal: Ability to connect external calendar accounts for event synchronization.*
 
-*   [x] **`AuthModule` (SSO Login - `AUTH_MODULE_PLAN.md`):** Solidify Auth0/OIDC integration. Handle SSO Callbacks, user provisioning/linking from provider data. Update `User` model fields (`emailVerified`, `firstName`, `lastName`, `picture`) from provider.
-*   [ ] **`AccountsModule` (Account Connection - `ACCOUNTS_MODULE_PLAN.md`):**
-    *   Implement OAuth 2.0 flow for connecting external calendar accounts (e.g., `/accounts/connect/google`, `/accounts/connect/google/callback`).
-    *   Utilize `CalendarPlatformModule` for OAuth client logic.
+*   [x] **`AccountsModule` (Account Connection - `ACCOUNTS_MODULE_PLAN.md`):**
+    *   Implement logic for connecting external calendar accounts (e.g., `/accounts/connect/google`, `/accounts/connect/google/callback`).
+    *   Utilize `CalendarPlatformModule` for client logic.
     *   Securely store external provider tokens in `ConnectedAccount` using `EncryptionService`.
-*   [ ] **`CalendarPlatformModule` (OAuth Client Logic - `CALENDAR_PLATFORM_MODULE_PLAN.md`):** Provide services to `AccountsModule` for OAuth token exchange and refresh.
-*   [ ] **`EncryptionService` (`apps/backend/src/common/encryption/encryption.service.ts`):** Implement encryption/decryption for external provider tokens.
-*   [ ] **Configuration:** Add `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, Google/Microsoft OAuth client IDs/secrets (for account connection), and redirect URIs to `.env` and `ConfigService`.
+*   [x] **`CalendarPlatformModule` (Client Logic - `CALENDAR_PLATFORM_MODULE_PLAN.md`):** Provide services to `AccountsModule` for token exchange and refresh.
+*   [x] **`EncryptionService` (`apps/backend/src/common/encryption/encryption.service.ts`):** Implement encryption/decryption for external provider tokens.
+*   [x] **Configuration:** Add Google/Microsoft OAuth client IDs/secrets (for account connection), and redirect URIs to `.env` and `ConfigService`.
 
 ---
 **Sub-Phase 2.3: Core Scheduling Functionalities**
@@ -65,8 +62,8 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 *   [ ] **`SyncModule` (`SYNC_MODULE_PLAN.md`):** Implement two-way sync, webhook ingestion, conflict resolution (FRD 3.5.3 "last update wins"). Implement initial sync.
 
 ---
-**Sub-Phase 2.4: Full Email/Password Authentication & Password Management (If Required Post-SSO, as per FRD)**
-*Goal: Implement standard email/password authentication and management features if deemed necessary after primary SSO implementation.*
+**Sub-Phase 2.4: Password Management (If Required)**
+*Goal: Implement password management features if deemed necessary after primary feature implementation.*
 
 *   [ ] **`UserModule` (Full - `USER_MODULE_PLAN.md`):** Add `password` (hashed) to `User` model. Implement password update logic.
 *   [ ] **`AuthModule` (Full - `AUTH_MODULE_PLAN.md`):** Implement registration (FRD 3.1.1), login (FRD 3.1.2), password reset (FRD 3.1.4), change password (FRD 3.1.5) for email/password users.

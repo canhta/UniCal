@@ -104,49 +104,6 @@ else
     print_warning "Backend .env.example not found"
 fi
 
-# Frontend .env.local file (Next.js standard)
-if [ -f "apps/frontend/.env.example" ]; then
-    if [ ! -f "apps/frontend/.env.local" ]; then
-        cp "apps/frontend/.env.example" "apps/frontend/.env.local"
-        
-        # Generate secure random AUTH0_SECRET
-        print_step "Generating secure AUTH0_SECRET..."
-        AUTH0_SECRET=$(openssl rand -hex 32)
-        
-        # Update the .env.local file with generated AUTH0_SECRET
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            # macOS
-            sed -i '' "s/AUTH0_SECRET=use_a_long_random_value_for_production_here_at_least_32_characters/AUTH0_SECRET=${AUTH0_SECRET}/" "apps/frontend/.env.local"
-        else
-            # Linux
-            sed -i "s/AUTH0_SECRET=use_a_long_random_value_for_production_here_at_least_32_characters/AUTH0_SECRET=${AUTH0_SECRET}/" "apps/frontend/.env.local"
-        fi
-        
-        print_success "Frontend .env.local file created with generated AUTH0_SECRET"
-    else
-        print_warning "Frontend .env.local file already exists, skipping copy"
-        
-        # Check if AUTH0_SECRET needs to be generated
-        if grep -q "AUTH0_SECRET=use_a_long_random_value_for_production_here_at_least_32_characters" "apps/frontend/.env.local"; then
-            print_warning "Default AUTH0_SECRET detected in existing .env.local file"
-            read -p "Would you like to generate a secure AUTH0_SECRET? (y/N): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                print_step "Generating secure AUTH0_SECRET..."
-                AUTH0_SECRET=$(openssl rand -hex 32)
-                if [[ "$OSTYPE" == "darwin"* ]]; then
-                    sed -i '' "s/AUTH0_SECRET=use_a_long_random_value_for_production_here_at_least_32_characters/AUTH0_SECRET=${AUTH0_SECRET}/" "apps/frontend/.env.local"
-                else
-                    sed -i "s/AUTH0_SECRET=use_a_long_random_value_for_production_here_at_least_32_characters/AUTH0_SECRET=${AUTH0_SECRET}/" "apps/frontend/.env.local"
-                fi
-                print_success "Generated secure AUTH0_SECRET"
-            fi
-        fi
-    fi
-else
-    print_warning "Frontend .env.example not found"
-fi
-
 # Step 2: Clean up existing Docker containers and volumes
 print_step "Cleaning up existing Docker containers and volumes..."
 
@@ -262,7 +219,6 @@ print_success "Setup completed successfully! 🎉"
 echo ""
 echo -e "${BLUE}📋 Environment Setup Summary:${NC}"
 echo "• Backend .env: apps/backend/.env"
-echo "• Frontend .env: apps/frontend/.env.local"
 echo "• Database: PostgreSQL running on localhost:5432"
 echo "• Redis: Running on localhost:6379"
 echo ""

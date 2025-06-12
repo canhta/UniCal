@@ -59,12 +59,10 @@
               return (
                 <html lang="en">
                   <body>
-                    <UserProvider> { /* Auth0 Provider */}
-                      <ReactQueryProvider>
-                        {/* ... other providers like ThemeProvider ... */}
-                        {children}
-                      </ReactQueryProvider>
-                    </UserProvider>
+                    <ReactQueryProvider>
+                      {/* ... other providers like ThemeProvider ... */}
+                      {children}
+                    </ReactQueryProvider>
                   </body>
                 </html>
               );
@@ -123,11 +121,6 @@
     *   **Reasoning:** Built-in for shareable/bookmarkable state (filters, pagination, selected dates).
     *   **AI Action:** AI will use these hooks for managing URL-based state.
 
-### E. Authentication State
-*   **[ ] Solution:** `@auth0/nextjs-auth0` v4 (`UserProvider`, `useUser`, `getSession`).
-    *   **Reasoning:** Dedicated library for auth, session management, user context.
-    *   **AI Action:** AI will ensure `UserProvider` wraps the application (as shown in `ReactQueryProvider` example) and use `useUser` or `getSession` as needed, following `AUTH_FEATURE_PLAN.md`.
-
 ## 3. Devtools Integration
 
 *   **[ ] TanStack Query Devtools:** Already included in `ReactQueryProvider` setup.
@@ -135,4 +128,4 @@
     *   **AI Action:** AI will ensure all Zustand stores are wrapped with `devtools` for debugging capabilities.
 
 ## Conclusion
-This layered strategy (TanStack Query for server data, Zustand for global UI, React local state, Next.js for URL, Auth0 for auth) provides a robust and maintainable approach to state management in UniCal.
+This layered strategy (TanStack Query for server data, Zustand for global UI, React local state, Next.js for URL) provides a robust and maintainable approach to state management in UniCal.

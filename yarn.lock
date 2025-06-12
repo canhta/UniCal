@@ -102,23 +102,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@auth0/nextjs-auth0@npm:^4.6.1":
-  version: 4.6.1
-  resolution: "@auth0/nextjs-auth0@npm:4.6.1"
-  dependencies:
-    "@edge-runtime/cookies": "npm:^5.0.1"
-    "@panva/hkdf": "npm:^1.2.1"
-    jose: "npm:^5.9.6"
-    oauth4webapi: "npm:^3.1.2"
-    swr: "npm:^2.2.5"
-  peerDependencies:
-    next: ^14.2.25 || ^15.2.3
-    react: ^18.0.0 || ^19.0.0 || ^19.0.0-0
-    react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-0
-  checksum: 10c0/ad8fd1fca3f706a163f651db33fc06457c92f4782f2138ec3307975492bc2db1ebc27345c81f73212160f8addaa93f6fe2fce6186c61e52ae5fbfd7e9989a40d
-  languageName: node
-  linkType: hard
-
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.16.7, @babel/code-frame@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/code-frame@npm:7.27.1"
@@ -508,13 +491,6 @@ __metadata:
   dependencies:
     "@jridgewell/trace-mapping": "npm:0.3.9"
   checksum: 10c0/05c5368c13b662ee4c122c7bfbe5dc0b613416672a829f3e78bc49a357a197e0218d6e74e7c66cfcd04e15a179acab080bd3c69658c9fbefd0e1ccd950a07fc6
-  languageName: node
-  linkType: hard
-
-"@edge-runtime/cookies@npm:^5.0.1":
-  version: 5.0.2
-  resolution: "@edge-runtime/cookies@npm:5.0.2"
-  checksum: 10c0/4db80e80403c7086f1d269afdf8956c035d88b173c70ca9e912d58683b58c300a1df922dee74bb44f964f1fab7e446f8ed8d32fc9715a7c322671e03405a682a
   languageName: node
   linkType: hard
 
@@ -2192,13 +2168,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@panva/hkdf@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@panva/hkdf@npm:1.2.1"
-  checksum: 10c0/1fabdec9bd2c19b8e88a3fa6fd0c25e25823c5000d9efdf4b6dfe32e9f370f8b9603cf776d120d160bec15fba17e079974cc34f0f52cebb24602cd832dfde19c
-  languageName: node
-  linkType: hard
-
 "@paralleldrive/cuid2@npm:^2.2.2":
   version: 2.2.2
   resolution: "@paralleldrive/cuid2@npm:2.2.2"
@@ -3192,16 +3161,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport-auth0@npm:^1":
-  version: 1.0.9
-  resolution: "@types/passport-auth0@npm:1.0.9"
-  dependencies:
-    "@types/express": "npm:*"
-    "@types/passport": "npm:*"
-  checksum: 10c0/d457dc94a4684fc4f58646886c66e85513601eb4834a6a183b68670601bcc728b6d6c18ba146f795ecd60b441fe2bf44a471bafc3bc4cffff88e147a46b4ce64
-  languageName: node
-  linkType: hard
-
 "@types/passport-jwt@npm:^4.0.1":
   version: 4.0.1
   resolution: "@types/passport-jwt@npm:4.0.1"
@@ -3519,7 +3478,6 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.10.7"
     "@types/passport": "npm:^0"
-    "@types/passport-auth0": "npm:^1"
     "@types/passport-jwt": "npm:^4.0.1"
     "@types/passport-local": "npm:^1.0.38"
     "@types/supertest": "npm:^6.0.2"
@@ -3537,7 +3495,6 @@ __metadata:
     jest: "npm:^29.7.0"
     jwks-rsa: "npm:^3.2.0"
     passport: "npm:^0.7.0"
-    passport-auth0: "npm:^1.4.4"
     passport-jwt: "npm:^4.0.1"
     passport-local: "npm:^1.0.0"
     prettier: "npm:^3.4.2"
@@ -3576,7 +3533,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@unical/frontend@workspace:apps/frontend"
   dependencies:
-    "@auth0/nextjs-auth0": "npm:^4.6.1"
     "@eslint/eslintrc": "npm:^3"
     "@event-calendar/core": "npm:^4.4.0"
     "@headlessui/react": "npm:^2.2.4"
@@ -4407,7 +4363,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.6.0, axios@npm:^1.9.0":
+"axios@npm:^1.9.0":
   version: 1.9.0
   resolution: "axios@npm:1.9.0"
   dependencies:
@@ -4529,13 +4485,6 @@ __metadata:
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
-  languageName: node
-  linkType: hard
-
-"base64url@npm:3.x.x":
-  version: 3.0.1
-  resolution: "base64url@npm:3.0.1"
-  checksum: 10c0/5ca9d6064e9440a2a45749558dddd2549ca439a305793d4f14a900b7256b5f4438ef1b7a494e1addc66ced5d20f5c010716d353ed267e4b769e6c78074991241
   languageName: node
   linkType: hard
 
@@ -5448,13 +5397,6 @@ __metadata:
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: 10c0/58bd06ec20e19529b06f7ad07ddab60e504d9e0faca4bd23079fac2d279c3594334d736508dc350e06e510aba5e22e4594483b3a6562ce7c17dd797f4cc4ad2c
-  languageName: node
-  linkType: hard
-
-"dequal@npm:^2.0.3":
-  version: 2.0.3
-  resolution: "dequal@npm:2.0.3"
-  checksum: 10c0/f98860cdf58b64991ae10205137c0e97d384c3a4edc7f807603887b7c4b850af1224a33d88012009f150861cbee4fa2d322c4cc04b9313bee312e47f6ecaa888
   languageName: node
   linkType: hard
 
@@ -8246,13 +8188,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:^5.9.6":
-  version: 5.10.0
-  resolution: "jose@npm:5.10.0"
-  checksum: 10c0/e20d9fc58d7e402f2e5f04e824b8897d5579aae60e64cb88ebdea1395311c24537bf4892f7de413fab1acf11e922797fb1b42269bc8fc65089a3749265ccb7b0
-  languageName: node
-  linkType: hard
-
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -9501,27 +9436,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth4webapi@npm:^3.1.2":
-  version: 3.5.2
-  resolution: "oauth4webapi@npm:3.5.2"
-  checksum: 10c0/fd056001ce67c9e4aba9b170b6aabe26315bd9ce67787534575ea66a475115fdae7c68b8b193e8607156a8e97a56a3eef552abb34ec3447b28cfe7c18749468a
-  languageName: node
-  linkType: hard
-
-"oauth@npm:0.10.x":
-  version: 0.10.2
-  resolution: "oauth@npm:0.10.2"
-  checksum: 10c0/5660d652b31eb2a90509989955a75b02311591d2e3cfb04a3fb91deae0d22c259aa5c31a9e8845f760d749af901032e3cfd06d151bbda9a5ebb9b76268d3aef9
-  languageName: node
-  linkType: hard
-
-"oauth@npm:0.9.x":
-  version: 0.9.15
-  resolution: "oauth@npm:0.9.15"
-  checksum: 10c0/52204f2a082850efca7e8406e6c6085d89318dc8a85f5a8d6c5594921da36149eb6228bba324af8e2fd9019f084d814ddf835ace6b697ced2b4be0d75f91fb30
-  languageName: node
-  linkType: hard
-
 "object-assign@npm:^4, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
@@ -9772,17 +9686,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-auth0@npm:^1.4.4":
-  version: 1.4.4
-  resolution: "passport-auth0@npm:1.4.4"
-  dependencies:
-    axios: "npm:^1.6.0"
-    passport-oauth: "npm:^1.0.0"
-    passport-oauth2: "npm:^1.6.0"
-  checksum: 10c0/ff48b135b665979f0a516178980b6e21341c3154905a8d233b3bc87d29ccadd9728618195f42b1406b7b2689bd8de281dc381f0effd2acdca6392d5a5769dca7
-  languageName: node
-  linkType: hard
-
 "passport-jwt@npm:^4.0.1":
   version: 4.0.1
   resolution: "passport-jwt@npm:4.0.1"
@@ -9799,40 +9702,6 @@ __metadata:
   dependencies:
     passport-strategy: "npm:1.x.x"
   checksum: 10c0/59becb988014921a5d6056470d9373c41db452fcf113323064f39d53baa6f184e72151bf269ca6770511f7f0260e13632dacc7b6afdbf60ebf63e90327e186d4
-  languageName: node
-  linkType: hard
-
-"passport-oauth1@npm:1.x.x":
-  version: 1.3.0
-  resolution: "passport-oauth1@npm:1.3.0"
-  dependencies:
-    oauth: "npm:0.9.x"
-    passport-strategy: "npm:1.x.x"
-    utils-merge: "npm:1.x.x"
-  checksum: 10c0/2bf9b0fe9942f5e4d0cda1d9b526f4f2395e3e547f17aa45ea020aa8017831a33bbb0227c747defdb0c1b9f1ad778551dbd310c9cc6866fb09e9986eb20c1745
-  languageName: node
-  linkType: hard
-
-"passport-oauth2@npm:1.x.x, passport-oauth2@npm:^1.6.0":
-  version: 1.8.0
-  resolution: "passport-oauth2@npm:1.8.0"
-  dependencies:
-    base64url: "npm:3.x.x"
-    oauth: "npm:0.10.x"
-    passport-strategy: "npm:1.x.x"
-    uid2: "npm:0.0.x"
-    utils-merge: "npm:1.x.x"
-  checksum: 10c0/16b431bd856b84dfe0c9c913dcbea6ff54875befac1035171b0dce1c77f79072dc5e26d785b13c2e62c034c8174a1a47571751d1066bdbcdb9108de217c0b19b
-  languageName: node
-  linkType: hard
-
-"passport-oauth@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "passport-oauth@npm:1.0.0"
-  dependencies:
-    passport-oauth1: "npm:1.x.x"
-    passport-oauth2: "npm:1.x.x"
-  checksum: 10c0/bdf74433f6f2c68fe3cc80110769f18ea6d50f2f352119f657b47a62fb9073933f0ddf683fd09c2e499fca54238f835b106f41a14f57b250f9abd469795093be
   languageName: node
   linkType: hard
 
@@ -11352,18 +11221,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swr@npm:^2.2.5":
-  version: 2.3.3
-  resolution: "swr@npm:2.3.3"
-  dependencies:
-    dequal: "npm:^2.0.3"
-    use-sync-external-store: "npm:^1.4.0"
-  peerDependencies:
-    react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/882fc8291912860e0c50eae3470ebf0cd58b0144cb12adcc4b14c5cef913ea06479043830508d8b0b3d4061d99ad8dd52485c9c879fbd4e9b893484e6d8da9e3
-  languageName: node
-  linkType: hard
-
 "symbol-observable@npm:4.0.0":
   version: 4.0.0
   resolution: "symbol-observable@npm:4.0.0"
@@ -11838,13 +11695,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uid2@npm:0.0.x":
-  version: 0.0.4
-  resolution: "uid2@npm:0.0.4"
-  checksum: 10c0/c3ed69da75d117214891f4743a1d8521db823d7a2f57644c1a9ae8b3bf25f0ba666d893264bf7e22be3dbbaa292d35a23d71d06ce7283458a65e8dd137c5c362
-  languageName: node
-  linkType: hard
-
 "uid@npm:2.0.2":
   version: 2.0.2
   resolution: "uid@npm:2.0.2"
@@ -12028,7 +11878,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.4.0, use-sync-external-store@npm:^1.5.0":
+"use-sync-external-store@npm:^1.5.0":
   version: 1.5.0
   resolution: "use-sync-external-store@npm:1.5.0"
   peerDependencies:
@@ -12044,7 +11894,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.x.x, utils-merge@npm:^1.0.1":
+"utils-merge@npm:^1.0.1":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672

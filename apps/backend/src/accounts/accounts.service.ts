@@ -6,7 +6,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../common/encryption/encryption.service';
-import { OAuthService } from '../common/oauth/oauth.service';
 import {
   ConnectedAccountResponseDto,
   InternalCreateConnectedAccountDto,
@@ -19,42 +18,8 @@ export class AccountsService {
   constructor(
     private prisma: PrismaService,
     private encryptionService: EncryptionService,
-    private oauthService: OAuthService,
     private configService: ConfigService,
   ) {}
-
-  async initiateOAuthFlow(
-    userId: string,
-    provider: string,
-  ): Promise<{ authorizationUrl: string; state: string }> {
-    return this.oauthService.generateAuthorizationUrl(userId, provider);
-  }
-
-  async handleOAuthCallback(
-    provider: string,
-    code: string,
-    state: string,
-  ): Promise<ConnectedAccountResponseDto> {
-    const { tokenResponse, userId } =
-      await this.oauthService.exchangeCodeForTokens(provider, code, state);
-
-    // Create connected account
-    const connectedAccount = await this.createConnectedAccount({
-      userId,
-      provider,
-      providerAccountId: tokenResponse.platformUserId || 'unknown',
-      accessToken: tokenResponse.accessToken,
-      refreshToken: tokenResponse.refreshToken,
-      expiresAt: tokenResponse.expiresInSeconds
-        ? new Date(Date.now() + tokenResponse.expiresInSeconds * 1000)
-        : undefined,
-      scopes: tokenResponse.scope ? [tokenResponse.scope] : undefined,
-    });
-
-    return this.toResponseDto(connectedAccount);
-  }
-
-  // ...existing code...
 
   async createConnectedAccount(
     data: InternalCreateConnectedAccountDto,

@@ -10,7 +10,6 @@ import {
   LoginDto,
   RegisterDto,
   AuthResponseDto,
-  Auth0User,
   JwtPayload,
 } from '@unical/core';
 import { User } from '@prisma/client';
@@ -34,9 +33,8 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-    // Create user (for local auth, we'll generate a dummy auth0Id)
+    // Create user
     const user = await this.userService.findOrCreateUserFromProvider({
-      auth0Id: `local_${Date.now()}_${Math.random()}`, // Temporary solution
       email: registerDto.email,
       name: registerDto.displayName,
       emailVerified: false,
@@ -111,18 +109,5 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
-  }
-
-  // For Auth0 integration (simplified version)
-  async loginWithAuth0Provider(auth0User: Auth0User): Promise<AuthResponseDto> {
-    const user = await this.userService.findOrCreateUserFromProvider({
-      auth0Id: auth0User.sub,
-      email: auth0User.email,
-      name: auth0User.name,
-      emailVerified: auth0User.email_verified,
-      avatarUrl: auth0User.picture,
-    });
-
-    return this.generateTokens(user);
   }
 }

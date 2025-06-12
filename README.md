@@ -41,13 +41,12 @@ After running the script, you'll have:
 
 ## Manual Configuration (Optional)
 
-After running the setup script, you may want to configure OAuth credentials:
+After running the setup script, you may want to configure some settings:
 
 ### Backend Environment (`apps/backend/.env`)
-Update the following values for calendar integrations:
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: Your Google OAuth credentials
-- `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`: Your Microsoft OAuth credentials
-- Ensure redirect URIs match: `http://localhost:3000/api/connect/google/callback`
+Update the following values:
+- `DATABASE_URL`: Connection string for PostgreSQL
+- `REDIS_URL`: Connection string for Redis
 
 ### Frontend Environment (`apps/frontend/.env.local`)
 The setup script handles most configuration, but you can customize:
@@ -238,4 +237,4 @@ If ports are occupied, update the respective configuration files.
 
 ## Next Steps
 
-After setup, configure your OAuth credentials in the environment files to enable calendar integrations with Google and Microsoft.
+After setup, you can start developing your application or explore the codebase.

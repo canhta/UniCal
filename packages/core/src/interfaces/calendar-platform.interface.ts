@@ -116,13 +116,6 @@ export interface PlatformWebhookSubscriptionDto {
  * Platform service interface
  */
 export interface ICalendarPlatformService {
-  // OAuth methods
-  getAuthorizationUrl(redirectUri: string): string;
-  exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<PlatformTokenResponseDto>;
-
   // Calendar management
   getCalendars(accessToken: string): Promise<PlatformCalendarDto[]>;
 
