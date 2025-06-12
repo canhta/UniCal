@@ -1,6 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@headlessui/react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   return (
@@ -9,7 +15,9 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Welcome to your unified calendar dashboard</p>
+          <p className="text-gray-600">
+            Welcome to your unified calendar dashboard
+          </p>
         </div>
 
         {/* Quick Actions */}
@@ -20,7 +28,7 @@ export default function DashboardPage() {
               <CardDescription>Jump to your calendar</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild className="w-full">
+              <Button className="w-full">
                 <Link href="/calendar">Open Calendar</Link>
               </Button>
             </CardContent>
@@ -32,7 +40,7 @@ export default function DashboardPage() {
               <CardDescription>Connect your calendars</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline" className="w-full">
+              <Button className="w-full">
                 <Link href="/integrations">Manage Integrations</Link>
               </Button>
             </CardContent>
@@ -44,7 +52,7 @@ export default function DashboardPage() {
               <CardDescription>Customize your experience</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline" className="w-full">
+              <Button className="w-full">
                 <Link href="/settings">View Settings</Link>
               </Button>
             </CardContent>
@@ -55,14 +63,18 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest calendar events and changes</CardDescription>
+            <CardDescription>
+              Your latest calendar events and changes
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-medium">No recent activity</p>
-                  <p className="text-sm text-gray-600">Connect your calendars to see events here</p>
+                  <p className="text-sm text-gray-600">
+                    Connect your calendars to see events here
+                  </p>
                 </div>
               </div>
             </div>
@@ -70,5 +82,5 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

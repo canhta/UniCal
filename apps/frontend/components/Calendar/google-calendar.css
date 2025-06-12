@@ -1,0 +1,306 @@
+/* Google Calendar Enhanced Styling */
+
+/* Hide default header */
+.ec-header {
+    display: none;
+}
+
+/* Google Calendar Color Palette */
+:root {
+    --google-blue-500: #1a73e8;
+    --google-blue-50: #e8f0fe;
+    --google-blue-100: #d2e3fc;
+    --google-red-500: #ea4335;
+    --google-grey-50: #f8f9fa;
+    --google-grey-100: #f1f3f4;
+    --google-grey-200: #e8eaed;
+    --google-grey-300: #dadce0;
+    --google-grey-400: #bdc1c6;
+    --google-grey-500: #9aa0a6;
+    --google-grey-600: #80868b;
+    --google-grey-700: #5f6368;
+    --google-grey-800: #3c4043;
+    --google-grey-900: #202124;
+}
+
+/* Main calendar container */
+.ec {
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    border: none;
+    background: white;
+}
+
+/* Event styling */
+.ec-event {
+    border-radius: 6px !important;
+    border: 1px solid transparent !important;
+    box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.15), 0 4px 8px 3px rgba(60, 64, 67, 0.15) !important;
+    margin: 1px !important;
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+    cursor: pointer !important;
+}
+
+.ec-event:hover {
+    box-shadow: 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 8px 24px 4px rgba(60, 64, 67, 0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+.ec-event-title {
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    color: inherit !important;
+}
+
+.ec-event-time {
+    font-size: 11px !important;
+    opacity: 0.8 !important;
+    margin-top: 1px !important;
+}
+
+/* Day Grid Styling */
+.ec-daygrid {
+    border: 1px solid var(--google-grey-200) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.ec-daygrid-day {
+    border-right: 1px solid var(--google-grey-200) !important;
+    border-bottom: 1px solid var(--google-grey-200) !important;
+    background: white !important;
+    min-height: 120px !important;
+}
+
+.ec-daygrid-day:hover {
+    background: var(--google-grey-50) !important;
+}
+
+.ec-daygrid-day-number {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--google-grey-700) !important;
+    padding: 8px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    margin: 4px !important;
+}
+
+.ec-daygrid-day-today .ec-daygrid-day-number {
+    background: var(--google-blue-500) !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.ec-daygrid-day-other .ec-daygrid-day-number {
+    color: var(--google-grey-400) !important;
+}
+
+.ec-daygrid-day-events {
+    padding: 2px 6px !important;
+}
+
+.ec-daygrid-event {
+    margin: 1px 0 !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+}
+
+/* Time Grid Styling */
+.ec-timegrid {
+    border: 1px solid var(--google-grey-200) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.ec-timegrid-slot {
+    height: 48px !important;
+    border-bottom: 1px solid var(--google-grey-100) !important;
+}
+
+.ec-timegrid-slot:nth-child(even) {
+    border-bottom: 1px solid var(--google-grey-200) !important;
+}
+
+.ec-timegrid-slot-label {
+    font-size: 12px !important;
+    color: var(--google-grey-600) !important;
+    padding: 4px 8px !important;
+    text-align: right !important;
+    border-right: 1px solid var(--google-grey-200) !important;
+    background: var(--google-grey-50) !important;
+}
+
+.ec-timegrid-slot-lane {
+    border-left: 1px solid var(--google-grey-200) !important;
+}
+
+.ec-timegrid-slot-lane:hover {
+    background: var(--google-grey-50) !important;
+}
+
+.ec-timegrid-col-header {
+    background: white !important;
+    border-bottom: 2px solid var(--google-grey-200) !important;
+    padding: 16px 8px !important;
+    text-align: center !important;
+}
+
+.ec-timegrid-col-header-text {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--google-grey-700) !important;
+}
+
+/* Now indicator (red line for current time) */
+.ec-timegrid-now-indicator-line {
+    border-color: var(--google-red-500) !important;
+    border-width: 2px !important;
+    z-index: 3 !important;
+}
+
+.ec-timegrid-now-indicator-dot {
+    background: var(--google-red-500) !important;
+    border: 2px solid white !important;
+    border-radius: 50% !important;
+    width: 12px !important;
+    height: 12px !important;
+    margin-left: -6px !important;
+    margin-top: -6px !important;
+    z-index: 4 !important;
+}
+
+/* Selection styling */
+.ec-timegrid-slot-selected,
+.ec-daygrid-day-selected {
+    background: var(--google-blue-50) !important;
+    border: 1px solid var(--google-blue-300) !important;
+}
+
+/* Week and day headers */
+.ec-col-header {
+    background: white !important;
+    border-bottom: 1px solid var(--google-grey-200) !important;
+    font-weight: 500 !important;
+    color: var(--google-grey-700) !important;
+    padding: 12px 8px !important;
+}
+
+.ec-col-header-text {
+    font-size: 14px !important;
+}
+
+/* List view styling */
+.ec-list {
+    border: 1px solid var(--google-grey-200) !important;
+    border-radius: 8px !important;
+}
+
+.ec-list-day {
+    background: var(--google-grey-50) !important;
+    border-bottom: 1px solid var(--google-grey-200) !important;
+    padding: 12px 16px !important;
+    font-weight: 500 !important;
+    color: var(--google-grey-700) !important;
+}
+
+.ec-list-event {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--google-grey-100) !important;
+    transition: background-color 0.2s !important;
+}
+
+.ec-list-event:hover {
+    background: var(--google-grey-50) !important;
+}
+
+/* All day events */
+.ec-daygrid-event,
+.ec-timegrid-event {
+    border-radius: 4px !important;
+}
+
+/* Loading state */
+.ec-loading {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+.ec-loading::after {
+    border-color: var(--google-blue-500) !important;
+    border-right-color: transparent !important;
+}
+
+/* Scrollbar styling */
+.ec-scroller::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+.ec-scroller::-webkit-scrollbar-track {
+    background: var(--google-grey-100) !important;
+}
+
+.ec-scroller::-webkit-scrollbar-thumb {
+    background: var(--google-grey-300) !important;
+    border-radius: 4px !important;
+}
+
+.ec-scroller::-webkit-scrollbar-thumb:hover {
+    background: var(--google-grey-400) !important;
+}
+
+/* Today highlighting */
+.ec-timegrid-col-today {
+    background: linear-gradient(to bottom, var(--google-blue-50) 0%, white 100%) !important;
+}
+
+.ec-daygrid-day-today {
+    background: var(--google-blue-50) !important;
+}
+
+/* Event color variations for different calendars */
+.ec-event.google-calendar {
+    background: #1a73e8 !important;
+    border-color: #1967d2 !important;
+    color: white !important;
+}
+
+.ec-event.outlook-calendar {
+    background: #0078d4 !important;
+    border-color: #106ebe !important;
+    color: white !important;
+}
+
+.ec-event.personal-calendar {
+    background: #34a853 !important;
+    border-color: #2d9348 !important;
+    color: white !important;
+}
+
+.ec-event.work-calendar {
+    background: #ea4335 !important;
+    border-color: #d73527 !important;
+    color: white !important;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .ec-timegrid-slot {
+        height: 40px !important;
+    }
+    
+    .ec-daygrid-day {
+        min-height: 80px !important;
+    }
+    
+    .ec-event {
+        font-size: 11px !important;
+        padding: 1px 4px !important;
+    }
+}

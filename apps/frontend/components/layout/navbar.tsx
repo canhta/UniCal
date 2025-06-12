@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import Link from "next/link"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
-import { useSession, signIn, signOut } from 'next-auth/react'
+import Link from "next/link";
+import { useState } from "react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { Button } from "@headlessui/react";
 
 export default function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { data: session, status } = useSession()
-  const isAuthenticated = status === 'authenticated'
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated";
 
   const publicNavItems = [
     { href: "/", label: "Home" },
     { href: "#features", label: "Features" },
     { href: "#about", label: "About" },
-  ]
+  ];
 
-  const navItems = publicNavItems
+  const navItems = publicNavItems;
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -51,16 +51,12 @@ export default function Navbar() {
                 <span className="text-sm text-gray-600">
                   Welcome, {session.user?.name || session.user?.email}!
                 </span>
-                <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  Logout
-                </Button>
+                <Button onClick={() => signOut()}>Logout</Button>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={() => signIn()}>
-                  Login
-                </Button>
-                <Button size="sm" asChild>
+                <Button onClick={() => signIn()}>Login</Button>
+                <Button >
                   <Link href="/dashboard">Get Started</Link>
                 </Button>
               </div>
@@ -97,23 +93,19 @@ export default function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              
+
               <div className="border-t border-gray-200 pt-4 flex flex-col space-y-2">
                 {isAuthenticated ? (
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-600">
                       Welcome, {session.user?.name || session.user?.email}!
                     </span>
-                    <Button variant="outline" size="sm" onClick={() => signOut()}>
-                      Logout
-                    </Button>
+                    <Button onClick={() => signOut()}>Logout</Button>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => signIn()}>
-                      Login
-                    </Button>
-                    <Button size="sm" className="mx-2" asChild>
+                    <Button onClick={() => signIn()}>Login</Button>
+                    <Button className="mx-2">
                       <Link href="/dashboard">Get Started</Link>
                     </Button>
                   </div>
@@ -124,5 +116,5 @@ export default function Navbar() {
         )}
       </div>
     </nav>
-  )
+  );
 }

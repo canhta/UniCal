@@ -1,6 +1,12 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@headlessui/react";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -11,16 +17,14 @@ export default function HomePage() {
           Welcome to <span className="text-blue-600">UniCal</span>
         </h1>
         <p className="mb-8 text-xl text-gray-600 max-w-2xl mx-auto">
-          Unify your calendars from Google, Outlook, and more in one place. 
+          Unify your calendars from Google, Outlook, and more in one place.
           Streamline your scheduling and never miss an important event again.
         </p>
         <div className="flex gap-4 justify-center">
-          <Button asChild size="lg">
+          <Button>
             <Link href="/dashboard">Get Started</Link>
           </Button>
-          <Button variant="outline" size="lg">
-            Learn More
-          </Button>
+          <Button>Learn More</Button>
         </div>
       </section>
 
@@ -39,8 +43,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 text-center">
-                Aggregate events from Google Calendar, Microsoft Outlook, and other platforms
-                for a complete view of your schedule.
+                Aggregate events from Google Calendar, Microsoft Outlook, and
+                other platforms for a complete view of your schedule.
               </p>
             </CardContent>
           </Card>
@@ -69,8 +73,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 text-center">
-                We use OAuth 2.0 and industry-standard encryption to keep
-                your calendar information safe and private.
+                We use OAuth 2.0 and industry-standard encryption to keep your
+                calendar information safe and private.
               </p>
             </CardContent>
           </Card>
@@ -84,13 +88,14 @@ export default function HomePage() {
             Ready to Simplify Your Calendar Management?
           </h2>
           <p className="mb-8 text-xl opacity-90">
-            Join thousands of users who have streamlined their scheduling with UniCal.
+            Join thousands of users who have streamlined their scheduling with
+            UniCal.
           </p>
-          <Button variant="secondary" size="lg" asChild>
+          <Button>
             <Link href="/dashboard">Start Free Today</Link>
           </Button>
         </div>
       </section>
     </div>
-  )
+  );
 }
