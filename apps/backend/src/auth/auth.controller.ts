@@ -16,11 +16,15 @@ import {
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ForgotPasswordDto, ResetPasswordDto } from '@unical/core';
+import { UserService } from '../user/user.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -97,5 +101,11 @@ export class AuthController {
     @Body() dto: ResetPasswordDto,
   ): Promise<{ message: string }> {
     return await this.authService.resetPassword(dto.token, dto.newPassword);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body('token') token: string) {
+    await this.userService.verifyEmail(token);
+    return { message: 'Email verified successfully' };
   }
 }

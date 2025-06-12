@@ -7,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { AuthResponseDto, LoginDto, RegisterDto } from '@unical/core';
-import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
@@ -57,7 +56,7 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async validateUser(email: string, password: string): Promise<User | null> {
+  async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password || ''))) {
       return user;
@@ -65,7 +64,7 @@ export class AuthService {
     return null;
   }
 
-  generateTokens(user: User): AuthResponseDto {
+  generateTokens(user: any): AuthResponseDto {
     const payload: any = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {

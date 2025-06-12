@@ -4,24 +4,16 @@ import '@event-calendar/core/index.css';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { Spinner } from './spinner';
-
-// Define the type for backend event
-interface BackendEvent {
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  color?: string;
-}
+import type { EventResponseDto } from '@unical/core';
 
 // Map backend event to calendar event format
-function mapEvent(event: BackendEvent) {
+function mapEvent(event: EventResponseDto) {
   return {
     id: event.id,
     title: event.title,
     start: event.startTime,
     end: event.endTime,
-    color: event.color || '#1976D2',
+    color: '#1976D2',
   };
 }
 

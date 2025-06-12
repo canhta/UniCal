@@ -1,10 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsBoolean } from 'class-validator';
-import {
-  BaseResponseDto,
-  BaseCreateDto,
-  BaseUpdateDto,
-} from '@unical/core';
+import { BaseResponseDto, BaseCreateDto, BaseUpdateDto } from '@unical/core';
 import {
   UUIDField,
   StringField,

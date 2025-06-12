@@ -1,4 +1,19 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import {
+  UserResponseDto,
+  UpdateUserDto,
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  LoginDto,
+  RegisterDto,
+  AuthResponseDto,
+  EventResponseDto,
+  CreateEventRequestDto,
+  UpdateEventRequestDto,
+  GetEventsQueryDto,
+} from '@unical/core';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 export interface ApiError {
   message: string;
@@ -17,31 +32,7 @@ interface UpdateUserData {
   timeZone?: string;
 }
 
-interface EventsQueryParams {
-  start?: string;
-  end?: string;
-  calendarId?: string;
-  limit?: number;
-}
 
-interface CreateEventData {
-  title: string;
-  description?: string;
-  startTime: string;
-  endTime: string;
-  allDay?: boolean;
-  location?: string;
-  calendarId?: string;
-}
-
-interface UpdateEventData {
-  title?: string;
-  description?: string;
-  startTime?: string;
-  endTime?: string;
-  allDay?: boolean;
-  location?: string;
-}
 
 class ApiClient {
   private baseUrl: string;
@@ -135,47 +126,93 @@ class ApiClient {
   }
 
   // Auth endpoints
-  async refreshToken(refreshToken: string) {
-    return this.request('/auth/refresh', {
+  async login(data: LoginDto): Promise<AuthResponseDto> {
+    return this.request<AuthResponseDto>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ refreshToken }),
+      body: JSON.stringify(data),
+    });
+  }
+
+  async register(data: RegisterDto): Promise<AuthResponseDto> {
+    return this.request<AuthResponseDto>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async forgotPassword(data: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async resetPassword(data: ResetPasswordDto): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
     });
   }
 
   // User endpoints
-  async getCurrentUser() {
-    return this.request('/user/me');
+  async getCurrentUser(): Promise<UserResponseDto> {
+    return this.request<UserResponseDto>('/user/me');
   }
 
-  async updateCurrentUser(userData: UpdateUserData) {
-    return this.request('/user/me', {
+  async updateCurrentUser(data: UpdateUserDto): Promise<UserResponseDto> {
+    return this.request<UserResponseDto>('/user/me', {
       method: 'PUT',
-      body: JSON.stringify(userData),
+      body: JSON.stringify(data),
     });
   }
 
-  // Events endpoints (placeholder for future implementation)
-  async getEvents(params?: EventsQueryParams) {
-    const queryString = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : '';
-    return this.request(`/events${queryString}`);
+  async changePassword(data: ChangePasswordDto): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/user/me/password', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
-  async createEvent(eventData: CreateEventData) {
-    return this.request('/events', {
+  // Events endpoints
+  async getEvents(query?: GetEventsQueryDto): Promise<EventResponseDto[]> {
+    let queryString = '';
+    if (query) {
+      const params = Object.entries(query)
+        .filter(([, value]) => value !== undefined && value !== null)
+        .map(([key, value]) =>
+          Array.isArray(value)
+            ? value.map(v => `${encodeURIComponent(key)}=${encodeURIComponent(String(v))}`).join('&')
+            : `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+        )
+        .join('&');
+      queryString = params ? `?${params}` : '';
+    }
+    return this.request<EventResponseDto[]>(`/events${queryString}`);
+  }
+
+  async createEvent(data: CreateEventRequestDto): Promise<EventResponseDto> {
+    return this.request<EventResponseDto>('/events', {
       method: 'POST',
-      body: JSON.stringify(eventData),
+      body: JSON.stringify(data),
     });
   }
 
-  async updateEvent(eventId: string, eventData: UpdateEventData) {
-    return this.request(`/events/${eventId}`, {
+  async updateEvent(eventId: string, data: UpdateEventRequestDto): Promise<EventResponseDto> {
+    return this.request<EventResponseDto>(`/events/${eventId}`, {
       method: 'PATCH',
-      body: JSON.stringify(eventData),
+      body: JSON.stringify(data),
     });
   }
 
-  async deleteEvent(eventId: string) {
-    return this.request(`/events/${eventId}`, {
+  async deleteEvent(eventId: string): Promise<void> {
+    return this.request<void>(`/events/${eventId}`, {
       method: 'DELETE',
     });
   }

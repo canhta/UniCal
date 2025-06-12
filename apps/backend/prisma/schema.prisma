@@ -17,6 +17,7 @@ model User {
   updatedAt         DateTime              @updatedAt
   emailVerified     Boolean               @default(false)
   password          String?
+  verificationToken String?               @unique
   calendars         Calendar[]
   connectedAccounts ConnectedAccount[]
   events            Event[]
