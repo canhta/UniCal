@@ -8,22 +8,154 @@ datasource db {
 }
 
 model User {
-  id                String                @id @default(uuid())
-  email             String                @unique
-  displayName       String?
-  avatarUrl         String?
-  timeZone          String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  emailVerified     Boolean               @default(false)
-  password          String?
-  verificationToken String?               @unique
-  calendars         Calendar[]
-  connectedAccounts ConnectedAccount[]
-  events            Event[]
-  calendarSettings  UserCalendarSetting[]
+  id                 String                @id @default(uuid())
+  email              String                @unique
+  displayName        String?
+  avatarUrl          String?
+  timeZone           String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  emailVerified      Boolean               @default(false)
+  password           String?
+  verificationToken  String?               @unique
+  auth0UserId        String?               @unique
+  fullName           String
+  lastLoginAt        DateTime?
+  phoneNumber        String?
+  registrationDate   DateTime              @default(now())
+  status             UserStatus            @default(ACTIVE)
+  auditLogsAffected  AuditLog[]            @relation("AffectedUser")
+  auditLogsPerformed AuditLog[]            @relation("PerformingUser")
+  calendars          Calendar[]
+  connectedAccounts  ConnectedAccount[]
+  events             Event[]
+  assignedLeads      Lead[]                @relation("AssignedLeads")
+  convertedFromLead  Lead?                 @relation("ConvertedFromLead")
+  calendarSettings   UserCalendarSetting[]
+  roles              UserRole[]
+  subscriptions      UserSubscription[]
 
   @@map("users")
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id         String   @id @default(uuid())
+  userId     String
+  roleId     String
+  assignedAt DateTime @default(now())
+  assignedBy String?
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  resource    String?
+  action      String?
+  createdAt   DateTime         @default(now())
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Lead {
+  id                String     @id @default(uuid())
+  fullName          String
+  email             String
+  phoneNumber       String?
+  companyName       String?
+  source            String?
+  status            LeadStatus @default(NEW)
+  notes             String?
+  assignedToId      String?
+  convertedToUserId String?    @unique
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  auditLogs         AuditLog[] @relation("AffectedLead")
+  assignedTo        User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  convertedToUser   User?      @relation("ConvertedFromLead", fields: [convertedToUserId], references: [id])
+
+  @@map("leads")
+}
+
+model AuditLog {
+  id               String   @id @default(uuid())
+  timestamp        DateTime @default(now())
+  performingUserId String
+  action           String
+  entityType       String
+  affectedUserId   String?
+  affectedLeadId   String?
+  details          Json?
+  ipAddress        String?
+  userAgent        String?
+  affectedLead     Lead?    @relation("AffectedLead", fields: [affectedLeadId], references: [id])
+  affectedUser     User?    @relation("AffectedUser", fields: [affectedUserId], references: [id])
+  performingUser   User     @relation("PerformingUser", fields: [performingUserId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SubscriptionPlan {
+  id               String             @id @default(uuid())
+  name             String
+  description      String?
+  price            Decimal            @db.Decimal(10, 2)
+  billingFrequency String
+  features         Json?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  subscriptions    UserSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model UserSubscription {
+  id           String             @id @default(uuid())
+  userId       String
+  planId       String
+  status       SubscriptionStatus @default(TRIAL)
+  startDate    DateTime
+  endDate      DateTime?
+  renewalDate  DateTime?
+  canceledAt   DateTime?
+  cancelReason String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  plan         SubscriptionPlan   @relation(fields: [planId], references: [id])
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_subscriptions")
 }
 
 model ConnectedAccount {
@@ -107,4 +239,27 @@ model UserCalendarSetting {
 
   @@unique([userId, calendarId])
   @@map("user_calendar_settings")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_VERIFICATION
+  DELETED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISQUALIFIED
+  CONVERTED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PAST_DUE
 }

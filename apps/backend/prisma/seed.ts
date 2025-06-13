@@ -1,452 +1,667 @@
-import { PrismaClient } from '@prisma/client';
+import {
+  PrismaClient,
+  UserStatus,
+  LeadStatus,
+  SubscriptionStatus,
+} from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  // Clear existing data (in dependency order)
-  console.log('🧹 Clearing existing data...');
+  // Clear existing data in correct order (respecting foreign key constraints)
+  console.log('🧹 Cleaning existing data...');
   await prisma.userCalendarSetting.deleteMany();
   await prisma.event.deleteMany();
   await prisma.calendar.deleteMany();
   await prisma.connectedAccount.deleteMany();
+  await prisma.userSubscription.deleteMany();
+  await prisma.subscriptionPlan.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.lead.deleteMany();
+  await prisma.rolePermission.deleteMany();
+  await prisma.userRole.deleteMany();
+  await prisma.permission.deleteMany();
+  await prisma.role.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create sample users
-  console.log('👤 Creating users...');
-  const users = await Promise.all([
-    prisma.user.create({
+  // Create Permissions
+  console.log('📝 Creating permissions...');
+  const permissions = await Promise.all([
+    // User Management Permissions
+    prisma.permission.create({
       data: {
-        email: 'canh@gmail.com',
-        displayName: 'Canh',
-        password:
-          '$2b$10$8K1p/a0dR1LXMIgoEDFrwOc6P7d2MkyX5UqJxP5V8Qz3KJ5Y5Y5Y5', // Hashed version of 'Seta@2025'
-        avatarUrl:
-          'https://ui-avatars.com/api/?name=Canh&background=0ea5e9&color=fff',
-        timeZone: 'UTC',
-        emailVerified: true,
+        name: 'user:create',
+        description: 'Create new users',
+        resource: 'user',
+        action: 'create',
       },
     }),
-    prisma.user.create({
+    prisma.permission.create({
       data: {
-        email: 'john.doe@example.com',
-        displayName: 'John Doe',
-        avatarUrl:
-          'https://ui-avatars.com/api/?name=John+Doe&background=0ea5e9&color=fff',
-        timeZone: 'America/New_York',
-        emailVerified: true,
+        name: 'user:read',
+        description: 'View user information',
+        resource: 'user',
+        action: 'read',
       },
     }),
-    prisma.user.create({
+    prisma.permission.create({
       data: {
-        email: 'jane.smith@example.com',
-        displayName: 'Jane Smith',
-        avatarUrl:
-          'https://ui-avatars.com/api/?name=Jane+Smith&background=f59e0b&color=fff',
-        timeZone: 'America/Los_Angeles',
-        emailVerified: true,
+        name: 'user:update',
+        description: 'Update user information',
+        resource: 'user',
+        action: 'update',
       },
     }),
-    prisma.user.create({
+    prisma.permission.create({
       data: {
-        email: 'demo@unical.app',
-        displayName: 'Demo User',
-        avatarUrl:
-          'https://ui-avatars.com/api/?name=Demo+User&background=10b981&color=fff',
-        timeZone: 'UTC',
-        emailVerified: true,
+        name: 'user:delete',
+        description: 'Delete users',
+        resource: 'user',
+        action: 'delete',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'user:manage_roles',
+        description: 'Assign and remove user roles',
+        resource: 'user',
+        action: 'manage_roles',
+      },
+    }),
+
+    // Lead Management Permissions
+    prisma.permission.create({
+      data: {
+        name: 'lead:create',
+        description: 'Create new leads',
+        resource: 'lead',
+        action: 'create',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'lead:read',
+        description: 'View lead information',
+        resource: 'lead',
+        action: 'read',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'lead:update',
+        description: 'Update lead information',
+        resource: 'lead',
+        action: 'update',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'lead:delete',
+        description: 'Delete leads',
+        resource: 'lead',
+        action: 'delete',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'lead:convert',
+        description: 'Convert leads to users',
+        resource: 'lead',
+        action: 'convert',
+      },
+    }),
+
+    // Admin Panel Permissions
+    prisma.permission.create({
+      data: {
+        name: 'admin:access',
+        description: 'Access admin panel',
+        resource: 'admin',
+        action: 'access',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'admin:dashboard',
+        description: 'View admin dashboard',
+        resource: 'admin',
+        action: 'dashboard',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'audit:read',
+        description: 'View audit logs',
+        resource: 'audit',
+        action: 'read',
+      },
+    }),
+
+    // Subscription Management Permissions
+    prisma.permission.create({
+      data: {
+        name: 'subscription:read',
+        description: 'View subscription information',
+        resource: 'subscription',
+        action: 'read',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'subscription:cancel',
+        description: 'Cancel user subscriptions',
+        resource: 'subscription',
+        action: 'cancel',
+      },
+    }),
+
+    // Calendar Permissions
+    prisma.permission.create({
+      data: {
+        name: 'calendar:read',
+        description: 'View calendar information',
+        resource: 'calendar',
+        action: 'read',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'calendar:write',
+        description: 'Create and modify calendar events',
+        resource: 'calendar',
+        action: 'write',
+      },
+    }),
+    prisma.permission.create({
+      data: {
+        name: 'calendar:connect',
+        description: 'Connect external calendar accounts',
+        resource: 'calendar',
+        action: 'connect',
       },
     }),
   ]);
 
-  console.log(`✅ Created ${users.length} users`);
+  console.log(`✅ Created ${permissions.length} permissions`);
 
-  // Create sample connected accounts
-  console.log('🔗 Creating connected accounts...');
-  const connectedAccounts = await Promise.all([
-    prisma.connectedAccount.create({
-      data: {
-        userId: users[0].id,
-        provider: 'GOOGLE',
-        providerAccountId: 'google_123456789',
-        encryptedAccessToken: 'encrypted_google_access_token_john',
-        encryptedRefreshToken: 'encrypted_google_refresh_token_john',
-        tokenExpiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour from now
-        scope: 'https://www.googleapis.com/auth/calendar',
-      },
-    }),
-    prisma.connectedAccount.create({
-      data: {
-        userId: users[1].id,
-        provider: 'OUTLOOK',
-        providerAccountId: 'outlook_987654321',
-        encryptedAccessToken: 'encrypted_outlook_access_token_jane',
-        encryptedRefreshToken: 'encrypted_outlook_refresh_token_jane',
-        tokenExpiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour from now
-        scope: 'https://graph.microsoft.com/calendars.readwrite',
-      },
-    }),
-    prisma.connectedAccount.create({
-      data: {
-        userId: users[2].id,
-        provider: 'GOOGLE',
-        providerAccountId: 'google_demo_account',
-        encryptedAccessToken: 'encrypted_google_access_token_demo',
-        encryptedRefreshToken: 'encrypted_google_refresh_token_demo',
-        tokenExpiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour from now
-        scope: 'https://www.googleapis.com/auth/calendar',
-      },
-    }),
-  ]);
+  // Create Roles
+  console.log('👥 Creating roles...');
 
-  console.log(`✅ Created ${connectedAccounts.length} connected accounts`);
+  // Client Role - for regular users of the calendar application
+  const clientRole = await prisma.role.create({
+    data: {
+      name: 'client',
+      description: 'Regular calendar application user',
+    },
+  });
 
-  // Create sample calendars
-  console.log('📅 Creating calendars...');
-  const calendars = await Promise.all([
-    // John Doe's calendars
-    prisma.calendar.create({
+  // Admin Role - for admin panel users with general administrative privileges
+  const adminRole = await prisma.role.create({
+    data: {
+      name: 'admin',
+      description: 'Admin panel user with general administrative privileges',
+    },
+  });
+
+  // Super Admin Role - for admin panel users with full system access
+  const superAdminRole = await prisma.role.create({
+    data: {
+      name: 'super_admin',
+      description: 'Admin panel user with full system access',
+    },
+  });
+
+  // Lead Manager Role - for users who can manage leads
+  const leadManagerRole = await prisma.role.create({
+    data: {
+      name: 'lead_manager',
+      description: 'User who can manage leads and convert them to clients',
+    },
+  });
+
+  console.log('✅ Created 4 roles');
+
+  // Assign permissions to roles
+  console.log('🔗 Assigning permissions to roles...');
+
+  // Client permissions (calendar functionality)
+  const clientPermissions = permissions.filter((p) =>
+    p.name.startsWith('calendar:'),
+  );
+
+  for (const permission of clientPermissions) {
+    await prisma.rolePermission.create({
       data: {
-        externalId: 'primary_john',
-        name: 'Personal',
-        description: "John's personal calendar",
-        color: '#1976D2',
-        timeZone: 'America/New_York',
-        isDefault: true,
-        isVisible: true,
-        connectedAccountId: connectedAccounts[0].id,
-        userId: users[0].id,
+        roleId: clientRole.id,
+        permissionId: permission.id,
       },
-    }),
-    prisma.calendar.create({
+    });
+  }
+
+  // Admin permissions (all client permissions + admin panel access + user/lead management)
+  const adminPermissions = permissions.filter(
+    (p) =>
+      p.name.startsWith('calendar:') ||
+      p.name.startsWith('admin:') ||
+      p.name.startsWith('audit:') ||
+      p.name.startsWith('subscription:') ||
+      (p.name.startsWith('user:') &&
+        !p.name.includes('delete') &&
+        !p.name.includes('manage_roles')) ||
+      p.name.startsWith('lead:'),
+  );
+
+  for (const permission of adminPermissions) {
+    await prisma.rolePermission.create({
       data: {
-        externalId: 'work_john',
-        name: 'Work',
-        description: "John's work calendar",
-        color: '#D32F2F',
-        timeZone: 'America/New_York',
-        isDefault: false,
-        isVisible: true,
-        connectedAccountId: connectedAccounts[0].id,
-        userId: users[0].id,
+        roleId: adminRole.id,
+        permissionId: permission.id,
       },
-    }),
-    // Jane Smith's calendars
-    prisma.calendar.create({
+    });
+  }
+
+  // Super Admin permissions (all permissions)
+  for (const permission of permissions) {
+    await prisma.rolePermission.create({
       data: {
-        externalId: 'primary_jane',
-        name: 'Main Calendar',
-        description: "Jane's main calendar",
-        color: '#F57C00',
-        timeZone: 'America/Los_Angeles',
-        isDefault: true,
-        isVisible: true,
-        connectedAccountId: connectedAccounts[1].id,
-        userId: users[1].id,
+        roleId: superAdminRole.id,
+        permissionId: permission.id,
       },
-    }),
-    prisma.calendar.create({
+    });
+  }
+
+  // Lead Manager permissions (lead management + basic user read)
+  const leadManagerPermissions = permissions.filter(
+    (p) =>
+      p.name.startsWith('lead:') ||
+      p.name === 'user:read' ||
+      p.name === 'admin:access',
+  );
+
+  for (const permission of leadManagerPermissions) {
+    await prisma.rolePermission.create({
       data: {
-        externalId: 'family_jane',
-        name: 'Family',
-        description: "Jane's family calendar",
-        color: '#388E3C',
-        timeZone: 'America/Los_Angeles',
-        isDefault: false,
-        isVisible: true,
-        connectedAccountId: connectedAccounts[1].id,
-        userId: users[1].id,
+        roleId: leadManagerRole.id,
+        permissionId: permission.id,
       },
-    }),
-    // Demo user's calendar
-    prisma.calendar.create({
-      data: {
-        externalId: 'demo_primary',
-        name: 'Demo Calendar',
-        description: 'Demo calendar for testing',
-        color: '#7B1FA2',
-        timeZone: 'UTC',
-        isDefault: true,
-        isVisible: true,
-        connectedAccountId: connectedAccounts[2].id,
-        userId: users[2].id,
+    });
+  }
+
+  console.log('✅ Assigned permissions to roles');
+
+  // Create Subscription Plans
+  console.log('💳 Creating subscription plans...');
+  const basicPlan = await prisma.subscriptionPlan.create({
+    data: {
+      name: 'Basic',
+      description: 'Basic calendar features with limited integrations',
+      price: 9.99,
+      billingFrequency: 'monthly',
+      features: {
+        calendars: 3,
+        events: 1000,
+        integrations: ['google'],
+        support: 'email',
       },
-    }),
-  ]);
+    },
+  });
 
-  console.log(`✅ Created ${calendars.length} calendars`);
-
-  // Create sample events
-  console.log('📝 Creating events...');
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  const events = await Promise.all([
-    // Today's events
-    prisma.event.create({
-      data: {
-        externalId: 'event_john_1',
-        title: 'Team Standup',
-        description: 'Daily team standup meeting',
-        startTime: new Date(today.getTime() + 9 * 60 * 60 * 1000), // 9 AM today
-        endTime: new Date(today.getTime() + 9.5 * 60 * 60 * 1000), // 9:30 AM today
-        isAllDay: false,
-        location: 'Conference Room A',
-        status: 'confirmed',
-        visibility: 'default',
-        calendarId: calendars[1].id, // John's work calendar
-        userId: users[0].id,
+  const proPlan = await prisma.subscriptionPlan.create({
+    data: {
+      name: 'Pro',
+      description: 'Advanced calendar features with full integrations',
+      price: 19.99,
+      billingFrequency: 'monthly',
+      features: {
+        calendars: 10,
+        events: 10000,
+        integrations: ['google', 'microsoft', 'apple'],
+        support: 'priority',
       },
-    }),
-    prisma.event.create({
-      data: {
-        externalId: 'event_john_2',
-        title: 'Lunch with Sarah',
-        description: 'Catching up over lunch',
-        startTime: new Date(today.getTime() + 12 * 60 * 60 * 1000), // 12 PM today
-        endTime: new Date(today.getTime() + 13 * 60 * 60 * 1000), // 1 PM today
-        isAllDay: false,
-        location: 'Downtown Cafe',
-        status: 'confirmed',
-        visibility: 'default',
-        calendarId: calendars[0].id, // John's personal calendar
-        userId: users[0].id,
+    },
+  });
+
+  const enterprisePlan = await prisma.subscriptionPlan.create({
+    data: {
+      name: 'Enterprise',
+      description: 'Enterprise-grade features with unlimited access',
+      price: 49.99,
+      billingFrequency: 'monthly',
+      features: {
+        calendars: 'unlimited',
+        events: 'unlimited',
+        integrations: 'all',
+        support: '24/7',
       },
-    }),
-    // Tomorrow's events
-    prisma.event.create({
-      data: {
-        externalId: 'event_jane_1',
-        title: 'Doctor Appointment',
-        description: 'Annual checkup',
-        startTime: new Date(
-          today.getTime() + 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000,
-        ), // 10 AM tomorrow
-        endTime: new Date(
-          today.getTime() + 24 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000,
-        ), // 11 AM tomorrow
-        isAllDay: false,
-        location: 'Medical Center',
-        status: 'confirmed',
-        visibility: 'private',
-        calendarId: calendars[2].id, // Jane's main calendar
-        userId: users[1].id,
+    },
+  });
+
+  console.log('✅ Created 3 subscription plans');
+
+  // Create Sample Users
+  console.log('👤 Creating sample users...');
+  const hashedPassword = await bcrypt.hash('password123', 10);
+
+  // Super Admin User
+  const superAdminUser = await prisma.user.create({
+    data: {
+      email: 'superadmin@unical.com',
+      fullName: 'Super Administrator',
+      password: hashedPassword,
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      registrationDate: new Date(),
+      phoneNumber: '+1-555-0001',
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: superAdminUser.id,
+      roleId: superAdminRole.id,
+      assignedBy: superAdminUser.id, // self-assigned for bootstrap
+    },
+  });
+
+  // Admin User
+  const adminUser = await prisma.user.create({
+    data: {
+      email: 'admin@unical.com',
+      fullName: 'System Administrator',
+      password: hashedPassword,
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      registrationDate: new Date(),
+      phoneNumber: '+1-555-0002',
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: adminUser.id,
+      roleId: adminRole.id,
+      assignedBy: superAdminUser.id,
+    },
+  });
+
+  // Lead Manager User
+  const leadManagerUser = await prisma.user.create({
+    data: {
+      email: 'leadmanager@unical.com',
+      fullName: 'Lead Manager',
+      password: hashedPassword,
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      registrationDate: new Date(),
+      phoneNumber: '+1-555-0003',
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: leadManagerUser.id,
+      roleId: leadManagerRole.id,
+      assignedBy: superAdminUser.id,
+    },
+  });
+
+  // Sample Client Users
+  const clientUser1 = await prisma.user.create({
+    data: {
+      email: 'john.doe@example.com',
+      fullName: 'John Doe',
+      password: hashedPassword,
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      registrationDate: new Date(),
+      phoneNumber: '+1-555-1001',
+      timeZone: 'America/New_York',
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: clientUser1.id,
+      roleId: clientRole.id,
+      assignedBy: adminUser.id,
+    },
+  });
+
+  const clientUser2 = await prisma.user.create({
+    data: {
+      email: 'jane.smith@example.com',
+      fullName: 'Jane Smith',
+      password: hashedPassword,
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      registrationDate: new Date(),
+      phoneNumber: '+1-555-1002',
+      timeZone: 'America/Los_Angeles',
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: clientUser2.id,
+      roleId: clientRole.id,
+      assignedBy: adminUser.id,
+    },
+  });
+
+  // Create a user with multiple roles (client + lead_manager)
+  const multiRoleUser = await prisma.user.create({
+    data: {
+      email: 'multi.role@example.com',
+      fullName: 'Multi Role User',
+      password: hashedPassword,
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      registrationDate: new Date(),
+      phoneNumber: '+1-555-1003',
+      timeZone: 'America/Chicago',
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: multiRoleUser.id,
+      roleId: clientRole.id,
+      assignedBy: adminUser.id,
+    },
+  });
+
+  await prisma.userRole.create({
+    data: {
+      userId: multiRoleUser.id,
+      roleId: leadManagerRole.id,
+      assignedBy: superAdminUser.id,
+    },
+  });
+
+  console.log('✅ Created 6 sample users');
+
+  // Create Sample Subscriptions
+  console.log('📊 Creating sample subscriptions...');
+  await prisma.userSubscription.create({
+    data: {
+      userId: clientUser1.id,
+      planId: basicPlan.id,
+      status: SubscriptionStatus.ACTIVE,
+      startDate: new Date(),
+      renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+    },
+  });
+
+  await prisma.userSubscription.create({
+    data: {
+      userId: clientUser2.id,
+      planId: proPlan.id,
+      status: SubscriptionStatus.ACTIVE,
+      startDate: new Date(),
+      renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.userSubscription.create({
+    data: {
+      userId: multiRoleUser.id,
+      planId: enterprisePlan.id,
+      status: SubscriptionStatus.TRIAL,
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14-day trial
+    },
+  });
+
+  console.log('✅ Created 3 sample subscriptions');
+
+  // Create Sample Leads
+  console.log('🎯 Creating sample leads...');
+  const lead1 = await prisma.lead.create({
+    data: {
+      fullName: 'Alice Johnson',
+      email: 'alice.johnson@prospect.com',
+      phoneNumber: '+1-555-2001',
+      companyName: 'TechCorp Inc.',
+      source: 'website_form',
+      status: LeadStatus.NEW,
+      notes: 'Interested in enterprise features for team of 50+',
+      assignedToId: leadManagerUser.id,
+    },
+  });
+
+  const lead2 = await prisma.lead.create({
+    data: {
+      fullName: 'Bob Wilson',
+      email: 'bob.wilson@startup.com',
+      phoneNumber: '+1-555-2002',
+      companyName: 'StartupXYZ',
+      source: 'google_ads',
+      status: LeadStatus.CONTACTED,
+      notes: 'Small team, budget conscious, interested in basic plan',
+      assignedToId: leadManagerUser.id,
+    },
+  });
+
+  await prisma.lead.create({
+    data: {
+      fullName: 'Carol Brown',
+      email: 'carol.brown@freelancer.com',
+      source: 'referral',
+      status: LeadStatus.QUALIFIED,
+      notes: 'Freelance consultant, needs personal calendar management',
+      assignedToId: multiRoleUser.id,
+    },
+  });
+
+  await prisma.lead.create({
+    data: {
+      fullName: 'David Miller',
+      email: 'david.miller@bigcorp.com',
+      phoneNumber: '+1-555-2004',
+      companyName: 'BigCorp Industries',
+      source: 'trade_show',
+      status: LeadStatus.DISQUALIFIED,
+      notes:
+        'Not a good fit - they need manufacturing scheduling, not calendar management',
+    },
+  });
+
+  console.log('✅ Created 4 sample leads');
+
+  // Create Sample Audit Logs
+  console.log('📋 Creating sample audit logs...');
+  await prisma.auditLog.create({
+    data: {
+      performingUserId: superAdminUser.id,
+      action: 'user_created',
+      entityType: 'User',
+      affectedUserId: adminUser.id,
+      details: {
+        roles: ['admin'],
+        email: adminUser.email,
+        status: 'active',
       },
-    }),
-    prisma.event.create({
-      data: {
-        externalId: 'event_jane_2',
-        title: 'Kids Soccer Game',
-        description: "Emma's soccer game",
-        startTime: new Date(
-          today.getTime() + 24 * 60 * 60 * 1000 + 15 * 60 * 60 * 1000,
-        ), // 3 PM tomorrow
-        endTime: new Date(
-          today.getTime() + 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000,
-        ), // 5 PM tomorrow
-        isAllDay: false,
-        location: 'City Park Soccer Field',
-        status: 'confirmed',
-        visibility: 'default',
-        calendarId: calendars[3].id, // Jane's family calendar
-        userId: users[1].id,
+      ipAddress: '192.168.1.100',
+      userAgent: 'Mozilla/5.0 (Admin Panel)',
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      performingUserId: adminUser.id,
+      action: 'user_role_assigned',
+      entityType: 'User',
+      affectedUserId: clientUser1.id,
+      details: {
+        role_added: 'client',
+        previous_roles: [],
+        new_roles: ['client'],
       },
-    }),
-    // All-day event
-    prisma.event.create({
-      data: {
-        externalId: 'event_demo_1',
-        title: 'Holiday',
-        description: 'National Holiday',
-        startTime: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        endTime: new Date(
-          today.getTime() + 7 * 24 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000,
-        ), // 8 days from now
-        isAllDay: true,
-        status: 'confirmed',
-        visibility: 'public',
-        calendarId: calendars[4].id, // Demo calendar
-        userId: users[2].id,
+      ipAddress: '192.168.1.101',
+      userAgent: 'Mozilla/5.0 (Admin Panel)',
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      performingUserId: leadManagerUser.id,
+      action: 'lead_created',
+      entityType: 'Lead',
+      affectedLeadId: lead1.id,
+      details: {
+        source: lead1.source,
+        status: lead1.status,
+        company: lead1.companyName,
       },
-    }),
-    // Recurring event
-    prisma.event.create({
-      data: {
-        externalId: 'event_john_recurring',
-        title: 'Weekly Team Meeting',
-        description: 'Weekly team sync',
-        startTime: new Date(
-          today.getTime() + 2 * 24 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000,
-        ), // 2 PM in 2 days
-        endTime: new Date(
-          today.getTime() + 2 * 24 * 60 * 60 * 1000 + 15 * 60 * 60 * 1000,
-        ), // 3 PM in 2 days
-        isAllDay: false,
-        location: 'Virtual - Zoom',
-        status: 'confirmed',
-        visibility: 'default',
-        recurrenceRule: 'FREQ=WEEKLY;BYDAY=FR',
-        calendarId: calendars[1].id, // John's work calendar
-        userId: users[0].id,
+      ipAddress: '192.168.1.102',
+      userAgent: 'Mozilla/5.0 (Admin Panel)',
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      performingUserId: leadManagerUser.id,
+      action: 'lead_status_updated',
+      entityType: 'Lead',
+      affectedLeadId: lead2.id,
+      details: {
+        previous_status: 'NEW',
+        new_status: 'CONTACTED',
+        notes: 'Initial contact made via email',
       },
-    }),
-    // Past event
-    prisma.event.create({
-      data: {
-        externalId: 'event_demo_past',
-        title: 'Project Kickoff',
-        description: 'New project kickoff meeting',
-        startTime: new Date(
-          today.getTime() - 3 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000,
-        ), // 10 AM 3 days ago
-        endTime: new Date(
-          today.getTime() - 3 * 24 * 60 * 60 * 1000 + 11.5 * 60 * 60 * 1000,
-        ), // 11:30 AM 3 days ago
-        isAllDay: false,
-        location: 'Conference Room B',
-        status: 'confirmed',
-        visibility: 'default',
-        calendarId: calendars[4].id, // Demo calendar
-        userId: users[2].id,
-      },
-    }),
-  ]);
+      ipAddress: '192.168.1.102',
+      userAgent: 'Mozilla/5.0 (Admin Panel)',
+    },
+  });
 
-  console.log(`✅ Created ${events.length} events`);
+  console.log('✅ Created 4 sample audit logs');
 
-  // Create user calendar settings
-  console.log('⚙️  Creating user calendar settings...');
-  const settings = await Promise.all([
-    // Settings for each user-calendar combination
-    prisma.userCalendarSetting.create({
-      data: {
-        userId: users[0].id,
-        calendarId: calendars[0].id, // John's personal calendar
-        syncEnabled: true,
-        conflictResolution: 'manual',
-        notificationsEnabled: true,
-        defaultEventDuration: 60, // 1 hour
-      },
-    }),
-    prisma.userCalendarSetting.create({
-      data: {
-        userId: users[0].id,
-        calendarId: calendars[1].id, // John's work calendar
-        syncEnabled: true,
-        conflictResolution: 'auto_decline',
-        notificationsEnabled: true,
-        defaultEventDuration: 30, // 30 minutes
-      },
-    }),
-    prisma.userCalendarSetting.create({
-      data: {
-        userId: users[1].id,
-        calendarId: calendars[2].id, // Jane's main calendar
-        syncEnabled: true,
-        conflictResolution: 'manual',
-        notificationsEnabled: true,
-        defaultEventDuration: 60, // 1 hour
-      },
-    }),
-    prisma.userCalendarSetting.create({
-      data: {
-        userId: users[1].id,
-        calendarId: calendars[3].id, // Jane's family calendar
-        syncEnabled: true,
-        conflictResolution: 'auto_accept',
-        notificationsEnabled: false,
-        defaultEventDuration: 120, // 2 hours
-      },
-    }),
-    prisma.userCalendarSetting.create({
-      data: {
-        userId: users[2].id,
-        calendarId: calendars[4].id, // Demo calendar
-        syncEnabled: true,
-        conflictResolution: 'manual',
-        notificationsEnabled: true,
-        defaultEventDuration: 60, // 1 hour
-      },
-    }),
-  ]);
+  console.log('🎉 Database seeding completed successfully!');
 
-  console.log(`✅ Created ${settings.length} user calendar settings`);
-
-  // Detailed Summary
-  console.log('\n🎉 Database seeding completed successfully!');
-  console.log('='.repeat(80));
-  console.log(`
-📊 SEEDING SUMMARY
-${'='.repeat(80)}
-
-👤 USERS (${users.length} created):
-${users
-  .map(
-    (user, i) =>
-      `   ${i + 1}. ${user.displayName} (${user.email}) - ${user.timeZone}`,
-  )
-  .join('\n')}
-
-🔗 CONNECTED ACCOUNTS (${connectedAccounts.length} created):
-${connectedAccounts
-  .map((acc, i) => `   ${i + 1}. ${acc.provider} - ${acc.providerAccountId}`)
-  .join('\n')}
-
-📅 CALENDARS (${calendars.length} created):
-${calendars
-  .map(
-    (cal, i) =>
-      `   ${i + 1}. "${cal.name}" ${cal.isDefault ? '(Default)' : ''} - ${cal.color}`,
-  )
-  .join('\n')}
-
-📝 EVENTS (${events.length} created):
-${events
-  .map((event, i) => {
-    const date = event.startTime.toLocaleDateString();
-    const time = event.isAllDay
-      ? 'All Day'
-      : event.startTime.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-    return `   ${i + 1}. "${event.title}" - ${date} ${time}`;
-  })
-  .join('\n')}
-
-⚙️  CALENDAR SETTINGS (${settings.length} created):
-${settings
-  .map(
-    (setting, i) =>
-      `   ${i + 1}. Sync: ${setting.syncEnabled ? '✓' : '✗'}, Notifications: ${setting.notificationsEnabled ? '✓' : '✗'}, Default Duration: ${setting.defaultEventDuration}min`,
-  )
-  .join('\n')}
-
-🔍 TEST ACCOUNTS:
-• john.doe@example.com
-  - Google Calendar integration
-  - 2 calendars: Personal, Work
-  - Timezone: America/New_York
-
-• jane.smith@example.com
-  - Outlook Calendar integration  
-  - 2 calendars: Main Calendar, Family
-  - Timezone: America/Los_Angeles
-
-• demo@unical.app
-  - Google Calendar integration
-  - 1 calendar: Demo Calendar
-  - Timezone: UTC
-
-💡 NEXT STEPS:
-1. Start the backend: yarn workspace @unical/backend dev
-2. Start the frontend: yarn workspace @unical/frontend dev
-3. Test with any of the sample accounts above
-4. Check the calendar views for seeded events
-
-${'='.repeat(80)}
-  `);
+  // Print summary
+  console.log('\n📊 Seeding Summary:');
+  console.log(`   • ${permissions.length} permissions created`);
+  console.log(
+    `   • 4 roles created (client, admin, super_admin, lead_manager)`,
+  );
+  console.log(`   • 3 subscription plans created`);
+  console.log(
+    `   • 6 users created (including admin users with different roles)`,
+  );
+  console.log(`   • 3 subscriptions created`);
+  console.log(`   • 4 leads created`);
+  console.log(`   • 4 audit log entries created`);
+  console.log('\n🔑 Test Credentials:');
+  console.log('   Super Admin: superadmin@unical.com / password123');
+  console.log('   Admin: admin@unical.com / password123');
+  console.log('   Lead Manager: leadmanager@unical.com / password123');
+  console.log(
+    '   Client Users: john.doe@example.com, jane.smith@example.com / password123',
+  );
+  console.log('   Multi-role User: multi.role@example.com / password123');
 }
 
 main()
