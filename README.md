@@ -117,7 +117,7 @@ yarn dev
 
 # Run specific workspace commands
 yarn frontend dev          # Start only frontend
-yarn backend start:dev     # Start only backend
+yarn backend dev     # Start only backend
 
 # Environment setup
 yarn env:copy              # Copy all environment files

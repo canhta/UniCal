@@ -108,4 +108,17 @@ export class AuthController {
     await this.userService.verifyEmail(token);
     return { message: 'Email verified successfully' };
   }
+
+  @Post('register-oauth')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register or get OAuth user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User created or retrieved successfully',
+  })
+  async registerOAuth(@Body() oauthDto: any): Promise<any> {
+    const user = await this.authService.registerOrGetOAuthUser(oauthDto);
+    // Return only the user object for next-auth
+    return user.user || user;
+  }
 }

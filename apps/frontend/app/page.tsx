@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -21,10 +21,12 @@ export default function HomePage() {
           Streamline your scheduling and never miss an important event again.
         </p>
         <div className="flex gap-4 justify-center">
-          <Button>
-            <Link href="/dashboard">Get Started</Link>
-          </Button>
-          <Button>Learn More</Button>
+          <Link href="/register">
+            <Button size="lg">Get Started Free</Button>
+          </Link>
+          <Link href="/login">
+            <Button variant="outline" size="lg">Sign In</Button>
+          </Link>
         </div>
       </section>
 
@@ -91,9 +93,11 @@ export default function HomePage() {
             Join thousands of users who have streamlined their scheduling with
             UniCal.
           </p>
-          <Button>
-            <Link href="/dashboard">Start Free Today</Link>
-          </Button>
+          <Link href="/register">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+              Start Free Today
+            </Button>
+          </Link>
         </div>
       </section>
     </div>

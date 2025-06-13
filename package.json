@@ -19,7 +19,7 @@
     "env:copy": "cp apps/backend/.env.example apps/backend/.env && cp apps/frontend/.env.example apps/frontend/.env.local",
     "env:copy:backend": "cp apps/backend/.env.example apps/backend/.env",
     "env:copy:frontend": "cp apps/frontend/.env.example apps/frontend/.env.local",
-    "dev": "concurrently \"yarn backend start:dev\" \"yarn frontend dev\"",
+    "dev": "concurrently \"yarn backend dev\" \"yarn frontend dev\"",
     "frontend": "yarn workspace @unical/frontend",
     "backend": "yarn workspace @unical/backend",
     "core": "yarn workspace @unical/core",
@@ -45,9 +45,9 @@
     "build": "yarn core:build && yarn workspace @unical/frontend build && yarn workspace @unical/backend build",
     "build:frontend": "yarn workspace @unical/frontend build",
     "build:backend": "yarn workspace @unical/backend build",
-    "start": "concurrently \"yarn backend start:prod\" \"yarn frontend start\"",
+    "start": "concurrently \"yarn backend prod\" \"yarn frontend start\"",
     "start:frontend": "yarn workspace @unical/frontend start",
-    "start:backend": "yarn workspace @unical/backend start:prod"
+    "start:backend": "yarn workspace @unical/backend prod"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

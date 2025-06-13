@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useSession, signIn, signOut } from "next-auth/react";
-import { Button } from "@headlessui/react";
+import { useSession, signOut } from "next-auth/react";
+import { Button } from "@/components/ui";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -51,14 +51,18 @@ export default function Navbar() {
                 <span className="text-sm text-gray-600">
                   Welcome, {session.user?.name || session.user?.email}!
                 </span>
-                <Button onClick={() => signOut()}>Logout</Button>
+                <Button onClick={() => signOut()} variant="outline">
+                  Sign Out
+                </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button onClick={() => signIn()}>Login</Button>
-                <Button >
-                  <Link href="/dashboard">Get Started</Link>
-                </Button>
+                <Link href="/login">
+                  <Button variant="outline">Sign In</Button>
+                </Link>
+                <Link href="/register">
+                  <Button>Sign Up</Button>
+                </Link>
               </div>
             )}
           </div>
@@ -100,14 +104,18 @@ export default function Navbar() {
                     <span className="text-sm text-gray-600">
                       Welcome, {session.user?.name || session.user?.email}!
                     </span>
-                    <Button onClick={() => signOut()}>Logout</Button>
+                    <Button onClick={() => signOut()} variant="outline">
+                      Sign Out
+                    </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-2">
-                    <Button onClick={() => signIn()}>Login</Button>
-                    <Button className="mx-2">
-                      <Link href="/dashboard">Get Started</Link>
-                    </Button>
+                  <div className="flex flex-col space-y-2">
+                    <Link href="/login">
+                      <Button variant="outline" className="w-full">Sign In</Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button className="w-full">Sign Up</Button>
+                    </Link>
                   </div>
                 )}
               </div>

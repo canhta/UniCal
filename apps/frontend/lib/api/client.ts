@@ -19,6 +19,8 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1';
 
+console.log('🔧 API Client initialized with base URL:', API_BASE_URL);
+
 export interface ApiError {
   message: string;
   statusCode?: number;
@@ -145,6 +147,46 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  }
+
+  // OAuth user creation (creates user from OAuth provider data)
+  async createOAuthUser(data: {
+    email: string;
+    name: string;
+    image?: string;
+    provider: string;
+  }): Promise<AuthResponseDto> {
+    console.log('🚀 API Client: Creating OAuth user with data:', data);
+    console.log('🔗 API Client: Using base URL:', this.baseUrl);
+    
+    const payload = {
+      email: data.email,
+      displayName: data.name,
+      avatarUrl: data.image,
+      provider: data.provider,
+    };
+    
+    console.log('📦 API Client: Request payload:', payload);
+    
+    try {
+      const result = await this.request<AuthResponseDto>('/auth/register-oauth', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      
+      console.log('✅ API Client: OAuth user creation successful:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ API Client: OAuth user creation failed:', error);
+      
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+      }
+      
+      throw error;
+    }
   }
 
   async forgotPassword(data: ForgotPasswordDto): Promise<{ message: string }> {

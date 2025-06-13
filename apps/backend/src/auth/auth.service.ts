@@ -48,6 +48,34 @@ export class AuthService {
     return this.generateTokens(updatedUser);
   }
 
+  async registerOrGetOAuthUser(oauthDto: {
+    email: string;
+    displayName: string;
+    avatarUrl?: string;
+    provider: string;
+  }): Promise<AuthResponseDto> {
+    // Try to find existing user first
+    let user = await this.userService.findByEmail(oauthDto.email);
+
+    if (!user) {
+      // Create new OAuth user
+      user = await this.userService.findOrCreateUserFromProvider({
+        email: oauthDto.email,
+        name: oauthDto.displayName,
+        emailVerified: true, // OAuth emails are pre-verified
+      });
+
+      // Update with avatar if provided
+      if (oauthDto.avatarUrl) {
+        user = await this.userService.updateUser(user.id, {
+          avatarUrl: oauthDto.avatarUrl,
+        });
+      }
+    }
+
+    return this.generateTokens(user);
+  }
+
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {

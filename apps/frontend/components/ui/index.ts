@@ -1,6 +1,7 @@
 // UI Components - Barrel Exports
 export { Input, type InputProps } from "./input"
 export { Label } from "./label"
+export { Button, type ButtonProps, buttonVariants } from "./button"
 export { 
   Card, 
   CardHeader, 
