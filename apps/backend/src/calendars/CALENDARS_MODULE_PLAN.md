@@ -7,7 +7,7 @@
 ## 1. Core Interface (`i-calendar-platform.service.ts`)
 *Goal: Define a consistent contract for all platform-specific calendar services.*
 
-*   [ ] **Define `ICalendarPlatformService` Interface:**
+*   [x] **Define `ICalendarPlatformService` Interface:**
     *   `exchangeCodeForTokens(code: string, redirectUri: string): Promise<PlatformTokenResponseDto>`
     *   `refreshAccessToken(refreshToken: string): Promise<PlatformTokenRefreshResponseDto>`
     *   `revokeToken(token: string, tokenTypeHint?: 'access_token' | 'refresh_token'): Promise<void>`
@@ -23,23 +23,23 @@
 ## 2. Platform-Agnostic DTOs (for Interface Contract)
 *Goal: Define common data structures used by the `ICalendarPlatformService` interface and the main `CalendarsService` facade.*
 
-*   [ ] **`PlatformTokenResponseDto.ts`:** `accessToken`, `refreshToken?`, `expiresInSeconds?`, `scope?`, `idToken?`, `platformUserId?`, `email?`.
-*   [ ] **`PlatformTokenRefreshResponseDto.ts`:** `accessToken`, `expiresInSeconds?`, `scope?`, `idToken?`, `refreshToken?` (if rotated).
-*   [ ] **`PlatformCalendarDto.ts`:** `id` (native platform calendar ID), `name`, `description?`, `colorId?`, `backgroundColor?`, `timeZone?`, `isPrimary?`, `canEditEvents?`, `accessRole?`.
-*   [ ] **`PlatformEventDto.ts`:** `id` (native platform event ID), `title?`, `description?`, `startTime` (ISO String, UTC or with TZ), `endTime` (ISO String, UTC or with TZ), `timeZone?` (of event itself), `isAllDay?`, `location?`, `attendees?: PlatformAttendeeDto[]`, `organizer?: PlatformOrganizerDto`, `recurrenceRule?: string[]`, `recurringEventId?`, `status?`, `privacy?`, `colorId?`, `htmlLink?`, `hangoutLink?`, `created?` (ISO String), `updated?` (ISO String - platform's last modified), `reminders?: PlatformReminderDto`.
-*   [ ] **`PlatformAttendeeDto.ts`:** `email`, `displayName?`, `responseStatus?`, `organizer?`, `self?`.
-*   [ ] **`PlatformOrganizerDto.ts`:** `email`, `displayName?`, `self?`.
-*   [ ] **`PlatformReminderDto.ts`:** `useDefault: boolean`, `overrides?: { method: 'email' | 'popup', minutes: number }[]`.
-*   [ ] **`CreatePlatformEventDto.ts`:** (Subset of `PlatformEventDto` for creation, e.g., `title`, `startTime`, `endTime`, `attendees?`, `description?`, `location?`, `timeZone?` for interpreting start/end if not UTC, `recurrenceRule?`).
-*   [ ] **`UpdatePlatformEventDto.ts`:** (Subset of `PlatformEventDto` for updates, all fields optional, `recurrenceRule?`).
-*   [ ] **`FetchPlatformEventsQueryDto.ts`:** `timeMin?` (ISO DateTime), `timeMax?` (ISO DateTime), `syncToken?`, `pageToken?`, `maxResults?`, `showDeleted?`.
-*   [ ] **`FetchPlatformEventsResponseDto.ts`:** `events: PlatformEventDto[]`, `nextPageToken?: string`, `nextSyncToken?: string`.
-*   [ ] **`PlatformWebhookSubscriptionDto.ts`:** `id` (platform's webhook/subscription ID), `expirationTimestamp?: number` (Unix ms).
+*   [x] **`PlatformTokenResponseDto.ts`:** `accessToken`, `refreshToken?`, `expiresInSeconds?`, `scope?`, `idToken?`, `platformUserId?`, `email?`.
+*   [x] **`PlatformTokenRefreshResponseDto.ts`:** `accessToken`, `expiresInSeconds?`, `scope?`, `idToken?`, `refreshToken?` (if rotated).
+*   [x] **`PlatformCalendarDto.ts`:** `id` (native platform calendar ID), `name`, `description?`, `colorId?`, `backgroundColor?`, `timeZone?`, `isPrimary?`, `canEditEvents?`, `accessRole?`.
+*   [x] **`PlatformEventDto.ts`:** `id` (native platform event ID), `title?`, `description?`, `startTime` (ISO String, UTC or with TZ), `endTime` (ISO String, UTC or with TZ), `timeZone?` (of event itself), `isAllDay?`, `location?`, `attendees?: PlatformAttendeeDto[]`, `organizer?: PlatformOrganizerDto`, `recurrenceRule?: string[]`, `recurringEventId?`, `status?`, `privacy?`, `colorId?`, `htmlLink?`, `hangoutLink?`, `created?` (ISO String), `updated?` (ISO String - platform's last modified), `reminders?: PlatformReminderDto`.
+*   [x] **`PlatformAttendeeDto.ts`:** `email`, `displayName?`, `responseStatus?`, `organizer?`, `self?`.
+*   [x] **`PlatformOrganizerDto.ts`:** `email`, `displayName?`, `self?`.
+*   [x] **`PlatformReminderDto.ts`:** `useDefault: boolean`, `overrides?: { method: 'email' | 'popup', minutes: number }[]`.
+*   [x] **`CreatePlatformEventDto.ts`:** (Subset of `PlatformEventDto` for creation, e.g., `title`, `startTime`, `endTime`, `attendees?`, `description?`, `location?`, `timeZone?` for interpreting start/end if not UTC, `recurrenceRule?`).
+*   [x] **`UpdatePlatformEventDto.ts`:** (Subset of `PlatformEventDto` for updates, all fields optional, `recurrenceRule?`).
+*   [x] **`FetchPlatformEventsQueryDto.ts`:** `timeMin?` (ISO DateTime), `timeMax?` (ISO DateTime), `syncToken?`, `pageToken?`, `maxResults?`, `showDeleted?`.
+*   [x] **`FetchPlatformEventsResponseDto.ts`:** `events: PlatformEventDto[]`, `nextPageToken?: string`, `nextSyncToken?: string`.
+*   [x] **`PlatformWebhookSubscriptionDto.ts`:** `id` (platform's webhook/subscription ID), `expirationTimestamp?: number` (Unix ms).
 
 ## 3. Platform-Specific Services (e.g., `google-calendar.service.ts`, `microsoft-calendar.service.ts`)
 *Goal: Implement `ICalendarPlatformService` for each supported provider.*
 
-*   [ ] **For each platform (Google, Microsoft, etc.):**
+*   [x] **For each platform (Google, Microsoft, etc.):**
     *   Create `[PlatformName]CalendarService.ts` implementing `ICalendarPlatformService`.
     *   Inject `HttpService` (from `@nestjs/axios`) and `ConfigService`.
     *   Use official SDKs (e.g., `googleapis`, `@microsoft/microsoft-graph-client`) or direct HTTP calls.
@@ -52,12 +52,12 @@
 ## 4. Main Facade Service (`calendars.service.ts`)
 *Goal: Provide a single entry point for other backend modules to interact with calendar platforms, abstracting away the specific provider.*
 
-*   [ ] Create `CalendarsService`.
-*   [ ] Inject all platform-specific services (e.g., `GoogleCalendarService`, `MicrosoftCalendarService`).
-*   [ ] Inject `AccountsService` (to fetch `ConnectedAccount` details like platform type and tokens).
-*   [ ] Inject `EncryptionService` (to decrypt tokens).
-*   [ ] **Helper Method `_getPlatformService(platformType: string): ICalendarPlatformService`:** Returns the correct platform-specific service instance.
-*   [ ] **Helper Method `_getDecryptedAccessToken(connectedAccountId: string): Promise<string>`:**
+*   [x] Create `CalendarsService`.
+*   [x] Inject all platform-specific services (e.g., `GoogleCalendarService`, `MicrosoftCalendarService`).
+*   [x] Inject `AccountsService` (to fetch `ConnectedAccount` details like platform type and tokens).
+*   [x] Inject `EncryptionService` (to decrypt tokens).
+*   [x] **Helper Method `_getPlatformService(platformType: string): ICalendarPlatformService`:** Returns the correct platform-specific service instance.
+*   [x] **Helper Method `_getDecryptedAccessToken(connectedAccountId: string): Promise<string>`:**
     *   Uses `AccountsService.getRawTokens(connectedAccountId)` (new method in `AccountsService` to get encrypted tokens).
     *   Uses `EncryptionService.decrypt(encryptedToken)`.
     *   Handles token refresh if necessary:
@@ -67,7 +67,7 @@
             *   Call `_getPlatformService(platform).refreshAccessToken(decryptedRefreshToken)`.
             *   Use `AccountsService.updateTokens(connectedAccountId, newTokens)` to store new (encrypted) tokens.
             *   Return new decrypted `accessToken`.
-*   [ ] **Implement methods mirroring `ICalendarPlatformService`, but taking `connectedAccountId: string` as the first argument:**
+*   [x] **Implement methods mirroring `ICalendarPlatformService`, but taking `connectedAccountId: string` as the first argument:**
     *   Example: `async listNativeCalendars(connectedAccountId: string): Promise<PlatformCalendarDto[]>`:
         1.  Fetch `ConnectedAccount` using `AccountsService.getAccountByIdInternal(connectedAccountId)` to get `provider` type.
         2.  Get `accessToken` using `_getDecryptedAccessToken(connectedAccountId)`.
@@ -78,14 +78,14 @@
 ## 5. Module Setup (`calendars.module.ts`)
 *Goal: Configure the NestJS module for calendars.*
 
-*   [ ] Create `CalendarsModule`.
-*   [ ] Import `HttpModule` (from `@nestjs/axios`).
-*   [ ] Import `ConfigModule`.
-*   [ ] Import `forwardRef(() => AccountsModule)` (for `AccountsService`).
-*   [ ] Import `EncryptionModule` (or a shared crypto module).
-*   [ ] Provide all platform-specific services (e.g., `GoogleCalendarService`, `MicrosoftCalendarService`).
-*   [ ] Declare and Export `CalendarsService` (the facade service).
-*   [ ] **No controllers are expected in this module.** It serves other backend modules.
+*   [x] Create `CalendarsModule`.
+*   [x] Import `HttpModule` (from `@nestjs/axios`).
+*   [x] Import `ConfigModule`.
+*   [x] Import `forwardRef(() => AccountsModule)` (for `AccountsService`).
+*   [x] Import `EncryptionModule` (or a shared crypto module).
+*   [x] Provide all platform-specific services (e.g., `GoogleCalendarService`, `MicrosoftCalendarService`).
+*   [x] Declare and Export `CalendarsService` (the facade service).
+*   [x] **Controllers created:** `CalendarsController` provides REST endpoints for calendar management.
 
 ## 6. Error Handling, Rate Limiting, Retries
 *Goal: Make platform interactions resilient.*

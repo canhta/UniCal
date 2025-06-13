@@ -11,6 +11,10 @@ import {
   CreateEventRequestDto,
   UpdateEventRequestDto,
   GetEventsQueryDto,
+  CalendarResponseDto,
+  SyncCalendarDto,
+  UpdateCalendarSettingsDto,
+  PlatformCalendarDto,
 } from '@unical/core';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1';
@@ -127,6 +131,9 @@ class ApiClient {
 
   // Auth endpoints
   async login(data: LoginDto): Promise<AuthResponseDto> {
+
+    console.log('ApiClient:login called with data:', data);
+
     return this.request<AuthResponseDto>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -197,6 +204,10 @@ class ApiClient {
     return this.request<EventResponseDto[]>(`/events${queryString}`);
   }
 
+  async getEventById(eventId: string): Promise<EventResponseDto> {
+    return this.request<EventResponseDto>(`/events/${eventId}`);
+  }
+
   async createEvent(data: CreateEventRequestDto): Promise<EventResponseDto> {
     return this.request<EventResponseDto>('/events', {
       method: 'POST',
@@ -213,6 +224,36 @@ class ApiClient {
 
   async deleteEvent(eventId: string): Promise<void> {
     return this.request<void>(`/events/${eventId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Calendar endpoints
+  async getUserCalendars(includeHidden?: boolean): Promise<CalendarResponseDto[]> {
+    const queryString = includeHidden !== undefined ? `?includeHidden=${includeHidden}` : '';
+    return this.request<CalendarResponseDto[]>(`/calendars${queryString}`);
+  }
+
+  async getExternalCalendars(accountId: string): Promise<PlatformCalendarDto[]> {
+    return this.request<PlatformCalendarDto[]>(`/calendars/external/${accountId}`);
+  }
+
+  async syncCalendar(data: SyncCalendarDto): Promise<CalendarResponseDto> {
+    return this.request<CalendarResponseDto>('/calendars/sync', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCalendarSettings(calendarId: string, data: UpdateCalendarSettingsDto): Promise<CalendarResponseDto> {
+    return this.request<CalendarResponseDto>(`/calendars/${calendarId}/settings`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async unsyncCalendar(calendarId: string): Promise<void> {
+    return this.request<void>(`/calendars/${calendarId}`, {
       method: 'DELETE',
     });
   }

@@ -2,6 +2,8 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
+import { apiClient } from './lib/api/client';
+import { LoginDto, AuthResponseDto } from '@unical/core';
 
 export const {
   handlers: { GET, POST },
@@ -17,15 +19,24 @@ export const {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // Call backend API to verify credentials
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(credentials),
-        });
-        if (!res.ok) return null;
-        const user = await res.json();
-        return user;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+          const loginData: LoginDto = {
+            email: credentials.email as string,
+            password: credentials.password as string,
+          };
+          const response = await apiClient.login(loginData);
+          return {
+            id: response.user.id,
+            email: response.user.email,
+            name: response.user.name,
+            image: response.user.avatarUrl,
+          };
+        } catch (error) {
+          return null;
+        }
       },
     }),
     GoogleProvider({
