@@ -91,6 +91,36 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 *   [ ] **Security:** Perform OWASP Top 10 review. Ensure comprehensive input validation and security headers.
 *   [ ] **Deployment:** Finalize Dockerfile. Prepare deployment scripts and CI/CD pipeline.
 
+---
+
+## Phase 5: Admin Panel MVP Backend
+
+**Goal:** Implement backend functionalities for the Admin Panel MVP as defined in `docs/Admin_FRD_MVP.md`.
+
+*   [ ] **`AdminModule` (`ADMIN_MODULE_PLAN.md`):**
+    *   [ ] **Authentication & Authorization:** Integrate with Auth0 for admin users. Implement RBAC for `Super Admin` and `Admin` roles (FR-AUSER-004-MVP, FR-AUSER-005-MVP).
+    *   [ ] **Admin User Management:** Implement CRUD operations for Admin Panel users (FR-AUSER-001-MVP to FR-AUSER-003-MVP). Super Admin only.
+    *   [ ] **Client User Management (Proxy to Main App):** Implement endpoints to view, update status, and (soft) delete client application users. These will largely proxy requests or interact directly with the main application's user data (FR-CUSER-001-MVP to FR-CUSER-005-MVP).
+    *   [ ] **Dashboard Data:** Implement endpoint to provide data for the simplified admin dashboard (FR-GEN-002-MVP).
+    *   [ ] **Global Search (Client Users):** Implement endpoint for searching client users (FR-GEN-003-MVP).
+    *   [ ] **Audit Logging:** Implement service to record and retrieve audit logs for critical admin and client user actions (FR-GEN-004-MVP).
+    *   [ ] **CRM Data (Proxy/Read):** Implement endpoints to view client user contact info and basic interaction logs (FR-CRM-001-MVP, FR-CRM-002-MVP).
+    *   [ ] **Subscription Data (Proxy/Read & Cancel):** Implement endpoints to view subscription plans, client user subscriptions, and initiate subscription cancellations (FR-SUB-001-MVP, FR-SUB-002-MVP, FR-SUB-003-MVP).
+    *   [ ] **API Documentation:** Ensure all Admin Panel API endpoints are documented with Swagger.
+    *   [ ] **Testing:** Write unit and integration tests for all Admin Panel functionalities.
+
+*(Agent: Populate `apps/backend/src/admin/ADMIN_MODULE_PLAN.md` with detailed tasks based on `Admin_FRD_MVP.md` and the above items.)*
+
+## Phase 6: Integration & Refinement (Renumbered from Phase 4)
+
+**Goal:** Finalize the application with comprehensive testing, complete documentation, security hardening, and deployment readiness.
+
+*   [ ] **Testing:** Achieve high coverage with unit, integration, and E2E tests. Setup and integrate CI.
+*   [ ] **Code Quality:** Enforce linting and formatting via CI. Conduct peer reviews.
+*   [ ] **API Docs:** Ensure Swagger documentation is complete, accurate, and user-friendly for all modules.
+*   [ ] **Security:** Perform OWASP Top 10 review. Ensure comprehensive input validation and security headers.
+*   [ ] **Deployment:** Finalize Dockerfile. Prepare deployment scripts and CI/CD pipeline.
+
 **Agent Workflow:**
 1.  **Understand Phase Goals:** For each phase and sub-phase, internalize the objectives.
 2.  **Populate Module Plans:** For each module, populate its `[MODULE_NAME]_PLAN.md` with detailed, actionable TODOs derived from the goals of the **current phase/sub-phase**. These module plans are the granular checklists.

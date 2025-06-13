@@ -82,7 +82,45 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
     *   Configure Jest & React Testing Library. Write initial unit/integration tests. Update `TESTING_SETUP_PLAN.md`.
 *   [ ] **SSR/Optimization Review:** Review Server/Client Components, Next.js optimizations.
 
-## Phase 5: Advanced Features (Post-Initial Product - Placeholder)
+## Phase 5: Admin Panel MVP UI (Aligns with Backend Admin Panel MVP)
+**Goal:** Implement the user interface for the Admin Panel MVP, enabling administrators to manage users and view system information as per `docs/Admin_FRD_MVP.md`.
+
+*   [ ] **Admin Panel Layout & Navigation (`/app/(admin)/layout.tsx`, `/components/admin/layout/ADMIN_LAYOUT_PLAN.md`):
+    *   [ ] Create a distinct layout for the Admin Panel, separate from the client-facing application.
+    *   [ ] Implement navigation (sidebar/topbar) for Admin Panel sections (Dashboard, User Management, Audit Logs, etc.) based on user role (Admin/Super Admin).
+    *   [ ] Ensure secure access to admin routes, redirecting if not authenticated or authorized.
+*   [ ] **Admin Authentication (`/app/(admin)/login/page.tsx`, `/lib/auth/ADMIN_AUTH_PLAN.md`):
+    *   [ ] Implement login page for Admin Panel users, integrating with Auth0 (FR-GEN-001-MVP).
+    *   [ ] Handle session management specifically for admin users.
+*   [ ] **Admin Dashboard (`/app/(admin)/dashboard/ADMIN_DASHBOARD_PLAN.md`):
+    *   [ ] Display KPIs: Total client users, new registrations, active subscriptions (FR-GEN-002-MVP).
+    *   [ ] Provide quick links to user management sections.
+*   [ ] **Global Search (`/components/admin/layout/ADMIN_LAYOUT_PLAN.md` - part of header):
+    *   [ ] Implement UI for global search of client users by name/email (FR-GEN-003-MVP).
+    *   [ ] Display search results and allow navigation to user details.
+*   [ ] **Audit Logs (`/app/(admin)/audit-logs/ADMIN_AUDIT_LOGS_PLAN.md`):
+    *   [ ] Display audit logs with filtering options (date range, performing admin) (FR-GEN-004-MVP).
+*   [ ] **Client User Management UI (`/app/(admin)/users/clients/ADMIN_CLIENT_USERS_PLAN.md`):
+    *   [ ] View list of client users with pagination, sorting, filtering (FR-CUSER-001-MVP).
+    *   [ ] View client user details (profile, subscription status, contact info, basic interaction log) (FR-CUSER-002-MVP, FR-CRM-001-MVP, FR-CRM-002-MVP).
+    *   [ ] Form to create client users manually (FR-CUSER-003-MVP).
+    *   [ ] Form to update client user basic info and status (FR-CUSER-004-MVP).
+    *   [ ] Functionality to (soft) delete client users (Super Admin only) (FR-CUSER-005-MVP).
+*   [ ] **Admin User Management UI (`/app/(admin)/users/admins/ADMIN_ADMIN_USERS_PLAN.md` - Super Admin only):
+    *   [ ] View list of admin users (FR-AUSER-001-MVP).
+    *   [ ] Form to create admin users (triggering Auth0 invite) (FR-AUSER-002-MVP).
+    *   [ ] Form to update admin user role and status (FR-AUSER-003-MVP).
+*   [ ] **Subscription Viewing UI (Integrated into Client User Details & Separate View):
+    *   [ ] Display list of available subscription plans (read-only) (`/app/(admin)/subscriptions/plans/ADMIN_SUB_PLANS_PLAN.md`) (FR-SUB-001-MVP).
+    *   [ ] Display client user's subscription details within their profile (FR-SUB-002-MVP).
+    *   [ ] UI to cancel a client user's subscription (FR-SUB-003-MVP).
+*   [ ] **API Integration:** Connect all UI components to the Admin Panel backend APIs.
+*   [ ] **State Management:** Utilize existing or new state management solutions for Admin Panel UI state.
+*   [ ] **Testing:** Write unit and integration tests for Admin Panel components and features.
+
+*(Agent: Create `*_PLAN.md` files in relevant `apps/frontend/app/(admin)/...` and `apps/frontend/components/admin/...` directories. Populate them with detailed tasks based on `Admin_FRD_MVP.md` and the above items.)*
+
+## Phase 6: Advanced Features (Post-Initial Product - Placeholder - Renumbered)
 **Goal:** Implement features beyond the initial product scope, as defined in FRD.
 *   Features: Full Email/Password Account Management (FR3.1.1, FR3.1.2, FR3.1.4, FR3.1.5), Advanced Calendar Views, Advanced Event Management, Personal Booking Page, Granular Privacy, AI Features, Task Integration.
 *   (Each will have its own `[FEATURE_NAME]_PLAN.md`)
