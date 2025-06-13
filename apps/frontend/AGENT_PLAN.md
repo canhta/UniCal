@@ -10,7 +10,7 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 *   **Iterative Refinement:** Address UI/UX challenges progressively, informed by Challenges.md.
 *   **Phased Rollout:** Align with FRD and backend capabilities.
 
-**Note on FRD Alignment:** Initial product: simplified/SSO login, unified calendar, core event CRUD, Google/Outlook sync. Advanced features post-initial product.
+**Note on FRD Alignment:** Initial product: simplified/SSO login (unified user model, multi-role), unified calendar, core event CRUD, Google/Outlook sync, basic lead management for admins. Advanced features post-initial product.
 
 ## Phase 1: Core Setup & Foundational UI (Aligns with SETUP_PLAN Phases 1-2)
 **Goal:** Establish a runnable Next.js project with basic layout, UI component structure, and environment setup.
@@ -24,11 +24,13 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 *   [x] **Basic Pages:** Create landing page, dashboard, calendar, integrations, and settings pages.
 
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
-**Goal:** Implement user authentication using next-auth v5 with username/password, Google, and Microsoft providers. Create basic page structure with protected routes.
+**Goal:** Implement user authentication using next-auth v5 with username/password, Google, and Microsoft providers, supporting a unified user model and multi-role RBAC. Create basic page structure with protected routes.
 
 *   [ ] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):**
     *   Use [next-auth v5](https://authjs.dev/getting-started/installation) for authentication.
-    *   Support username/password, Google, and Microsoft providers ([Google setup](https://authjs.dev/getting-started/providers/google)).
+    *   Support username/password, Google, and Microsoft providers.
+    *   Backend will manage unified user profiles and roles; frontend auth will focus on obtaining tokens and session state.
+    *   Ensure session information includes user roles for client-side conditional rendering if needed (primary RBAC is backend enforced).
     *   Follow [migration guide](https://authjs.dev/getting-started/migrating-to-v5) if upgrading from previous versions.
     *   Add environment variables for provider credentials and next-auth secret.
     *   Create `/auth.ts` config file exporting next-auth handlers and provider configs.
@@ -36,7 +38,7 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
     *   Wrap app in `SessionProvider` from `next-auth/react` ([see guide](https://nextjs.org/learn/dashboard-app/adding-authentication)).
     *   Update login/logout UI to use next-auth's `signIn`/`signOut` functions.
     *   Use `useSession` hook in client components and `auth()` in server components to access session/user info.
-    *   Protect routes using session checks in both server and client components.
+    *   Protect routes using session checks in both server and client components. Admin routes will require specific roles.
     *   Update `AUTH_FEATURE_PLAN.md` with detailed steps and code snippets.
 *   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
 *   [ ] **Initial Page Structure (`app/`):
@@ -83,56 +85,33 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 *   [ ] **SSR/Optimization Review:** Review Server/Client Components, Next.js optimizations.
 
 ## Phase 5: Admin Panel MVP UI (Aligns with Backend Admin Panel MVP)
-**Goal:** Implement the user interface for the Admin Panel MVP, enabling administrators to manage users and view system information as per `docs/Admin_FRD_MVP.md`.
+
+**Goal:** Implement the user interface for the Admin Panel MVP, enabling administrators to manage all system users (unified table, multi-role) and leads, and view system information as per the updated `docs/Admin_FRD.md`.
 
 *   [ ] **Admin Panel Layout & Navigation (`/app/(admin)/layout.tsx`, `/components/admin/layout/ADMIN_LAYOUT_PLAN.md`):
-    *   [ ] Create a distinct layout for the Admin Panel, separate from the client-facing application.
-    *   [ ] Implement navigation (sidebar/topbar) for Admin Panel sections (Dashboard, User Management, Audit Logs, etc.) based on user role (Admin/Super Admin).
-    *   [ ] Ensure secure access to admin routes, redirecting if not authenticated or authorized.
+    *   [ ] Create a distinct layout for the Admin Panel.
+    *   [ ] Implement navigation (sidebar/topbar) for Admin Panel sections (Dashboard, User Management, Lead Management, Audit Logs, etc.) based on user role(s) (Admin/Super Admin).
+    *   [ ] Ensure secure access to admin routes, redirecting if not authenticated or authorized with appropriate role(s).
 *   [ ] **Admin Authentication (`/app/(admin)/login/page.tsx`, `/lib/auth/ADMIN_AUTH_PLAN.md`):
     *   [ ] Implement login page for Admin Panel users, integrating with Auth0 (FR-GEN-001-MVP).
-    *   [ ] Handle session management specifically for admin users.
+    *   [ ] Handle session management specifically for admin-roled users.
 *   [ ] **Admin Dashboard (`/app/(admin)/dashboard/ADMIN_DASHBOARD_PLAN.md`):
-    *   [ ] Display KPIs: Total client users, new registrations, active subscriptions (FR-GEN-002-MVP).
-    *   [ ] Provide quick links to user management sections.
+    *   [ ] Display KPIs: Total users (by type/role if possible), new registrations, active subscriptions (FR-GEN-002-MVP).
+    *   [ ] Provide quick links to user and lead management sections.
 *   [ ] **Global Search (`/components/admin/layout/ADMIN_LAYOUT_PLAN.md` - part of header):
-    *   [ ] Implement UI for global search of client users by name/email (FR-GEN-003-MVP).
-    *   [ ] Display search results and allow navigation to user details.
+    *   [ ] Implement UI for global search of users (all types) and leads by name/email (FR-GEN-003-MVP).
+    *   [ ] Display search results and allow navigation to user/lead details.
 *   [ ] **Audit Logs (`/app/(admin)/audit-logs/ADMIN_AUDIT_LOGS_PLAN.md`):
-    *   [ ] Display audit logs with filtering options (date range, performing admin) (FR-GEN-004-MVP).
-*   [ ] **Client User Management UI (`/app/(admin)/users/clients/ADMIN_CLIENT_USERS_PLAN.md`):
-    *   [ ] View list of client users with pagination, sorting, filtering (FR-CUSER-001-MVP).
-    *   [ ] View client user details (profile, subscription status, contact info, basic interaction log) (FR-CUSER-002-MVP, FR-CRM-001-MVP, FR-CRM-002-MVP).
-    *   [ ] Form to create client users manually (FR-CUSER-003-MVP).
-    *   [ ] Form to update client user basic info and status (FR-CUSER-004-MVP).
-    *   [ ] Functionality to (soft) delete client users (Super Admin only) (FR-CUSER-005-MVP).
-*   [ ] **Admin User Management UI (`/app/(admin)/users/admins/ADMIN_ADMIN_USERS_PLAN.md` - Super Admin only):
-    *   [ ] View list of admin users (FR-AUSER-001-MVP).
-    *   [ ] Form to create admin users (triggering Auth0 invite) (FR-AUSER-002-MVP).
-    *   [ ] Form to update admin user role and status (FR-AUSER-003-MVP).
-*   [ ] **Subscription Viewing UI (Integrated into Client User Details & Separate View):
-    *   [ ] Display list of available subscription plans (read-only) (`/app/(admin)/subscriptions/plans/ADMIN_SUB_PLANS_PLAN.md`) (FR-SUB-001-MVP).
-    *   [ ] Display client user's subscription details within their profile (FR-SUB-002-MVP).
-    *   [ ] UI to cancel a client user's subscription (FR-SUB-003-MVP).
-*   [ ] **API Integration:** Connect all UI components to the Admin Panel backend APIs.
-*   [ ] **State Management:** Utilize existing or new state management solutions for Admin Panel UI state.
-*   [ ] **Testing:** Write unit and integration tests for Admin Panel components and features.
-
-*(Agent: Create `*_PLAN.md` files in relevant `apps/frontend/app/(admin)/...` and `apps/frontend/components/admin/...` directories. Populate them with detailed tasks based on `Admin_FRD_MVP.md` and the above items.)*
-
-## Phase 6: Advanced Features (Post-Initial Product - Placeholder - Renumbered)
-**Goal:** Implement features beyond the initial product scope, as defined in FRD.
-*   Features: Full Email/Password Account Management (FR3.1.1, FR3.1.2, FR3.1.4, FR3.1.5), Advanced Calendar Views, Advanced Event Management, Personal Booking Page, Granular Privacy, AI Features, Task Integration.
-*   (Each will have its own `[FEATURE_NAME]_PLAN.md`)
-
-## General Agent Workflow:
-1.  **Understand Phase Goals:** Internalize objectives for each phase.
-2.  **Create/Update Detailed Plans:** For items referencing `*_PLAN.md`, create/update that file with detailed, actionable TODOs, linking to FRD requirements.
-3.  **Implement Incrementally:** Execute TODOs. Create/update components, pages, services. Integrate with backend APIs (mock if necessary, mark for later real integration).
-4.  **Testing:** Write unit/integration tests concurrently.
-5.  **Commit Frequently:** Small, logical commits with clear messages.
-6.  **Address Challenges:** Refer to `Challenges.md` for guidance.
-7.  **Iterate:** Refine UI/UX based on visual output and usability.
-8.  **Seek Clarification:** If a task is ambiguous, ask before proceeding.
-
-*(Agent: Start by creating directory structure and initial `*_PLAN.md` files for Phase 1 & 2, then proceed with implementation.)*
+    *   [ ] Display audit logs with filtering options (date range, performing admin, entity type: User/Lead) (FR-GEN-004-MVP).
+*   [ ] **Unified User Management UI (`/app/(admin)/users/ADMIN_USERS_PLAN.md`):
+    *   [ ] View list of all system users with pagination, sorting, filtering (by role(s), status) (FR-USER-001-MVP).
+    *   [ ] View user details (profile, assigned role(s), subscription status if applicable, contact info, basic interaction log) (FR-USER-002-MVP, FR-CRM-001-MVP, FR-CRM-002-MVP).
+    *   [ ] Form to create users manually, assign role(s) (FR-USER-003-MVP).
+    *   [ ] Form to update user basic info, status, and manage assigned role(s) (FR-USER-004-MVP).
+    *   [ ] Functionality to (soft) delete users (Super Admin role only) (FR-USER-005-MVP).
+*   [ ] **Lead Management UI (`/app/(admin)/leads/ADMIN_LEADS_PLAN.md`):
+    *   [ ] View list of leads with pagination, sorting, filtering (FR-LEAD-002-MVP).
+    *   [ ] Form to create leads manually (FR-LEAD-001-MVP).
+    *   [ ] View lead details (FR-LEAD-003-MVP).
+    *   [ ] Form to update lead info and status (FR-LEAD-004-MVP).
+    *   [ ] Functionality to convert lead to a user (pre-fills user creation form, assigns default role) (FR-LEAD-005

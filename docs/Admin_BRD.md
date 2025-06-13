@@ -4,10 +4,10 @@
   * **1.1. Purpose**
     This Business Requirements Document (BRD) outlines the business needs and functional specifications for the UniCal Admin Panel. It serves as the foundational guide for developing the Admin Panel to support and manage the client-facing UniCal application, ensuring alignment with business goals and operational necessities.
   * **1.2. Project Background & Context**
-    The UniCal Admin Panel is being developed to efficiently manage and support the operations of the client-facing UniCal application. It will provide internal teams with tools for Customer Relationship Management (CRM), lead capture and processing, user account management (for platform users and administrative staff), and subscription management. The Admin Panel is an integral component of the UniCal platform ecosystem, crucial for operational excellence, data integrity, and enabling platform growth.
+    The UniCal Admin Panel is being developed to efficiently manage and support the operations of the client-facing UniCal application. It will provide internal teams with tools for Customer Relationship Management (CRM) at a basic level (focusing on user and lead data), lead capture and processing, unified user account management (for all platform users including clients, leads, and administrative staff using a single user table with multi-role capabilities), and subscription management. The Admin Panel is an integral component of the UniCal platform ecosystem, crucial for operational excellence, data integrity, and enabling platform growth.
 
 * **2\. Executive Summary**
-  This Admin Panel project provides internal capabilities for managing key operational aspects of UniCal's client-facing application. Its primary purpose is to centralize and streamline CRM, lead management, platform user administration, and customer subscription management. Key objectives include enhancing operational efficiency, improving data integrity, strengthening security, and providing better tools for internal teams. The scope encompasses dedicated modules for CRM, lead processing, user lifecycle management (with RBAC), and subscription handling, alongside reporting and analytics. Anticipated benefits include reduced manual effort, improved responsiveness, more effective user/subscription management, and enhanced data-driven decision-making.
+  This Admin Panel project provides internal capabilities for managing key operational aspects of UniCal's client-facing application. Its primary purpose is to centralize and streamline CRM (user/lead focused), lead management, platform user administration (single user table, multi-role RBAC), and customer subscription management. Key objectives include enhancing operational efficiency, improving data integrity, strengthening security, and providing better tools for internal teams. The scope encompasses dedicated modules for basic CRM, lead processing, unified user lifecycle management, and subscription handling, alongside reporting and analytics. Anticipated benefits include reduced manual effort, improved responsiveness, more effective user/subscription management, and enhanced data-driven decision-making.
 
 * **3\. Project Objectives & Success Metrics**
   * **3.1. Business Objectives**
@@ -23,11 +23,11 @@
       * Average Task Completion Time: Target: 20% reduction from baseline for key recurring tasks.
       * Administrative Error Rate: Target: <2% for tasks like CRM data entry or subscription modifications.
     * **User Management:**
-      * User Provisioning/De-provisioning Time: Target: <15 minutes for provisioning, <5 minutes for de-provisioning.
+      * User Provisioning/De-provisioning Time: Target: <15 minutes for provisioning, <5 minutes for de-provisioning for any user type.
       * Access-Related Security Incidents: Target: Zero per quarter.
     * **CRM & Lead Management:**
-      * Lead Processing Time (Admin Component): Target: <30 minutes from capture to processing/assignment.
-      * CRM Data Accuracy Score: Target: >95% complete and accurate records.
+      * Lead Processing Time (Admin Component): Target: <30 minutes from capture to initial processing/assignment.
+      * User/Lead Data Accuracy Score: Target: >95% complete and accurate records.
     * **Subscription Management:**
       * Subscription Issue Resolution Time: Target: 25% reduction from baseline.
       * Administrative Churn Contributors: Target: <0.5% of total churn per month due to admin errors/delays.
@@ -41,9 +41,9 @@
   * **4.1. In Scope**
     The following are explicitly included:
     * **Admin Dashboard:** Centralized, role-aware overview of key metrics, alerts, and quick access links.
-    * **Customer Relationship Management (CRM) Module:** Contact and company record management (CRUD), interaction logging, customer segmentation, sales opportunity management.
-    * **Lead Capture & Management Module:** Centralized lead data management, assignment/routing, status tracking, conversion monitoring.
-    * **User Management Module:** Lifecycle management for client app users and admin users (CRUD, activate/deactivate), RBAC, secure authentication (MFA).
+    * **Basic CRM Module:** Focused on contact information management for Users and Leads, interaction logging.
+    * **Lead Capture & Management Module:** Centralized lead data management, assignment/routing (basic), status tracking, conversion monitoring to User.
+    * **Unified User Management Module:** Lifecycle management for all system users (clients, admins, leads if they become users) using a single user table. CRUD operations, activate/deactivate, multi-role RBAC definition and assignment, secure authentication (MFA for admins).
     * **Subscription Management Module:** Plan management, customer subscription lifecycle (CRUD, pause/resume, upgrade/downgrade), billing operations, payment tracking, coupon/discount management.
     * **Reporting & Analytics Module:** Pre-defined reports, data visualization, data export.
     * **Audit Logging:** Comprehensive logging of significant admin actions.
@@ -105,10 +105,10 @@
       * **FR-GEN-005 (High): Reporting Shell:** Foundational framework for generating, viewing, and managing reports.
       * **FR-GEN-006 (Medium): Admin User Profile Management:** Admins can manage their profiles (password, contact info, notification preferences).
     * **7.1.2. CRM Module Requirements**
-      * **FR-CRM-001 (Critical): Contact Management:** CRUD operations for contact records (standard and custom fields).
-      * **FR-CRM-002 (Critical): Contact Interaction History:** View comprehensive interaction history per contact.
-      * **FR-CRM-003 (Critical): Company/Account Management:** CRUD operations for company/account records; link contacts to companies.
-      * **FR-CRM-004 (High): Lead & Opportunity/Deal Management (Admin View):** View and manage leads in the sales pipeline and track sales opportunities.
+      * **FR-CRM-001 (Critical): User/Lead Contact Management:** CRUD operations for contact records (standard and custom fields) associated with User and Lead entities.
+      * **FR-CRM-002 (Critical): User/Lead Interaction History:** View comprehensive interaction history per User/Lead.
+      * **FR-CRM-003 (High): Company/Account Management (Simplified):** Basic ability to associate Users/Leads with a company name (no full company CRUD for MVP).
+      * **FR-CRM-004 (High): Lead & Opportunity/Deal Management (Admin View - Basic):** View and manage leads, track basic progression towards becoming a User or customer.
       * **FR-CRM-005 (High): Activity Logging & Management:** Manually log interactions and view automatically logged activities.
       * **FR-CRM-006 (Medium): Admin-Initiated Communication:** Send templated emails to contacts/groups from CRM.
       * **FR-CRM-007 (Medium): Segmentation & List Management:** Create and manage static/dynamic contact/company lists.
@@ -123,10 +123,10 @@
       * **FR-LEAD-006 (Medium): Duplicate Lead Management:** Identify and manage potential duplicate leads.
       * **FR-LEAD-007 (Medium): Lead Import/Export:** Bulk import/export of lead data (CSV, Excel).
     * **7.1.4. User Management Module Requirements**
-      * **FR-USER-001 (Critical): User Account Lifecycle Management:** CRUD, Activate, Deactivate user accounts (client app users and admin users).
-      * **FR-USER-002 (Critical): Role-Based Access Control (RBAC) Definition:** Define and manage distinct user roles.
-      * **FR-USER-003 (Critical): User Role Assignment:** Assign roles to user accounts.
-      * **FR-USER-004 (Critical): Permissions Management:** Granular control over permissions per role (actions, data access), adhering to least privilege.
+      * **FR-USER-001 (Critical): Unified User Account Lifecycle Management:** CRUD, Activate, Deactivate user accounts for all system users (e.g., client app users, admin users) based on a single user table.
+      * **FR-USER-002 (Critical): Role-Based Access Control (RBAC) Definition:** Define and manage distinct user roles (e.g., Client, Lead, Admin, Super Admin, Sales, Support).
+      * **FR-USER-003 (Critical): User Multi-Role Assignment:** Assign one or more roles to user accounts.
+      * **FR-USER-004 (Critical): Permissions Management:** Granular control over permissions per role (actions, data access), adhering to least privilege. Permissions are additive if a user has multiple roles.
       * **FR-USER-005 (High): Super Admin Permission Configuration:** Super Admins can configure permissions for each role.
       * **FR-USER-006 (Critical): Strong Authentication:** Enforce strong password policies (complexity, length, expiry, history).
       * **FR-USER-007 (Critical): Multi-Factor Authentication (MFA):** Support and allow enforcement of MFA for admin users.
@@ -213,15 +213,16 @@
     Policies to define: Audit log retention, customer data retention (active/inactive), lead data retention, inactive user account management, archival procedures, secure deletion processes.
   * **8.3. Key Data Entities and Relationships (Conceptual Overview)**
     A high-level conceptual overview of main data entities:
-    * **Users:** (Client app users & Admin Panel admins) - Attributes: UserID, Username, Hashed Password, Email, Roles, Status, Timestamps.
-    * **Roles:** (Admin roles) - Attributes: RoleID, RoleName, Description.
-    * **Permissions:** (Specific actions) - Attributes: PermissionID, PermissionName, Description.
-    * *(Relationship: Users have Roles, Roles have Permissions)*
-    * **Contacts:** (CRM individuals) - Attributes: ContactID, Name, Email, Phone, CompanyID, Custom Fields.
-    * **Companies:** (CRM organizations) - Attributes: CompanyID, Name, Address, Industry, Custom Fields.
-    * *(Relationship: Contacts belong to Companies)*
-    * **Leads:** - Attributes: LeadID, Source, Status, AssignedToUserID, ContactID, Timestamps.
-    * **Subscriptions:** - Attributes: SubscriptionID, UserID, PlanID, Status, StartDate, EndDate, RenewalDate.
+    * **User:** (Single table for all system users: clients, admins, leads post-conversion, etc.) - Attributes: UserID, FullName, Email, HashedPassword (if applicable), Auth0ID (for SSO users), Status, Timestamps, PhoneNumber, etc.
+    * **Role:** (Admin-defined roles) - Attributes: RoleID, RoleName, Description.
+    * **UserRole:** (Junction table) - Attributes: UserID (FK), RoleID (FK).
+    * *(Relationship: A User can have multiple Roles via UserRole table)*
+    * **Permission:** (Specific actions/access rights) - Attributes: PermissionID, PermissionName, Description.
+    * **RolePermission:** (Junction table) - Attributes: RoleID (FK), PermissionID (FK).
+    * *(Relationship: A Role can have multiple Permissions via RolePermission table)*
+    * **Lead:** (Prospective users/customers before formal account creation or specific engagement) - Attributes: LeadID, FullName, Email, Phone, Source, Status, AssignedToUserID (FK to User table, e.g. a sales role user), Notes, Timestamps. May be converted to a User.
+    * **ContactDetails:** (Could be part of User/Lead or a separate linked entity if more complex CRM data is needed later) - Attributes: Address, CompanyName, etc.
+    * **Subscriptions:** - Attributes: SubscriptionID, UserID (FK to User table), PlanID, Status, StartDate, EndDate, RenewalDate.
     * **Plans:** (Subscription plans) - Attributes: PlanID, Name, Price, BillingCycle, Features.
     * *(Relationship: Users have Subscriptions, Subscriptions based on Plans)*
     * **Invoices:** - Attributes: InvoiceID, SubscriptionID, Amount, IssueDate, DueDate, Status.

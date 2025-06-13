@@ -16,14 +16,14 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 *   [x] **Project Setup:** Verify NestJS project (ESLint, Prettier, TS).
 *   [x] **Database (Prisma):**
     *   Install Prisma Client.
-    *   Define `schema.prisma` for `User`, `ConnectedAccount`, `CalendarEvent` (align with respective module plans).
-    *   Run migration: `prisma migrate dev --name initial_schema`.
+    *   Define `schema.prisma` for `User` (unified model), `Role`, `UserRole` (join table), `Lead`, `ConnectedAccount`, `CalendarEvent` (align with respective module plans).
+    *   Run migration: `prisma migrate dev --name initial_schema_unified_user_lead`.
     *   Create `PrismaService`.
 *   [x] **Configuration (`@nestjs/config`):**
     *   Setup `.env`: `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`.
     *   Implement `ConfigService`.
 *   [x] **Module Structure:**
-    *   Create skeleton module/controller/service files for `AuthModule`, `UserModule`, `CalendarPlatformModule`, `ConnectedAccountModule`, `EventModule`, `SyncModule`.
+    *   Create skeleton module/controller/service files for `AuthModule`, `UserModule` (unified), `RoleModule`, `LeadModule`, `CalendarPlatformModule`, `ConnectedAccountModule`, `EventModule`, `SyncModule`.
     *   Create `[MODULE_NAME]_PLAN.md` in each module directory.
     *   Define `EncryptionService` structure in `apps/backend/src/common/encryption/`. (Implementation in M2).
 *   [x] **Logging:** Implement basic, consistent logging framework.
@@ -34,11 +34,12 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 **General Guidelines:** For each sub-phase, ensure DTOs with validation, robust error handling, unit/integration tests, UTC for dates, and Swagger documentation updates.
 
 ---
-**Sub-Phase 2.1: Simplified User Login & Basic Setup**
-*Goal: Enable basic user interaction with the system post-authentication, focusing on standard username/password mechanism.*
+**Sub-Phase 2.1: Unified User Login & Basic Setup**
+*Goal: Enable basic user interaction with the system post-authentication, focusing on a unified user model and standard username/password mechanism initially.*
 
-*   [x] **`UserModule` (Simplified - `USER_MODULE_PLAN.md`):** Implement user profile management (`GET /me`, `PUT /me`). User creation/linking primarily handled by standard registration flow.
-*   [x] **`AuthModule` (Username/Password Focused - `AUTH_MODULE_PLAN.md`):** Implement standard username/password authentication. Include JWT validation and refresh logic.
+*   [ ] **`UserModule` (Unified Model - `USER_MODULE_PLAN.md`):** Implement user profile management (`GET /users/me`, `PUT /users/me`) for the unified `User` model. User creation to handle different user types via roles.
+*   [ ] **`AuthModule` (Username/Password Focused - `AUTH_MODULE_PLAN.md`):** Implement standard username/password authentication. JWT validation and refresh logic. Authorization to consider multiple roles.
+*   [ ] **`RoleModule` (`ROLE_MODULE_PLAN.md`):** Basic CRUD for `Role` entities (likely admin-only later). Service for assigning/unassigning roles to users (`UserRole` table).
 
 ---
 **Sub-Phase 2.2: Account Connection**
@@ -63,9 +64,9 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 
 ---
 **Sub-Phase 2.4: Password Management (If Required)**
-*Goal: Implement password management features if deemed necessary after primary feature implementation.*
+*Goal: Implement password management features if deemed necessary after primary feature implementation for non-SSO users.*
 
-*   [ ] **`UserModule` (Full - `USER_MODULE_PLAN.md`):** Add `password` (hashed) to `User` model. Implement password update logic.
+*   [ ] **`UserModule` (Full - `USER_MODULE_PLAN.md`):** Add `password` (hashed) to unified `User` model. Implement password update logic.
 *   [ ] **`AuthModule` (Full - `AUTH_MODULE_PLAN.md`):** Implement registration (FRD 3.1.1), login (FRD 3.1.2), password reset (FRD 3.1.4), change password (FRD 3.1.5) for email/password users.
 
 ---
@@ -95,21 +96,33 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 
 ## Phase 5: Admin Panel MVP Backend
 
-**Goal:** Implement backend functionalities for the Admin Panel MVP as defined in `docs/Admin_FRD_MVP.md`.
+**Goal:** Implement backend functionalities for the Admin Panel MVP as defined in `docs/Admin_FRD.md` (updated for unified user and lead management).
 
 *   [ ] **`AdminModule` (`ADMIN_MODULE_PLAN.md`):**
-    *   [ ] **Authentication & Authorization:** Integrate with Auth0 for admin users. Implement RBAC for `Super Admin` and `Admin` roles (FR-AUSER-004-MVP, FR-AUSER-005-MVP).
-    *   [ ] **Admin User Management:** Implement CRUD operations for Admin Panel users (FR-AUSER-001-MVP to FR-AUSER-003-MVP). Super Admin only.
-    *   [ ] **Client User Management (Proxy to Main App):** Implement endpoints to view, update status, and (soft) delete client application users. These will largely proxy requests or interact directly with the main application's user data (FR-CUSER-001-MVP to FR-CUSER-005-MVP).
-    *   [ ] **Dashboard Data:** Implement endpoint to provide data for the simplified admin dashboard (FR-GEN-002-MVP).
-    *   [ ] **Global Search (Client Users):** Implement endpoint for searching client users (FR-GEN-003-MVP).
-    *   [ ] **Audit Logging:** Implement service to record and retrieve audit logs for critical admin and client user actions (FR-GEN-004-MVP).
-    *   [ ] **CRM Data (Proxy/Read):** Implement endpoints to view client user contact info and basic interaction logs (FR-CRM-001-MVP, FR-CRM-002-MVP).
-    *   [ ] **Subscription Data (Proxy/Read & Cancel):** Implement endpoints to view subscription plans, client user subscriptions, and initiate subscription cancellations (FR-SUB-001-MVP, FR-SUB-002-MVP, FR-SUB-003-MVP).
+    *   [ ] **Authentication & Authorization:** Integrate with Auth0 for admin-roled users. Implement RBAC considering multiple roles (e.g., `Super Admin`, `Admin`) for accessing admin functionalities (FR-USER-006-MVP, FR-USER-007-MVP).
+    *   [ ] **Unified User Management (within `UserModule` primarily, accessed via `AdminModule`):**
+        *   Endpoints to list all users with filters (by role, status) (FR-USER-001-MVP).
+        *   Endpoints to view user details (FR-USER-002-MVP).
+        *   Endpoints for creating users (manual, assigning roles) (FR-USER-003-MVP).
+        *   Endpoints for updating users (basic info, status, roles) (FR-USER-004-MVP).
+        *   Endpoints for (soft) deleting users (Super Admin role only) (FR-USER-005-MVP).
+        *   (Leverage `UserModule` and `RoleModule` services).
+    *   [ ] **Lead Management (`LeadModule` - `LEAD_MODULE_PLAN.md`, accessed via `AdminModule`):**
+        *   Endpoints for creating leads (FR-LEAD-001-MVP).
+        *   Endpoints to list leads with filters (FR-LEAD-002-MVP).
+        *   Endpoints to view lead details (FR-LEAD-003-MVP).
+        *   Endpoints for updating leads (info, status) (FR-LEAD-004-MVP).
+        *   Endpoints for converting a lead to a user (creates a User record with appropriate role(s)) (FR-LEAD-005-MVP).
+        *   Endpoints for (soft) deleting leads (FR-LEAD-006-MVP).
+    *   [ ] **Dashboard Data:** Implement endpoint to provide data for the simplified admin dashboard (FR-GEN-002-MVP, reflecting unified users).
+    *   [ ] **Global Search (Users & Leads):** Implement endpoint for searching users and leads (FR-GEN-003-MVP).
+    *   [ ] **Audit Logging:** Implement service to record and retrieve audit logs for critical actions on Users (all types) and Leads (FR-GEN-004-MVP).
+    *   [ ] **CRM Data (Proxy/Read - User focused):** Implement endpoints to view user contact info and basic interaction logs (FR-CRM-001-MVP, FR-CRM-002-MVP - focused on User entity).
+    *   [ ] **Subscription Data (Proxy/Read & Cancel - for Users with 'Client' role):** Implement endpoints to view subscription plans, user subscriptions, and initiate subscription cancellations (FR-SUB-001-MVP, FR-SUB-002-MVP, FR-SUB-003-MVP - linked to User entity).
     *   [ ] **API Documentation:** Ensure all Admin Panel API endpoints are documented with Swagger.
-    *   [ ] **Testing:** Write unit and integration tests for all Admin Panel functionalities.
+    *   [ ] **Testing:** Write unit and integration tests for all Admin Panel functionalities, including user and lead management.
 
-*(Agent: Populate `apps/backend/src/admin/ADMIN_MODULE_PLAN.md` with detailed tasks based on `Admin_FRD_MVP.md` and the above items.)*
+*(Agent: Populate `apps/backend/src/admin/ADMIN_MODULE_PLAN.md`, `apps/backend/src/user/USER_MODULE_PLAN.md`, `apps/backend/src/role/ROLE_MODULE_PLAN.md`, and `apps/backend/src/lead/LEAD_MODULE_PLAN.md` with detailed tasks based on `Admin_FRD.md` and the above items.)*
 
 ## Phase 6: Integration & Refinement (Renumbered from Phase 4)
 
@@ -123,7 +136,7 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 
 **Agent Workflow:**
 1.  **Understand Phase Goals:** For each phase and sub-phase, internalize the objectives.
-2.  **Populate Module Plans:** For each module, populate its `[MODULE_NAME]_PLAN.md` with detailed, actionable TODOs derived from the goals of the **current phase/sub-phase**. These module plans are the granular checklists.
+2.  **Populate Module Plans:** For each module, populate its `[MODULE_NAME]_PLAN.md` with detailed, actionable TODOs derived from the goals of the **current phase/sub-phase**, reflecting the unified user model, multi-role RBAC, and lead management. These module plans are the granular checklists.
 3.  **Implement Incrementally:** Execute tasks from module plans. Write tests alongside features. Commit frequently with clear messages.
 4.  **Iterate & Refine:** Address challenges and refine implementations as you proceed.
 5.  **Seek Clarification:** If any task is ambiguous, request clarification before proceeding.

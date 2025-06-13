@@ -47,6 +47,7 @@ This document outlines the initial steps for the UniCal frontend application.
     *   Username/password (CredentialsProvider)
     *   Google ([docs](https://authjs.dev/getting-started/providers/google))
     *   Microsoft ([docs](https://authjs.dev/getting-started/providers/microsoft))
+    *   (Auth0 for Admin Panel users will be a separate configuration or handled by backend redirecting to Auth0, then back to a specific admin callback URL. The primary next-auth setup here is for client-facing app users, though the session might eventually hold role information for unified users).
 *   [ ] **Set Environment Variables:**
     *   `NEXTAUTH_SECRET`: Generate with `openssl rand -hex 32`.
     *   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
@@ -60,9 +61,9 @@ This document outlines the initial steps for the UniCal frontend application.
 *   [ ] **Update Login/Logout UI:**
     *   Use `signIn`/`signOut` from `next-auth/react`.
 *   [ ] **Access User Info:**
-    *   Use `useSession` in client components, `auth()` in server components.
+    *   Use `useSession` in client components, `auth()` in server components. Session should ideally contain user ID and roles after backend authentication and RBAC checks.
 *   [ ] **Protect Routes:**
-    *   Check session in server/client components to restrict access.
+    *   Check session in server/client components to restrict access. Admin panel routes will have stricter role-based checks, potentially managed by a dedicated admin layout/auth flow.
 
 ## Phase 4: Calendar Integration (@event-calendar/core)
 
@@ -93,8 +94,9 @@ This document outlines the initial steps for the UniCal frontend application.
     *   Server Components: Fetch data directly for SSR.
     *   Client Components: Use TanStack Query for client-side fetching.
 *   [ ] **Authenticated API Requests:**
-    *   Include Auth0 access token in `Authorization` header.
-    *   Use `@auth0/nextjs-auth0` v4 SDK to obtain the token.
+    *   Include JWT (from next-auth session for client users) or Auth0 access token (for admin users) in `Authorization` header.
+    *   Use `next-auth/react` `getSession` or `useSession` to get the token for client users.
+    *   For Admin Panel, if Auth0 is used directly for admin login, its SDK or callbacks will provide the token.
 
 ## Phase 7: Core Components & Pages
 

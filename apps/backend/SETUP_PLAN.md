@@ -35,15 +35,15 @@ This document outlines the initial setup steps for the UniCal backend applicatio
 *   [x] **Configure `DATABASE_URL`:**
     *   Ensure `DATABASE_URL` in `.env` points to a valid PostgreSQL instance (e.g., from `docker-compose.yml`).
 *   [ ] **Define Initial Schemas:**
-    *   Define core schemas in `prisma/schema.prisma` for `User`, `ConnectedAccount`, `CalendarEvent`, `UserCalendarSetting`, `Calendar`, `Event`.
-    *   Refer to `USER_MODULE_PLAN.md`, `ACCOUNTS_MODULE_PLAN.md`, `EVENTS_MODULE_PLAN.md`, `CALENDARS_MODULE_PLAN.md`.
+    *   Define core schemas in `prisma/schema.prisma` for `User` (unified model for all users), `Role` (e.g., Client, Admin, Super Admin, LeadManager), `UserRole` (join table for many-to-many User-Role relationship), `Lead` (for lead capture flow), `ConnectedAccount`, `CalendarEvent`, `UserCalendarSetting`, `Calendar`, `Event`.
+    *   Refer to `USER_MODULE_PLAN.md`, `ROLE_MODULE_PLAN.md`, `LEAD_MODULE_PLAN.md`, `ACCOUNTS_MODULE_PLAN.md`, `EVENTS_MODULE_PLAN.md`, `CALENDARS_MODULE_PLAN.md`.
 *   [x] **Generate Prisma Client:**
     *   `npx prisma generate`
 *   [x] **Create Prisma Service:**
     *   Create `src/prisma/prisma.service.ts` extending `PrismaClient` and implementing `OnModuleInit`.
     *   Provide this service globally or in modules requiring database access.
 *   [x] **Initial Migration:**
-    *   `npx prisma migrate dev --name initial_setup`
+    *   `npx prisma migrate dev --name initial_setup_unified_user_lead` (or a similar descriptive name reflecting the schema changes)
 *   [x] **Docker Setup for PostgreSQL:**
     *   Verify PostgreSQL service is configured in `docker-compose.yml` at the project root.
 
