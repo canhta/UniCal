@@ -14,11 +14,30 @@ import {
   AuthResponseDto,
   RegisterDto,
 } from '@unical/core';
-import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
+import { UserStatus } from '@prisma/client';
+
+interface User {
+  id: string;
+  email: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  timeZone: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  emailVerified: boolean;
+  password: string | null;
+  verificationToken: string | null;
+  auth0UserId: string | null;
+  fullName: string;
+  lastLoginAt: Date | null;
+  phoneNumber: string | null;
+  registrationDate: Date;
+  status: UserStatus;
+}
 
 @Injectable()
 export class UserService {
@@ -28,7 +47,7 @@ export class UserService {
     private mailerService: MailerService,
   ) {}
 
-  async findOrCreateUserFromProvider(userData: CreateUserDto): Promise<any> {
+  async findOrCreateUserFromProvider(userData: CreateUserDto): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { email: userData.email },
     });
@@ -40,6 +59,7 @@ export class UserService {
     return this.prisma.user.create({
       data: {
         email: userData.email,
+        fullName: userData.name || userData.email.split('@')[0], // Use name or fallback to email username
         displayName: userData.name,
         avatarUrl: userData.avatarUrl,
         emailVerified: userData.emailVerified || false,
@@ -47,13 +67,13 @@ export class UserService {
     });
   }
 
-  async findByEmail(email: string): Promise<any> {
+  async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
     });
   }
 
-  async findById(id: string): Promise<any> {
+  async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
     });
@@ -152,11 +172,12 @@ export class UserService {
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const verificationToken = uuidv4();
+    const verificationToken: string = uuidv4();
 
     const user = await this.prisma.user.create({
       data: {
         email: registerDto.email,
+        fullName: registerDto.displayName, // Map displayName to fullName
         displayName: registerDto.displayName,
         avatarUrl: registerDto.avatarUrl,
         password: hashedPassword,
@@ -205,7 +226,7 @@ export class UserService {
     });
   }
 
-  toResponseDto(user: any): UserResponseDto {
+  toResponseDto(user: User): UserResponseDto {
     return {
       id: user.id,
       email: user.email,

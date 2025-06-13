@@ -62,11 +62,7 @@ export class UserController {
     @Request() req: AuthenticatedRequest,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const updatedUser = await this.userService.updateUser(
-      req.user.id,
-      updateUserDto,
-    );
-    return this.userService.toResponseDto(updatedUser);
+    return await this.userService.updateUser(req.user.id, updateUserDto);
   }
 
   @Put('me/password')

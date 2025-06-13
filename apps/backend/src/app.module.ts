@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PrismaService } from './prisma/prisma.service';
+import { PrismaModule } from './prisma/prisma.module';
 import { EncryptionService } from './common/encryption/encryption.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { EventsModule } from './events/events.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -15,12 +15,14 @@ import { EventsModule } from './events/events.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    PrismaModule,
     UserModule,
     AuthModule,
     AccountsModule,
     EventsModule,
+    AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService, EncryptionService],
+  providers: [EncryptionService],
 })
 export class AppModule {}

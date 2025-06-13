@@ -6,9 +6,19 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
-import { AuthResponseDto, LoginDto, RegisterDto } from '@unical/core';
+import {
+  AuthResponseDto,
+  LoginDto,
+  RegisterDto,
+  UserResponseDto,
+} from '@unical/core';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -41,19 +51,15 @@ export class AuthService {
     });
 
     // Update with hashed password for local users
-    const updatedUser = await this.userService.updateUser(user.id, {
+    await this.userService.updateUser(user.id, {
       password: hashedPassword,
     });
 
-    return this.generateTokens(updatedUser);
+    const userDto = await this.userService.getCurrentUser(user.id);
+    return this.generateTokens(userDto);
   }
 
-  async registerOrGetOAuthUser(oauthDto: {
-    email: string;
-    displayName: string;
-    avatarUrl?: string;
-    provider: string;
-  }): Promise<AuthResponseDto> {
+  async registerOrGetOAuthUser(oauthDto: any): Promise<AuthResponseDto> {
     // Try to find existing user first
     let user = await this.userService.findByEmail(oauthDto.email);
 
@@ -67,13 +73,14 @@ export class AuthService {
 
       // Update with avatar if provided
       if (oauthDto.avatarUrl) {
-        user = await this.userService.updateUser(user.id, {
+        await this.userService.updateUser(user.id, {
           avatarUrl: oauthDto.avatarUrl,
         });
       }
     }
 
-    return this.generateTokens(user);
+    const userDto = await this.userService.getCurrentUser(user.id);
+    return this.generateTokens(userDto);
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
@@ -84,16 +91,19 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto | null> {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password || ''))) {
-      return user;
+      return this.userService.toResponseDto(user);
     }
     return null;
   }
 
-  generateTokens(user: any): AuthResponseDto {
-    const payload: any = { sub: user.id, email: user.email };
+  generateTokens(user: UserResponseDto): AuthResponseDto {
+    const payload: JwtPayload = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: this.configService.get<string>(
@@ -116,7 +126,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        name: user.displayName || null,
+        name: user.name || null,
         avatarUrl: user.avatarUrl || null,
         timeZone: user.timeZone || null,
         emailVerified: user.emailVerified,
@@ -128,7 +138,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
-      const payload = this.jwtService.verify<any>(refreshToken, {
+      const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
@@ -136,8 +146,8 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
-
-      return this.generateTokens(user);
+      const userDto = this.userService.toResponseDto(user);
+      return this.generateTokens(userDto);
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }

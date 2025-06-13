@@ -3,3 +3,4 @@
  */
 
 export * from './calendar-platform.interface';
+export * from './user.interface';

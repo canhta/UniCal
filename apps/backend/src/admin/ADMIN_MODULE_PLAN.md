@@ -3,30 +3,30 @@
 This plan outlines the backend tasks for implementing the Admin Panel MVP, based on `docs/Admin_FRD_MVP.md` and `apps/backend/AGENT_PLAN.md Phase 5`.
 
 ## Core Setup
-- [ ] Create `AdminModule` in `apps/backend/src/admin/admin.module.ts`.
-- [ ] Define `AdminController` (`admin.controller.ts`) and `AdminService` (`admin.service.ts`).
-- [ ] Configure routing for `/admin/*` endpoints.
-- [ ] Define base DTOs for pagination requests (e.g., `PageOptionsDto`) and responses (e.g., `PageDto<T>`).
+- [x] Create `AdminModule` in `apps/backend/src/admin/admin.module.ts`.
+- [x] Define `AdminController` (`admin.controller.ts`) and `AdminService` (`admin.service.ts`).
+- [x] Configure routing for `/admin/*` endpoints.
+- [x] Define base DTOs for pagination requests (e.g., `PageOptionsDto`) and responses (e.g., `PageDto<T>`).
 
 ## Authentication & Authorization (FR-AUSER-004-MVP, FR-AUSER-005-MVP)
 - [ ] Integrate Auth0 for Admin Panel administrators.
     - [ ] Configure Auth0 application for Admin Panel (Client ID, Secret, Domain, Callback URLs).
     - [ ] Implement Auth0 strategy for NestJS (e.g., create `AdminAuth0Strategy` extending `PassportStrategy(Auth0Strategy)` if different from client app, or configure existing `AuthModule` to handle admin-specific Auth0 app).
     - [ ] Secure Admin Panel endpoints using Auth0 JWTs and `@UseGuards(AuthGuard(\'auth0-admin\'))` or similar.
-- [ ] Implement Role-Based Access Control (RBAC).
-    - [ ] Define `RolesGuard` (e.g., `AdminRolesGuard`) for `Super Admin` and `Admin` roles.
-    - [ ] Define decorators for roles (e.g., `@AdminRoles(\'SuperAdmin\')`).
-    - [ ] Define `AdminUser` Prisma model:
-        - [ ] `id String @id @default(cuid())`
-        - [ ] `auth0UserId String @unique` (Subject claim from Auth0 token)
-        - [ ] `email String @unique`
-        - [ ] `fullName String?`
-        - [ ] `role String` (e.g., "SuperAdmin", "Admin")
-        - [ ] `status String` (e.g., "Active", "Inactive")
-        - [ ] `createdAt DateTime @default(now())`
-        - [ ] `updatedAt DateTime @updatedAt`
-        - [ ] `auditLogs AuditLog[]` (Relation to AuditLog model)
-    - [ ] Ensure `AdminUser` entity in `AdminService` reflects this model.
+- [x] Implement Role-Based Access Control (RBAC).
+    - [x] Define `RolesGuard` (e.g., `AdminRolesGuard`) for `Super Admin` and `Admin` roles.
+    - [x] Define decorators for roles (e.g., `@AdminRoles(\'SuperAdmin\')`).
+    - [x] Define `AdminUser` Prisma model:
+        - [x] `id String @id @default(cuid())`
+        - [x] `auth0UserId String @unique` (Subject claim from Auth0 token)
+        - [x] `email String @unique`
+        - [x] `fullName String?`
+        - [x] `role String` (e.g., "SuperAdmin", "Admin")
+        - [x] `status String` (e.g., "Active", "Inactive")
+        - [x] `createdAt DateTime @default(now())`
+        - [x] `updatedAt DateTime @updatedAt`
+        - [x] `auditLogs AuditLog[]` (Relation to AuditLog model)
+    - [x] Ensure `AdminUser` entity in `AdminService` reflects this model.
 
 ## Admin User Management (Super Admin Only)
 - **FR-AUSER-001-MVP: View Admin User List**

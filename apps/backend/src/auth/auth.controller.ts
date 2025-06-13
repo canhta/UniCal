@@ -15,7 +15,14 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { ForgotPasswordDto, ResetPasswordDto } from '@unical/core';
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  RegisterDto,
+  LoginDto,
+  AuthResponseDto,
+  OAuthUserDto,
+} from '@unical/core';
 import { UserService } from '../user/user.service';
 
 @ApiTags('Authentication')
@@ -34,10 +41,8 @@ export class AuthController {
     description: 'User registered successfully',
   })
   @ApiResponse({ status: 409, description: 'User already exists' })
-  async register(@Body() registerDto: any): Promise<any> {
-    const user = await this.authService.register(registerDto);
-    // Return only the user object for next-auth
-    return user.user || user;
+  async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
+    return await this.authService.register(registerDto);
   }
 
   @Post('login')
@@ -50,10 +55,8 @@ export class AuthController {
     description: 'Login successful',
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: any): Promise<any> {
-    const user = await this.authService.login(loginDto);
-    // Return only the user object for next-auth
-    return user.user || user;
+  async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
+    return await this.authService.login(loginDto);
   }
 
   @Post('refresh')
@@ -64,8 +67,10 @@ export class AuthController {
     description: 'Token refreshed successfully',
   })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refresh(@Body() refreshTokenDto: any): Promise<any> {
-    return this.authService.refreshToken(refreshTokenDto.refreshToken);
+  async refresh(
+    @Body('refreshToken') refreshToken: string,
+  ): Promise<AuthResponseDto> {
+    return await this.authService.refreshToken(refreshToken);
   }
 
   @Post('logout')
@@ -104,7 +109,9 @@ export class AuthController {
   }
 
   @Post('verify-email')
-  async verifyEmail(@Body('token') token: string) {
+  async verifyEmail(
+    @Body('token') token: string,
+  ): Promise<{ message: string }> {
     await this.userService.verifyEmail(token);
     return { message: 'Email verified successfully' };
   }
@@ -116,9 +123,9 @@ export class AuthController {
     status: 201,
     description: 'User created or retrieved successfully',
   })
-  async registerOAuth(@Body() oauthDto: any): Promise<any> {
-    const user = await this.authService.registerOrGetOAuthUser(oauthDto);
-    // Return only the user object for next-auth
-    return user.user || user;
+  async registerOAuth(
+    @Body() oauthDto: OAuthUserDto,
+  ): Promise<AuthResponseDto> {
+    return await this.authService.registerOrGetOAuthUser(oauthDto);
   }
 }
