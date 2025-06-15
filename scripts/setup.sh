@@ -70,9 +70,9 @@ if [ -f "apps/backend/.env.example" ]; then
         TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)
         
         # Update the .env file with generated keys
-        update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=your-jwt-secret-here"
-        update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=your-jwt-refresh-secret-here"
-        update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key"
+        update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=your-super-secure-jwt-secret-here-replace-this-in-production"
+        update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=your-super-secure-jwt-refresh-secret-here-replace-this-in-production"
+        update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key-replace-this-in-production"
         
         # Ensure BASE_URL is set correctly
         update_env_var "apps/backend/.env" "BASE_URL" "http://localhost:3000" "BASE_URL=http://localhost:3000"
@@ -83,13 +83,13 @@ if [ -f "apps/backend/.env.example" ]; then
         
         # Check if keys are missing and offer to generate them
         missing_keys=()
-        if grep -q "JWT_SECRET=your-jwt-secret-here\|JWT_SECRET=$" "apps/backend/.env"; then
+        if grep -q "JWT_SECRET=your-super-secure-jwt-secret-here-replace-this-in-production\|JWT_SECRET=$" "apps/backend/.env"; then
             missing_keys+=("JWT_SECRET")
         fi
-        if grep -q "JWT_REFRESH_SECRET=your-jwt-refresh-secret-here\|JWT_REFRESH_SECRET=$" "apps/backend/.env"; then
+        if grep -q "JWT_REFRESH_SECRET=your-super-secure-jwt-refresh-secret-here-replace-this-in-production\|JWT_REFRESH_SECRET=$" "apps/backend/.env"; then
             missing_keys+=("JWT_REFRESH_SECRET")
         fi
-        if grep -q "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key\|TOKEN_ENCRYPTION_KEY=$" "apps/backend/.env"; then
+        if grep -q "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key-replace-this-in-production\|TOKEN_ENCRYPTION_KEY=$" "apps/backend/.env"; then
             missing_keys+=("TOKEN_ENCRYPTION_KEY")
         fi
         
@@ -104,19 +104,19 @@ if [ -f "apps/backend/.env.example" ]; then
                     case $key in
                         "JWT_SECRET")
                             JWT_SECRET=$(openssl rand -hex 32)
-                            update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=your-jwt-secret-here"
+                            update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=your-super-secure-jwt-secret-here-replace-this-in-production"
                             update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=$"
                             print_success "Generated JWT_SECRET"
                             ;;
                         "JWT_REFRESH_SECRET")
                             JWT_REFRESH_SECRET=$(openssl rand -hex 32)
-                            update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=your-jwt-refresh-secret-here"
+                            update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=your-super-secure-jwt-refresh-secret-here-replace-this-in-production"
                             update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=$"
                             print_success "Generated JWT_REFRESH_SECRET"
                             ;;
                         "TOKEN_ENCRYPTION_KEY")
                             TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)
-                            update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key"
+                            update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key-replace-this-in-production"
                             update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=$"
                             print_success "Generated TOKEN_ENCRYPTION_KEY"
                             ;;
@@ -129,6 +129,17 @@ if [ -f "apps/backend/.env.example" ]; then
         if ! grep -q "BASE_URL=" "apps/backend/.env"; then
             echo "BASE_URL=http://localhost:3000" >> "apps/backend/.env"
             print_success "Added BASE_URL to backend .env"
+        fi
+        
+        # Ensure other critical variables have default values
+        if ! grep -q "FRONTEND_BASE_URL=" "apps/backend/.env"; then
+            echo "FRONTEND_BASE_URL=http://localhost:3030" >> "apps/backend/.env"
+            print_success "Added FRONTEND_BASE_URL to backend .env"
+        fi
+        
+        if ! grep -q "OAUTH_REDIRECT_BASE_URL=" "apps/backend/.env"; then
+            echo "OAUTH_REDIRECT_BASE_URL=http://localhost:3000/api/v1" >> "apps/backend/.env"
+            print_success "Added OAUTH_REDIRECT_BASE_URL to backend .env"
         fi
     fi
 else
@@ -165,6 +176,17 @@ if [ -f "apps/frontend/.env.example" ]; then
                 update_env_var "apps/frontend/.env.local" "NEXTAUTH_SECRET" "$NEXTAUTH_SECRET" "NEXTAUTH_SECRET=$"
                 print_success "Generated NEXTAUTH_SECRET"
             fi
+        fi
+        
+        # Ensure other critical frontend variables have default values
+        if ! grep -q "NEXTAUTH_URL=" "apps/frontend/.env.local"; then
+            echo "NEXTAUTH_URL=http://localhost:3030" >> "apps/frontend/.env.local"
+            print_success "Added NEXTAUTH_URL to frontend .env.local"
+        fi
+        
+        if ! grep -q "NEXT_PUBLIC_FRONTEND_API_URL=" "apps/frontend/.env.local"; then
+            echo "NEXT_PUBLIC_FRONTEND_API_URL=http://localhost:3030/api/v1" >> "apps/frontend/.env.local"
+            print_success "Added NEXT_PUBLIC_FRONTEND_API_URL to frontend .env.local"
         fi
     fi
 else
@@ -292,17 +314,50 @@ if [ -f "apps/backend/.env" ]; then
     if ! grep -q "^BASE_URL=" "apps/backend/.env" || grep -q "BASE_URL=$" "apps/backend/.env"; then
         missing_backend_vars+=("BASE_URL")
     fi
-    if ! grep -q "^JWT_SECRET=" "apps/backend/.env" || grep -q "JWT_SECRET=$\|JWT_SECRET=your-jwt-secret-here" "apps/backend/.env"; then
+    if ! grep -q "^JWT_SECRET=" "apps/backend/.env" || grep -q "JWT_SECRET=$\|JWT_SECRET=your-super-secure-jwt-secret-here-replace-this-in-production" "apps/backend/.env"; then
         missing_backend_vars+=("JWT_SECRET")
+    fi
+    if ! grep -q "^JWT_REFRESH_SECRET=" "apps/backend/.env" || grep -q "JWT_REFRESH_SECRET=$\|JWT_REFRESH_SECRET=your-super-secure-jwt-refresh-secret-here-replace-this-in-production" "apps/backend/.env"; then
+        missing_backend_vars+=("JWT_REFRESH_SECRET")
+    fi
+    if ! grep -q "^TOKEN_ENCRYPTION_KEY=" "apps/backend/.env" || grep -q "TOKEN_ENCRYPTION_KEY=$\|TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key-replace-this-in-production" "apps/backend/.env"; then
+        missing_backend_vars+=("TOKEN_ENCRYPTION_KEY")
     fi
     if ! grep -q "^DATABASE_URL=" "apps/backend/.env" || grep -q "DATABASE_URL=$" "apps/backend/.env"; then
         missing_backend_vars+=("DATABASE_URL")
     fi
+    if ! grep -q "^FRONTEND_BASE_URL=" "apps/backend/.env" || grep -q "FRONTEND_BASE_URL=$" "apps/backend/.env"; then
+        missing_backend_vars+=("FRONTEND_BASE_URL")
+    fi
+    if ! grep -q "^OAUTH_REDIRECT_BASE_URL=" "apps/backend/.env" || grep -q "OAUTH_REDIRECT_BASE_URL=$" "apps/backend/.env"; then
+        missing_backend_vars+=("OAUTH_REDIRECT_BASE_URL")
+    fi
     
     if [ ${#missing_backend_vars[@]} -gt 0 ]; then
         print_warning "Backend missing required variables: ${missing_backend_vars[*]}"
+        print_warning "Please update apps/backend/.env with the missing variables before starting the application"
     else
         print_success "Backend environment configuration looks good"
+    fi
+    
+    # Check for OAuth credentials (these are optional for initial setup but required for full functionality)
+    oauth_warnings=()
+    if grep -q "GOOGLE_CLIENT_ID=your-google-client-id-from-console-cloud-google\|GOOGLE_CLIENT_ID=$" "apps/backend/.env"; then
+        oauth_warnings+=("GOOGLE_CLIENT_ID")
+    fi
+    if grep -q "GOOGLE_CLIENT_SECRET=your-google-client-secret-from-console-cloud-google\|GOOGLE_CLIENT_SECRET=$" "apps/backend/.env"; then
+        oauth_warnings+=("GOOGLE_CLIENT_SECRET")
+    fi
+    if grep -q "MICROSOFT_CLIENT_ID=your-microsoft-client-id-from-azure-portal\|MICROSOFT_CLIENT_ID=$" "apps/backend/.env"; then
+        oauth_warnings+=("MICROSOFT_CLIENT_ID")
+    fi
+    if grep -q "MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret-from-azure-portal\|MICROSOFT_CLIENT_SECRET=$" "apps/backend/.env"; then
+        oauth_warnings+=("MICROSOFT_CLIENT_SECRET")
+    fi
+    
+    if [ ${#oauth_warnings[@]} -gt 0 ]; then
+        print_warning "Backend OAuth credentials not configured: ${oauth_warnings[*]}"
+        print_warning "Calendar integrations will not work until OAuth credentials are set"
     fi
 fi
 
@@ -314,14 +369,35 @@ if [ -f "apps/frontend/.env.local" ]; then
     if ! grep -q "^NEXTAUTH_SECRET=" "apps/frontend/.env.local" || grep -q "NEXTAUTH_SECRET=$\|NEXTAUTH_SECRET=your-secret-here" "apps/frontend/.env.local"; then
         missing_frontend_vars+=("NEXTAUTH_SECRET")
     fi
-    if ! grep -q "^NEXT_PUBLIC_BACKEND_API_URL=" "apps/frontend/.env.local"; then
+    if ! grep -q "^NEXTAUTH_URL=" "apps/frontend/.env.local" || grep -q "NEXTAUTH_URL=$" "apps/frontend/.env.local"; then
+        missing_frontend_vars+=("NEXTAUTH_URL")
+    fi
+    if ! grep -q "^NEXT_PUBLIC_BACKEND_API_URL=" "apps/frontend/.env.local" || grep -q "NEXT_PUBLIC_BACKEND_API_URL=$" "apps/frontend/.env.local"; then
         missing_frontend_vars+=("NEXT_PUBLIC_BACKEND_API_URL")
+    fi
+    if ! grep -q "^NEXT_PUBLIC_FRONTEND_API_URL=" "apps/frontend/.env.local" || grep -q "NEXT_PUBLIC_FRONTEND_API_URL=$" "apps/frontend/.env.local"; then
+        missing_frontend_vars+=("NEXT_PUBLIC_FRONTEND_API_URL")
     fi
     
     if [ ${#missing_frontend_vars[@]} -gt 0 ]; then
         print_warning "Frontend missing required variables: ${missing_frontend_vars[*]}"
+        print_warning "Please update apps/frontend/.env.local with the missing variables before starting the application"
     else
         print_success "Frontend environment configuration looks good"
+    fi
+    
+    # Check for OAuth credentials (these are optional for initial setup but required for full functionality)
+    frontend_oauth_warnings=()
+    if grep -q "GOOGLE_CLIENT_ID=your-google-client-id\|GOOGLE_CLIENT_ID=$" "apps/frontend/.env.local"; then
+        frontend_oauth_warnings+=("GOOGLE_CLIENT_ID")
+    fi
+    if grep -q "GOOGLE_CLIENT_SECRET=your-google-client-secret\|GOOGLE_CLIENT_SECRET=$" "apps/frontend/.env.local"; then
+        frontend_oauth_warnings+=("GOOGLE_CLIENT_SECRET")
+    fi
+    
+    if [ ${#frontend_oauth_warnings[@]} -gt 0 ]; then
+        print_warning "Frontend OAuth credentials not configured: ${frontend_oauth_warnings[*]}"
+        print_warning "User authentication will not work until OAuth credentials are set"
     fi
 fi
 
@@ -344,13 +420,33 @@ echo ""
 
 echo -e "${BLUE}📝 Next steps:${NC}"
 echo "1. Update OAuth credentials in environment files:"
-echo "   - apps/backend/.env: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc."
-echo "   - apps/frontend/.env.local: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc."
+echo "   - Backend (apps/backend/.env):"
+echo "     * GOOGLE_CLIENT_ID=your-google-client-id-from-console-cloud-google"
+echo "     * GOOGLE_CLIENT_SECRET=your-google-client-secret-from-console-cloud-google"
+echo "     * MICROSOFT_CLIENT_ID=your-microsoft-client-id-from-azure-portal"
+echo "     * MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret-from-azure-portal"
+echo "   - Frontend (apps/frontend/.env.local):"
+echo "     * GOOGLE_CLIENT_ID=your-google-client-id"
+echo "     * GOOGLE_CLIENT_SECRET=your-google-client-secret"
+echo "     * GITHUB_CLIENT_ID=your-github-client-id (optional)"
+echo "     * GITHUB_CLIENT_SECRET=your-github-client-secret (optional)"
 echo "2. Run 'yarn dev' to start the development servers"
 echo "3. Frontend will be available at http://localhost:3030"
 echo "4. Backend API will be available at http://localhost:3000"
 echo "5. API docs (Swagger) at http://localhost:3000/api/docs"
 echo "6. Use 'docker-compose logs -f' to view container logs"
+echo ""
+echo -e "${YELLOW}⚠️  Important OAuth Setup Notes:${NC}"
+echo "• Google OAuth: https://console.cloud.google.com/"
+echo "  - Enable Google Calendar API"
+echo "  - Add redirect URIs:"
+echo "    * http://localhost:3030/api/auth/callback/google (NextAuth.js)"
+echo "    * http://localhost:3000/api/v1/integrations/auth/google/callback (Calendar sync)"
+echo "• Microsoft OAuth: https://portal.azure.com/"
+echo "  - Register application in Azure AD"
+echo "  - Add redirect URIs:"
+echo "    * http://localhost:3030/api/auth/callback/microsoft (NextAuth.js)"
+echo "    * http://localhost:3000/api/v1/integrations/auth/microsoft/callback (Calendar sync)"
 echo ""
 
 # Ask if user wants to start development servers

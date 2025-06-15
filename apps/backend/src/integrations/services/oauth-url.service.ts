@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
+import { AppConfigService } from '../../config/app-config.service';
 
 export interface OAuthUrlResponse {
   url: string;
@@ -21,19 +21,19 @@ export class OAuthUrlService {
     { userId: string; expires: number }
   >();
 
-  constructor(private configService: ConfigService) {}
+  constructor(private appConfig: AppConfigService) {}
 
   generateGoogleOAuthUrl(userId: string): OAuthUrlResponse {
     const state = this.generateStateToken(userId);
     this.storeState(state, userId);
 
-    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
-    const redirectUri = `${this.configService.get<string>('OAUTH_REDIRECT_BASE_URL')}/integrations/auth/google/callback`;
+    const clientId = this.appConfig.oauth.google.clientId;
+    const redirectUri = `${this.appConfig.oauth.redirectBaseUrl}/integrations/auth/google/callback`;
     const scope = 'https://www.googleapis.com/auth/calendar';
 
     const params = new URLSearchParams({
-      client_id: clientId || '',
-      redirect_uri: redirectUri || '',
+      client_id: clientId,
+      redirect_uri: redirectUri,
       response_type: 'code',
       scope,
       state,
@@ -51,14 +51,14 @@ export class OAuthUrlService {
     const state = this.generateStateToken(userId);
     this.storeState(state, userId);
 
-    const clientId = this.configService.get<string>('MICROSOFT_CLIENT_ID');
-    const redirectUri = `${this.configService.get<string>('OAUTH_REDIRECT_BASE_URL')}/integrations/auth/microsoft/callback`;
+    const clientId = this.appConfig.oauth.microsoft.clientId;
+    const redirectUri = `${this.appConfig.oauth.redirectBaseUrl}/integrations/auth/microsoft/callback`;
     const scope =
       'https://graph.microsoft.com/calendars.readwrite offline_access';
 
     const params = new URLSearchParams({
-      client_id: clientId || '',
-      redirect_uri: redirectUri || '',
+      client_id: clientId,
+      redirect_uri: redirectUri,
       response_type: 'code',
       scope,
       state,

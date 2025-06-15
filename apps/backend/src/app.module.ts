@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
+import { AppConfigModule } from './config/app-config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { EncryptionService } from './common/encryption/encryption.service';
 import { UserModule } from './user/user.module';
@@ -15,10 +15,7 @@ import { SyncModule } from './sync/sync.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
+    AppConfigModule, // Global configuration module
     ScheduleModule.forRoot(),
     PrismaModule,
     UserModule,

@@ -17,8 +17,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AppConfigService } from '../config/app-config.service';
 import {
   OAuthUrlService,
   OAuthUrlResponse,
@@ -56,7 +56,7 @@ export class IntegrationsController {
     private oauthCallbackService: OAuthCallbackService,
     private syncService: SyncService,
     private accountsService: AccountsService,
-    private configService: ConfigService,
+    private appConfig: AppConfigService,
   ) {}
 
   @Get('oauth-url/:provider')
@@ -90,10 +90,7 @@ export class IntegrationsController {
     return {
       url: result.url,
       // Don't expose state in production for security
-      state:
-        this.configService.get('NODE_ENV') === 'development'
-          ? result.state
-          : undefined,
+      state: this.appConfig.isDevelopment ? result.state : undefined,
     };
   }
 
@@ -122,9 +119,7 @@ export class IntegrationsController {
     query: OAuthCallbackQueryDto,
     res: Response,
   ) {
-    const frontendUrl =
-      this.configService.get<string>('FRONTEND_BASE_URL') ||
-      'http://localhost:3030';
+    const frontendUrl = this.appConfig.server.frontendBaseUrl;
 
     try {
       // Handle OAuth errors
