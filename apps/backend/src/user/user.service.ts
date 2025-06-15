@@ -14,30 +14,11 @@ import {
   AuthResponseDto,
   RegisterDto,
 } from '@unical/core';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
-import { UserStatus } from '@prisma/client';
-
-interface User {
-  id: string;
-  email: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  timeZone: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  emailVerified: boolean;
-  password: string | null;
-  verificationToken: string | null;
-  auth0UserId: string | null;
-  fullName: string;
-  lastLoginAt: Date | null;
-  phoneNumber: string | null;
-  registrationDate: Date;
-  status: UserStatus;
-}
 
 @Injectable()
 export class UserService {
@@ -47,7 +28,7 @@ export class UserService {
     private mailerService: MailerService,
   ) {}
 
-  async findOrCreateUserFromProvider(userData: CreateUserDto): Promise<User> {
+  async findOrCreateUserFromProvider(userData: CreateUserDto): Promise<any> {
     const user = await this.prisma.user.findUnique({
       where: { email: userData.email },
     });
@@ -67,13 +48,13 @@ export class UserService {
     });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<any> {
     return this.prisma.user.findUnique({
       where: { email },
     });
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<any> {
     return this.prisma.user.findUnique({
       where: { id },
     });
@@ -226,7 +207,7 @@ export class UserService {
     });
   }
 
-  toResponseDto(user: User): UserResponseDto {
+  toResponseDto(user: any): UserResponseDto {
     return {
       id: user.id,
       email: user.email,

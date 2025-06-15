@@ -84,6 +84,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: 'Admin users retrieved successfully',
+    type: PageDto<AdminUserResponseDto>,
   })
   async getAdminUsers(
     @Query() pageOptions: PageOptionsDto,
@@ -142,6 +143,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: 'Client users retrieved successfully',
+    type: PageDto<ClientUserResponseDto>,
   })
   async getClientUsers(
     @Query() pageOptions: PageOptionsDto,
@@ -225,6 +227,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: 'Audit logs retrieved successfully',
+    type: PageDto<AuditLogResponseDto>,
   })
   async getAuditLogs(
     @Query() pageOptions: PageOptionsDto,
@@ -239,6 +242,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: 'User audit logs retrieved successfully',
+    type: PageDto<AuditLogResponseDto>,
   })
   async getUserAuditLogs(
     @Param('userId') userId: string,
