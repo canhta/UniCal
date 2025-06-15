@@ -90,14 +90,14 @@
 ## 6. Error Handling, Rate Limiting, Retries
 *Goal: Make platform interactions resilient.*
 
-*   [ ] **Platform-Specific Error Handling:** Each platform service must:
+*   [x] **Platform-Specific Error Handling:** Each platform service must:
     *   Catch API errors, parse responses, throw standardized NestJS exceptions (e.g., `HttpException`, `UnauthorizedException` for token issues, `NotFoundException`).
     *   Specifically handle token expiry errors to signal refresh needs to the facade.
-*   [ ] **Facade Error Handling (`CalendarsService`):**
+*   [x] **Facade Error Handling (`CalendarsService`):**
     *   Catch errors from platform services.
     *   Handle token refresh logic upon specific auth errors.
     *   Propagate other errors or re-throw as standardized UniCal errors.
-*   [ ] **Rate Limiting & Retries:** Platform services should respect `Retry-After` headers. Consider simple retry mechanisms for transient errors. (More complex retry/queueing might be handled by `SyncModule` for background tasks).
+*   [x] **Rate Limiting & Retries:** Platform services should respect `Retry-After` headers. Consider simple retry mechanisms for transient errors. (More complex retry/queueing might be handled by `SyncModule` for background tasks).
 
 ## 7. Testing
 *Goal: Ensure correctness and robustness of platform integrations.*
@@ -111,7 +111,29 @@
     *   Test token decryption and refresh logic.
 *   [ ] **Integration Tests (Limited):** Avoid live API calls in automated tests.
 
-## 8. Dependencies
+## 8. Google Calendar Auto-Sync Implementation
+*Goal: Implement automatic synchronization with Google Calendar including webhooks and scheduled sync.*
+
+*   [x] **Google Calendar Sync Service (`google-calendar-sync.service.ts`):**
+    *   Manual sync for specific Google Calendar accounts
+    *   Sync individual calendars with incremental sync support
+    *   Process events (create, update, delete) from Google Calendar
+    *   Scheduled automatic sync every hour using cron jobs
+    *   Webhook notification handling (framework ready)
+    *   Sync token management for efficient incremental sync
+*   [x] **Integration with CalendarsModule:**
+    *   Added sync service to module providers
+    *   Added ScheduleModule for cron job support
+    *   Created API endpoints for manual sync operations
+*   [x] **Controller Endpoints:**
+    *   `POST /calendars/sync/:accountId` - Manual sync for account
+    *   `POST /calendars/webhooks/setup/:accountId` - Setup webhooks  
+    *   `POST /calendars/webhooks/google` - Handle webhook notifications
+*   [ ] **Database Models Enhancement:** Webhook and sync state models added to schema but not yet fully integrated due to Prisma client recognition issues
+*   [x] **Error Handling and Retry Logic:** Implemented robust error handling with retry utilities for rate limiting
+*   [x] **Logging and Monitoring:** Comprehensive logging for sync operations and webhook events
+
+## 9. Dependencies
 *   `@nestjs/axios`, `ConfigModule`
 *   `googleapis` (for Google), `@microsoft/microsoft-graph-client` (for Microsoft)
 *   `AccountsModule`, `EncryptionModule`

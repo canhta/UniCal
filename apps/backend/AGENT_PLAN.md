@@ -57,7 +57,7 @@ This plan guides the UniCal backend development, prioritizing a phased rollout (
 **Sub-Phase 2.3: Core Scheduling Functionalities**
 *Goal: Enable calendar connectivity, unified event view, event management, and two-way synchronization.*
 
-*   [ ] **`CalendarPlatformModule` (Full - `CALENDAR_PLATFORM_MODULE_PLAN.md`):** Implement full `ICalendarPlatformService` for Google/Microsoft (fetch calendars/events, CUD events, webhooks).
+*   [x] **`CalendarPlatformModule` (Full - `CALENDAR_PLATFORM_MODULE_PLAN.md`):** Implement full `ICalendarPlatformService` for Google/Microsoft (fetch calendars/events, CUD events, webhooks).
 *   [ ] **`ConnectedAccountModule` (`CONNECTED_ACCOUNT_MODULE_PLAN.md`):** Manage platform connections, secure token storage/refresh. Implement list/select native calendars.
 *   [ ] **`EventModule` (`EVENT_MODULE_PLAN.md`):** Implement `CalendarEvent` aggregate, CRUD operations (via `CalendarPlatformModule`). Handle basic recurrence (FRD 3.4.5), privacy indication (FRD 3.7.1), reminder display (FRD 3.9.1).
 *   [ ] **`SyncModule` (`SYNC_MODULE_PLAN.md`):** Implement two-way sync, webhook ingestion, conflict resolution (FRD 3.5.3 "last update wins"). Implement initial sync.

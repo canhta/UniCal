@@ -49,7 +49,9 @@ export function isValidISODate(dateString: string): boolean {
 /**
  * Convert a date to ISO string, handling null/undefined
  */
-export function toISOString(date: Date | string | null | undefined): string | undefined {
+export function toISOString(
+  date: Date | string | null | undefined,
+): string | undefined {
   if (!date) return undefined;
   if (typeof date === 'string') return date;
   return date.toISOString();

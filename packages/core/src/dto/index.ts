@@ -3,6 +3,7 @@
  */
 
 export * from './base.dto';
+export * from './pagination.dto';
 export * from './user.dto';
 export * from './calendar.dto';
 export * from './event.dto';

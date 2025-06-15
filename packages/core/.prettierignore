@@ -1,0 +1,11 @@
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Config files
+*.config.js
+*.config.mjs

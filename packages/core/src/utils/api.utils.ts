@@ -7,7 +7,10 @@ import { ApiResponse, ApiError, PaginatedResponse } from '../types/api.types';
 /**
  * Create a successful API response
  */
-export function createSuccessResponse<T>(data: T, message?: string): ApiResponse<T> {
+export function createSuccessResponse<T>(
+  data: T,
+  message?: string,
+): ApiResponse<T> {
   return {
     success: true,
     data,
@@ -44,7 +47,7 @@ export function createPaginatedResponse<T>(
   limit: number,
 ): PaginatedResponse<T> {
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     data,
     pagination: {
@@ -70,6 +73,7 @@ export function isValidEmail(email: string): boolean {
  * Validate UUID format
  */
 export function isValidUUID(uuid: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }

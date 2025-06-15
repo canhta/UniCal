@@ -2,6 +2,7 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google, calendar_v3 } from 'googleapis';
 import {
+  RetryUtil,
   ICalendarPlatformService,
   PlatformCalendarDto,
   PlatformEventDto,
@@ -91,73 +92,69 @@ export class GoogleCalendarService implements ICalendarPlatformService {
   }
 
   async getCalendars(accessToken: string): Promise<PlatformCalendarDto[]> {
-    try {
-      const oauth2Client = this.getOAuth2Client(accessToken);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    return RetryUtil.withRetry(async () => {
+      try {
+        const oauth2Client = this.getOAuth2Client(accessToken);
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      const response = await calendar.calendarList.list();
-      const calendars = response.data.items || [];
+        const response = await calendar.calendarList.list();
+        const calendars = response.data.items || [];
 
-      return calendars.map(
-        (cal): PlatformCalendarDto => ({
-          id: cal.id!,
-          name: cal.summary!,
-          description: cal.description || undefined,
-          primary: cal.primary || undefined,
-          accessRole: cal.accessRole || undefined,
-          backgroundColor: cal.backgroundColor || undefined,
-          foregroundColor: cal.foregroundColor || undefined,
-          timeZone: cal.timeZone || undefined,
-        }),
-      );
-    } catch (error) {
-      this.logger.error('Failed to get Google calendars', error);
-      throw new HttpException(
-        'Failed to retrieve calendars from Google',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+        return calendars.map(
+          (cal): PlatformCalendarDto => ({
+            id: cal.id!,
+            name: cal.summary!,
+            description: cal.description || undefined,
+            primary: cal.primary || undefined,
+            accessRole: cal.accessRole || undefined,
+            backgroundColor: cal.backgroundColor || undefined,
+            foregroundColor: cal.foregroundColor || undefined,
+            timeZone: cal.timeZone || undefined,
+          }),
+        );
+      } catch (error: unknown) {
+        this.handleApiError(error, 'Failed to get Google calendars');
+      }
+    });
   }
 
   async getEvents(
     accessToken: string,
     query: FetchPlatformEventsQueryDto,
   ): Promise<FetchPlatformEventsResponseDto> {
-    try {
-      const oauth2Client = this.getOAuth2Client(accessToken);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    return RetryUtil.withRetry(async () => {
+      try {
+        const oauth2Client = this.getOAuth2Client(accessToken);
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      // Get events from primary calendar or all calendars
-      const calendarId = 'primary'; // TODO: Support multiple calendars
+        // Get events from primary calendar or all calendars
+        const calendarId = 'primary'; // TODO: Support multiple calendars
 
-      const response = await calendar.events.list({
-        calendarId,
-        timeMin: query.timeMin,
-        timeMax: query.timeMax,
-        maxResults: query.maxResults || 250,
-        singleEvents: true,
-        orderBy: 'startTime',
-        syncToken: query.syncToken,
-        pageToken: query.pageToken,
-        showDeleted: query.showDeleted,
-      });
+        const response = await calendar.events.list({
+          calendarId,
+          timeMin: query.timeMin,
+          timeMax: query.timeMax,
+          maxResults: query.maxResults || 250,
+          singleEvents: true,
+          orderBy: 'startTime',
+          syncToken: query.syncToken,
+          pageToken: query.pageToken,
+          showDeleted: query.showDeleted,
+        });
 
-      const events = (response.data.items || []).map(
-        this.mapGoogleEventToPlatform,
-      );
+        const events = (response.data.items || []).map(
+          this.mapGoogleEventToPlatform,
+        );
 
-      return {
-        events,
-        nextPageToken: response.data.nextPageToken || undefined,
-        nextSyncToken: response.data.nextSyncToken || undefined,
-      };
-    } catch (error) {
-      this.logger.error('Failed to get Google events', error);
-      throw new HttpException(
-        'Failed to retrieve events from Google',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+        return {
+          events,
+          nextPageToken: response.data.nextPageToken || undefined,
+          nextSyncToken: response.data.nextSyncToken || undefined,
+        };
+      } catch (error: unknown) {
+        this.handleApiError(error, 'Failed to get Google events');
+      }
+    });
   }
 
   async getEvent(
@@ -165,79 +162,75 @@ export class GoogleCalendarService implements ICalendarPlatformService {
     calendarId: string,
     eventId: string,
   ): Promise<PlatformEventDto> {
-    try {
-      const oauth2Client = this.getOAuth2Client(accessToken);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    return RetryUtil.withRetry(async () => {
+      try {
+        const oauth2Client = this.getOAuth2Client(accessToken);
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      const response = await calendar.events.get({
-        calendarId,
-        eventId,
-      });
+        const response = await calendar.events.get({
+          calendarId,
+          eventId,
+        });
 
-      return this.mapGoogleEventToPlatform(response.data);
-    } catch (error) {
-      this.logger.error(`Failed to get Google event ${eventId}`, error);
-      throw new HttpException(
-        'Failed to retrieve event from Google',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+        return this.mapGoogleEventToPlatform(response.data);
+      } catch (error: unknown) {
+        this.handleApiError(error, `Failed to get Google event ${eventId}`);
+      }
+    });
   }
 
   async createEvent(
     accessToken: string,
     eventData: CreatePlatformEventDto,
   ): Promise<PlatformEventDto> {
-    try {
-      const oauth2Client = this.getOAuth2Client(accessToken);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    return RetryUtil.withRetry(async () => {
+      try {
+        const oauth2Client = this.getOAuth2Client(accessToken);
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      const googleEvent: calendar_v3.Schema$Event = {
-        summary: eventData.title,
-        description: eventData.description,
-        location: eventData.location,
-        status: eventData.status as 'confirmed' | 'tentative' | 'cancelled',
-        visibility: eventData.visibility === 'private' ? 'private' : 'public',
-        start: eventData.isAllDay
-          ? { date: eventData.startTime.split('T')[0] }
-          : {
-              dateTime: eventData.startTime,
-              timeZone: eventData.timeZone,
-            },
-        end: eventData.isAllDay
-          ? { date: eventData.endTime.split('T')[0] }
-          : {
-              dateTime: eventData.endTime,
-              timeZone: eventData.timeZone,
-            },
-        attendees: eventData.attendees?.map((attendee) => ({
-          email: attendee.email,
-          displayName: attendee.displayName,
-        })),
-        reminders: eventData.reminders
-          ? {
-              useDefault: false,
-              overrides: eventData.reminders.map((reminder) => ({
-                method: reminder.method,
-                minutes: reminder.minutes,
-              })),
-            }
-          : undefined,
-      };
+        const googleEvent: calendar_v3.Schema$Event = {
+          summary: eventData.title,
+          description: eventData.description,
+          location: eventData.location,
+          status: eventData.status as 'confirmed' | 'tentative' | 'cancelled',
+          visibility: eventData.visibility === 'private' ? 'private' : 'public',
+          start: eventData.isAllDay
+            ? { date: eventData.startTime.split('T')[0] }
+            : {
+                dateTime: eventData.startTime,
+                timeZone: eventData.timeZone,
+              },
+          end: eventData.isAllDay
+            ? { date: eventData.endTime.split('T')[0] }
+            : {
+                dateTime: eventData.endTime,
+                timeZone: eventData.timeZone,
+              },
+          attendees: eventData.attendees?.map((attendee) => ({
+            email: attendee.email,
+            displayName: attendee.displayName,
+          })),
+          reminders: eventData.reminders
+            ? {
+                useDefault: false,
+                overrides: eventData.reminders.map((reminder) => ({
+                  method: reminder.method,
+                  minutes: reminder.minutes,
+                })),
+              }
+            : undefined,
+        };
 
-      const response = await calendar.events.insert({
-        calendarId: eventData.calendarId,
-        requestBody: googleEvent,
-      });
+        const response = await calendar.events.insert({
+          calendarId: eventData.calendarId,
+          requestBody: googleEvent,
+        });
 
-      return this.mapGoogleEventToPlatform(response.data);
-    } catch (error) {
-      this.logger.error('Failed to create Google event', error);
-      throw new HttpException(
-        'Failed to create event in Google Calendar',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+        return this.mapGoogleEventToPlatform(response.data);
+      } catch (error: unknown) {
+        this.handleApiError(error, 'Failed to create Google event');
+      }
+    });
   }
 
   async updateEvent(
@@ -246,62 +239,60 @@ export class GoogleCalendarService implements ICalendarPlatformService {
     eventId: string,
     eventData: UpdatePlatformEventDto,
   ): Promise<PlatformEventDto> {
-    try {
-      const oauth2Client = this.getOAuth2Client(accessToken);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    return RetryUtil.withRetry(async () => {
+      try {
+        const oauth2Client = this.getOAuth2Client(accessToken);
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      const updateData: Partial<calendar_v3.Schema$Event> = {};
+        const updateData: Partial<calendar_v3.Schema$Event> = {};
 
-      if (eventData.title !== undefined) updateData.summary = eventData.title;
-      if (eventData.description !== undefined)
-        updateData.description = eventData.description;
-      if (eventData.location !== undefined)
-        updateData.location = eventData.location;
-      if (eventData.status !== undefined)
-        updateData.status = eventData.status as
-          | 'confirmed'
-          | 'tentative'
-          | 'cancelled';
-      if (eventData.visibility !== undefined)
-        updateData.visibility =
-          eventData.visibility === 'private' ? 'private' : 'public';
+        if (eventData.title !== undefined) updateData.summary = eventData.title;
+        if (eventData.description !== undefined)
+          updateData.description = eventData.description;
+        if (eventData.location !== undefined)
+          updateData.location = eventData.location;
+        if (eventData.status !== undefined)
+          updateData.status = eventData.status as
+            | 'confirmed'
+            | 'tentative'
+            | 'cancelled';
+        if (eventData.visibility !== undefined)
+          updateData.visibility =
+            eventData.visibility === 'private' ? 'private' : 'public';
 
-      if (
-        eventData.startTime ||
-        eventData.endTime ||
-        eventData.isAllDay !== undefined
-      ) {
-        if (eventData.isAllDay) {
-          if (eventData.startTime) {
-            updateData.start = { date: eventData.startTime.split('T')[0] };
-          }
-          if (eventData.endTime) {
-            updateData.end = { date: eventData.endTime.split('T')[0] };
-          }
-        } else {
-          if (eventData.startTime) {
-            updateData.start = { dateTime: eventData.startTime };
-          }
-          if (eventData.endTime) {
-            updateData.end = { dateTime: eventData.endTime };
+        if (
+          eventData.startTime ||
+          eventData.endTime ||
+          eventData.isAllDay !== undefined
+        ) {
+          if (eventData.isAllDay) {
+            if (eventData.startTime) {
+              updateData.start = { date: eventData.startTime.split('T')[0] };
+            }
+            if (eventData.endTime) {
+              updateData.end = { date: eventData.endTime.split('T')[0] };
+            }
+          } else {
+            if (eventData.startTime) {
+              updateData.start = { dateTime: eventData.startTime };
+            }
+            if (eventData.endTime) {
+              updateData.end = { dateTime: eventData.endTime };
+            }
           }
         }
+
+        const response = await calendar.events.patch({
+          calendarId,
+          eventId,
+          requestBody: updateData,
+        });
+
+        return this.mapGoogleEventToPlatform(response.data);
+      } catch (error: unknown) {
+        this.handleApiError(error, `Failed to update Google event ${eventId}`);
       }
-
-      const response = await calendar.events.patch({
-        calendarId,
-        eventId,
-        requestBody: updateData,
-      });
-
-      return this.mapGoogleEventToPlatform(response.data);
-    } catch (error) {
-      this.logger.error(`Failed to update Google event ${eventId}`, error);
-      throw new HttpException(
-        'Failed to update event in Google Calendar',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    });
   }
 
   async deleteEvent(
@@ -309,21 +300,19 @@ export class GoogleCalendarService implements ICalendarPlatformService {
     calendarId: string,
     eventId: string,
   ): Promise<void> {
-    try {
-      const oauth2Client = this.getOAuth2Client(accessToken);
-      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    return RetryUtil.withRetry(async () => {
+      try {
+        const oauth2Client = this.getOAuth2Client(accessToken);
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      await calendar.events.delete({
-        calendarId,
-        eventId,
-      });
-    } catch (error) {
-      this.logger.error(`Failed to delete Google event ${eventId}`, error);
-      throw new HttpException(
-        'Failed to delete event from Google Calendar',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+        await calendar.events.delete({
+          calendarId,
+          eventId,
+        });
+      } catch (error: unknown) {
+        this.handleApiError(error, `Failed to delete Google event ${eventId}`);
+      }
+    });
   }
 
   async createWebhookSubscription(
@@ -456,4 +445,47 @@ export class GoogleCalendarService implements ICalendarPlatformService {
       htmlLink: googleEvent.htmlLink || undefined,
     };
   };
+
+  private handleApiError(error: unknown, context: string): never {
+    this.logger.error(context, error);
+
+    if (error && typeof error === 'object' && 'code' in error) {
+      const apiError = error as { code: number; message?: string };
+
+      switch (apiError.code) {
+        case 401:
+          throw new HttpException(
+            'Google Calendar access token is invalid or expired',
+            HttpStatus.UNAUTHORIZED,
+          );
+        case 403:
+          throw new HttpException(
+            'Insufficient permissions for Google Calendar access',
+            HttpStatus.FORBIDDEN,
+          );
+        case 404:
+          throw new HttpException(
+            'Google Calendar resource not found',
+            HttpStatus.NOT_FOUND,
+          );
+        case 429:
+          throw new HttpException(
+            'Google Calendar API rate limit exceeded',
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        default:
+          if (apiError.code >= 500) {
+            throw new HttpException(
+              'Google Calendar service temporarily unavailable',
+              HttpStatus.BAD_GATEWAY,
+            );
+          }
+      }
+    }
+
+    throw new HttpException(
+      `Google Calendar API error: ${context}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
 }

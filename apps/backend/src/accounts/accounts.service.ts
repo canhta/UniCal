@@ -10,7 +10,7 @@ import {
   ConnectedAccountResponseDto,
   InternalCreateConnectedAccountDto,
   InternalUpdateConnectedAccountDto,
-} from './dto/accounts.dto';
+} from '@unical/core';
 import { ConnectedAccount } from '@prisma/client';
 
 @Injectable()
@@ -165,8 +165,8 @@ export class AccountsService {
       providerAccountId: account.providerAccountId,
       accountEmail: undefined, // Would need to be stored separately
       scopes: account.scope ? account.scope.split(' ') : undefined,
-      createdAt: account.createdAt,
-      updatedAt: account.updatedAt,
+      createdAt: account.createdAt.toISOString(),
+      updatedAt: account.updatedAt.toISOString(),
     };
   }
 }

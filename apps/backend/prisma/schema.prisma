@@ -159,7 +159,7 @@ model UserSubscription {
 }
 
 model ConnectedAccount {
-  id                    String     @id @default(uuid())
+  id                    String                @id @default(uuid())
   userId                String
   provider              String
   providerAccountId     String
@@ -167,10 +167,12 @@ model ConnectedAccount {
   encryptedRefreshToken String?
   tokenExpiresAt        DateTime?
   scope                 String?
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
   calendars             Calendar[]
-  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  webhookSubscriptions  WebhookSubscription[]
+  calendarSyncStates    CalendarSyncState[]
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("connected_accounts")
@@ -239,6 +241,36 @@ model UserCalendarSetting {
 
   @@unique([userId, calendarId])
   @@map("user_calendar_settings")
+}
+
+model WebhookSubscription {
+  id                     String           @id @default(uuid())
+  platformSubscriptionId String
+  connectedAccountId     String
+  platformCalendarId     String
+  webhookUrl             String
+  expiresAt              DateTime?
+  active                 Boolean          @default(true)
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  connectedAccount       ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedAccountId, platformCalendarId])
+  @@map("webhook_subscriptions")
+}
+
+model CalendarSyncState {
+  id                 String           @id @default(uuid())
+  connectedAccountId String
+  platformCalendarId String
+  syncToken          String?
+  lastSyncedAt       DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  connectedAccount   ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedAccountId, platformCalendarId])
+  @@map("calendar_sync_states")
 }
 
 enum UserStatus {

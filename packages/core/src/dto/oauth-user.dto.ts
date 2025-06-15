@@ -22,4 +22,4 @@ export class OAuthUserDto {
   constructor(data: Partial<OAuthUserDto>) {
     Object.assign(this, data);
   }
-} 
+}

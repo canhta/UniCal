@@ -1,12 +1,20 @@
-import { IsEmail, IsString, IsOptional, IsEnum, IsNotEmpty, MinLength, IsPhoneNumber, IsInt, Min, Max, IsDateString, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  MinLength,
+  IsPhoneNumber,
+  IsDateString,
+  IsIn,
+} from 'class-validator';
 
 // Type unions for enum-like values
 export const AdminRole = {
   SUPER_ADMIN: 'SuperAdmin',
   ADMIN: 'Admin',
 } as const;
-export type AdminRole = typeof AdminRole[keyof typeof AdminRole];
+export type AdminRole = (typeof AdminRole)[keyof typeof AdminRole];
 
 export const UserStatus = {
   ACTIVE: 'ACTIVE',
@@ -14,7 +22,7 @@ export const UserStatus = {
   PENDING_VERIFICATION: 'PENDING_VERIFICATION',
   DELETED: 'DELETED',
 } as const;
-export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 
 export const LeadStatus = {
   NEW: 'NEW',
@@ -23,7 +31,7 @@ export const LeadStatus = {
   DISQUALIFIED: 'DISQUALIFIED',
   CONVERTED: 'CONVERTED',
 } as const;
-export type LeadStatus = typeof LeadStatus[keyof typeof LeadStatus];
+export type LeadStatus = (typeof LeadStatus)[keyof typeof LeadStatus];
 
 export const AuditAction = {
   CREATE_CLIENT_USER: 'CREATE_CLIENT_USER',
@@ -40,64 +48,7 @@ export const AuditAction = {
   ADMIN_LOGIN: 'ADMIN_LOGIN',
   ADMIN_LOGOUT: 'ADMIN_LOGOUT',
 } as const;
-export type AuditAction = typeof AuditAction[keyof typeof AuditAction];
-
-// Pagination DTOs
-export class PageOptionsDto {
-  @Type(() => Number)
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  readonly page?: number = 1;
-
-  @Type(() => Number)
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(50)
-  readonly limit?: number = 10;
-
-  get skip(): number {
-    return ((this.page ?? 1) - 1) * (this.limit ?? 10);
-  }
-
-  get take(): number {
-    return this.limit ?? 10;
-  }
-}
-
-export interface PageMetaDto {
-  page: number;
-  limit: number;
-  totalItems: number;
-  totalPages: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
-}
-
-export class PageDto<T> {
-  constructor(
-    public readonly data: T[],
-    public readonly meta: PageMetaDto,
-  ) {}
-}
-
-export function createPageMeta(
-  pageOptions: PageOptionsDto,
-  totalItems: number,
-): PageMetaDto {
-  const page = pageOptions.page ?? 1;
-  const limit = pageOptions.limit ?? 10;
-  const totalPages = Math.ceil(totalItems / limit);
-  return {
-    page,
-    limit,
-    totalItems,
-    totalPages,
-    hasPreviousPage: page > 1,
-    hasNextPage: page < totalPages,
-  };
-}
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction];
 
 // Admin User DTOs
 export class CreateAdminUserDto {

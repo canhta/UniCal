@@ -15,9 +15,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AccountsService } from './accounts.service';
-import { ConnectedAccountResponseDto } from './dto/accounts.dto';
+import {
+  ConnectedAccountResponseDto,
+  AuthenticatedRequest,
+} from '@unical/core';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from '@unical/core';
 
 @ApiTags('Connected Accounts')
 @Controller('accounts')

@@ -10,6 +10,7 @@ import {
 
 /**
  * Common decorator combinations for frequent validation patterns
+ * These decorators can be used across frontend and backend for consistent validation
  */
 
 // UUID Field
@@ -90,7 +91,6 @@ export const UrlField = (
     IsUrl()(target, propertyKey);
     ApiProperty({
       example: example || 'https://example.com',
-      description: description || 'URL',
       format: 'url',
       required: !isOptional,
     })(target, propertyKey);

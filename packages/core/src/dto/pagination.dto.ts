@@ -1,6 +1,17 @@
-import { IsOptional, IsInt, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+  IsDateString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+
+/**
+ * Common pagination DTOs that can be reused across the application
+ */
 
 export class PageOptionsDto {
   @ApiPropertyOptional({
@@ -52,6 +63,9 @@ export class PageDto<T> {
   ) {}
 }
 
+/**
+ * Utility function to create pagination metadata
+ */
 export function createPageMeta(
   pageOptions: PageOptionsDto,
   totalItems: number,
@@ -67,4 +81,38 @@ export function createPageMeta(
     hasPreviousPage: page > 1,
     hasNextPage: page < totalPages,
   };
+}
+
+/**
+ * Paginated query with date range support
+ */
+export class PaginatedDateRangeQueryDto extends PageOptionsDto {
+  @ApiPropertyOptional({
+    example: '2023-06-01T00:00:00.000Z',
+    description: 'Start date for filtering',
+  })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional({
+    example: '2023-06-30T23:59:59.999Z',
+    description: 'End date for filtering',
+  })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+}
+
+/**
+ * Search query DTO
+ */
+export class SearchQueryDto extends PageOptionsDto {
+  @ApiPropertyOptional({
+    example: 'search term',
+    description: 'Search query string',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

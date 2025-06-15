@@ -24,9 +24,9 @@ import {
   CreateEventRequestDto,
   UpdateEventRequestDto,
   GetEventsQueryDto,
-} from './dto/events.dto';
+  AuthenticatedRequest,
+} from '@unical/core';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from '@unical/core';
 
 @ApiTags('Events')
 @Controller('events')
