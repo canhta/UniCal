@@ -5,17 +5,19 @@ import { ConnectAccountButtons } from "@/components/integrations/ConnectAccountB
 import { IntegrationsHeader } from "@/components/integrations/IntegrationsHeader"
 
 interface IntegrationsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     status?: 'success_google' | 'success_microsoft' | 'error_google' | 'error_microsoft';
     message?: string;
-  }
+  }>
 }
 
-export default function IntegrationsPage({ searchParams }: IntegrationsPageProps) {
+export default async function IntegrationsPage({ searchParams }: IntegrationsPageProps) {
+  const params = await searchParams;
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <IntegrationsHeader status={searchParams.status} message={searchParams.message} />
+        <IntegrationsHeader status={params.status} message={params.message} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <ConnectAccountButtons />
