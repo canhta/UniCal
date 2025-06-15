@@ -77,9 +77,21 @@ export function ConnectedAccountsList() {
     router.push(`/integrations/${accountId}/calendars`)
   }
 
+  const [syncing, setSyncing] = useState<string | null>(null)
+
   const handleRefreshSync = async (accountId: string) => {
-    // In a real implementation, this would trigger a manual sync
-    console.log('Refreshing sync for account:', accountId)
+    try {
+      setSyncing(accountId)
+      const result = await apiClient.manualSync(accountId)
+      console.log('Manual sync triggered:', result)
+      // In a real app, you might show a success toast here
+      // You could also refresh the accounts list to update sync status
+      await fetchConnectedAccounts()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to trigger sync')
+    } finally {
+      setSyncing(null)
+    }
   }
 
   const getProviderIcon = (provider: string) => {
@@ -230,10 +242,11 @@ export function ConnectedAccountsList() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleRefreshSync(account.id)}
+                  disabled={syncing === account.id}
                   className="text-xs"
                 >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Sync
+                  <RefreshCw className={`h-3 w-3 mr-1 ${syncing === account.id ? 'animate-spin' : ''}`} />
+                  {syncing === account.id ? 'Syncing...' : 'Sync'}
                 </Button>
                 
                 <Button

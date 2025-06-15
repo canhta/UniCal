@@ -4,21 +4,42 @@ import { CheckCircle, XCircle } from "lucide-react"
 import { Alert } from "@/components/ui/alert"
 
 interface IntegrationsHeaderProps {
-  status?: 'success_google' | 'success_microsoft' | 'error_google' | 'error_microsoft';
-  message?: string;
+  status?: 'success' | 'error';
+  provider?: 'google' | 'microsoft';
+  accountId?: string;
+  error?: string;
 }
 
-export function IntegrationsHeader({ status, message }: IntegrationsHeaderProps) {
+export function IntegrationsHeader({ status, provider, accountId, error }: IntegrationsHeaderProps) {
   const getStatusMessage = () => {
+    if (!status || !provider) return null;
+
+    const providerName = provider === 'google' ? 'Google Calendar' : 'Microsoft Outlook';
+    
     switch (status) {
-      case 'success_google':
-        return { type: 'success', text: 'Google Calendar connected successfully!' };
-      case 'success_microsoft':
-        return { type: 'success', text: 'Microsoft Outlook connected successfully!' };
-      case 'error_google':
-        return { type: 'error', text: message || 'Failed to connect Google Calendar. Please try again.' };
-      case 'error_microsoft':
-        return { type: 'error', text: message || 'Failed to connect Microsoft Outlook. Please try again.' };
+      case 'success':
+        return { 
+          type: 'success', 
+          text: `${providerName} connected successfully! ${accountId ? `Account ID: ${accountId}` : ''}`
+        };
+      case 'error':
+        let errorText = `Failed to connect ${providerName}.`;
+        if (error) {
+          switch (error) {
+            case 'access_denied':
+              errorText += ' You denied access to your calendar.';
+              break;
+            case 'invalid_state':
+              errorText += ' Security validation failed. Please try again.';
+              break;
+            case 'callback_failed':
+              errorText += ' Connection failed during processing.';
+              break;
+            default:
+              errorText += ` Error: ${error}`;
+          }
+        }
+        return { type: 'error', text: errorText };
       default:
         return null;
     }

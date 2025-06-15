@@ -6,8 +6,10 @@ import { IntegrationsHeader } from "@/components/integrations/IntegrationsHeader
 
 interface IntegrationsPageProps {
   searchParams: Promise<{
-    status?: 'success_google' | 'success_microsoft' | 'error_google' | 'error_microsoft';
-    message?: string;
+    status?: 'success' | 'error';
+    provider?: 'google' | 'microsoft';
+    accountId?: string;
+    error?: string;
   }>
 }
 
@@ -17,7 +19,12 @@ export default async function IntegrationsPage({ searchParams }: IntegrationsPag
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <IntegrationsHeader status={params.status} message={params.message} />
+        <IntegrationsHeader 
+          status={params.status} 
+          provider={params.provider}
+          accountId={params.accountId}
+          error={params.error}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <ConnectAccountButtons />

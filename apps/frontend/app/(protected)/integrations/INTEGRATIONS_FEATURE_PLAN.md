@@ -1,6 +1,28 @@
 # Integrations Feature Plan (Phase 3)
 
-This plan details the UI and interaction for managing calendar integrations (Google, Microsoft Outlook) in the UniCal frontend.
+This plan details the simplified UI and interaction for managing calendar integrations (Google, Microsoft) in the UniCal frontend.
+
+## Implementation TODOs
+
+### Phase 1: Core Integration Page  
+- [x] Create main integrations page (`/integrations`) ✅
+- [x] Add OAuth URL API endpoints to `lib/api/client.ts` ✅
+- [x] Build `ConnectButtons.tsx` component with OAuth flow ✅
+- [x] Build `ConnectedAccountCard.tsx` component for account display ✅
+- [x] Handle OAuth success/error feedback from URL parameters ✅
+- [x] Update IntegrationsHeader to handle new callback format ✅
+
+### Phase 2: Account Management  
+- [x] Implement disconnect functionality with confirmation ✅
+- [x] Add manual sync trigger buttons ✅ 
+- [x] Display sync status and error states ✅
+- [x] Add loading states for async operations ✅
+- [x] Connect to new backend integrations endpoints ✅
+
+### Phase 3: Calendar Selection (Future)
+- [ ] Calendar selection modal or page
+- [ ] Checkbox interface for calendar sync preferences
+- [ ] Save and update sync settings
 
 ## FRD Alignment
 *   **FR3.2.1 Connect Google Calendar**
@@ -16,96 +38,111 @@ This page will be a Server Component by default (`apps/frontend/app/(protected)/
 ## UI Elements & Functionality
 
 1.  **[x] Display Connected Accounts Section:**
-    *   **Data Fetching (SSR):** In `page.tsx`, fetch the list of currently connected accounts for the user from the backend API (e.g., `/api/integrations/accounts`).
+    *   **Data Fetching (SSR):** In `page.tsx`, fetch connected accounts from `/api/integrations/accounts`
     *   **UI:**
-        *   If no accounts connected: Display a message like "You haven't connected any calendar accounts yet." and prominently show "Connect" buttons.
-        *   If accounts are connected: List each account (e.g., "Google Calendar - user@example.com", "Microsoft Outlook - work@example.com").
-            *   Display platform logo (Google, Outlook).
-            *   Display account identifier (email).
-            *   **FR3.9.3 Sync Status:** Display a basic status indicator (e.g., "Connected", "Syncing", "Needs Re-authentication", "Error"). This status would come from the backend API response for each account.
-            *   "Disconnect" button for each account.
-            *   "Manage Calendars" or "Select Calendars to Sync" button/link for each account.
-    *   **Component:** `apps/frontend/components/integrations/ConnectedAccountCard.tsx` (Client Component if it has interactive elements like a disconnect button that triggers client-side actions before API call, or if status updates dynamically without full page reload).
+        *   If no accounts: Show "No calendar accounts connected" message with prominent connect buttons
+        *   If accounts connected: List each account with:
+            *   Platform logo (Google, Microsoft)
+            *   Account email/identifier  
+            *   Sync status indicator (Connected, Syncing, Error, etc.)
+            *   "Disconnect" and "Manage Calendars" buttons
+    *   **Component:** `ConnectedAccountCard.tsx` for individual account display
 
-2.  **[x] Connect New Account Section:**
+2.  **[ ] Connect New Account Section:**
     *   **UI:**
-        *   "Connect Google Calendar" button.
-        *   "Connect Microsoft Outlook Calendar" button.
-    *   **Action:**
-        *   Clicking these buttons should navigate the user to the backend OAuth initiation URL (e.g., `/api/auth/google/connect`, `/api/auth/microsoft/connect`). The backend will handle the OAuth dance and redirect back to a predefined callback URL (e.g., `/integrations?status=success_google` or `/integrations?status=error_google`).
-    *   **Feedback:** The `/integrations` page should be able to display success or error messages based on query parameters from the OAuth callback. This can be handled in the Server Component (`page.tsx`) by reading `searchParams`.
+        *   "Connect Google Calendar" button
+        *   "Connect Microsoft Outlook Calendar" button
+    *   **Simplified Action Flow:**
+        1. User clicks connect button
+        2. Frontend calls `apiClient.getOAuthUrl(provider)` to get OAuth URL
+        3. Frontend redirects to OAuth URL using `window.location.href = oauthUrl`
+        4. User completes OAuth on provider's site
+        5. Provider redirects to backend callback
+        6. Backend handles OAuth and redirects to `/integrations?status=success/error`
+        7. Frontend shows success/error message based on URL parameters
 
 3.  **[x] Disconnect Account Functionality:**
-    *   **UI:** "Disconnect" button on each `ConnectedAccountCard`.
-    *   **Action (Client-Side initiated, calls API):**
-        *   Show a confirmation modal (`components/ui/Modal.tsx`).
-        *   On confirmation, make an API call to the backend to disconnect the account (e.g., `DELETE /api/integrations/accounts/{accountId}`).
-        *   On success, refresh the list of connected accounts. This can be done by:
-            *   Server-side: `router.refresh()` if using Next.js App Router to re-fetch data in the Server Component.
-            *   Client-side: If using a client-side state manager for the list, update it directly and potentially re-fetch.
+    *   **UI:** Disconnect button with confirmation modal
+    *   **Action:** Call `apiClient.disconnectAccount(accountId)` and refresh page
 
-4.  **[ ] Manage Calendars / Select Calendars to Sync (FR3.5.4):**
-    *   **Navigation:** Clicking "Manage Calendars" for a connected account could either:
-        *   Navigate to a new page: ` /integrations/{accountId}/calendars` (Server Component to fetch calendars for that account).
-        *   Open a modal (`components/ui/Modal.tsx`) on the current page (modal content fetched client-side or pre-fetched if data is small).
-    *   **UI (Modal or New Page):**
-        *   List all calendars available under the selected connected account (e.g., "Personal", "Work", "Family" for Google).
-        *   Each calendar should have a checkbox (`components/ui/Checkbox.tsx`) to indicate if it should be synced with UniCal.
-        *   Display current sync status/selection.
-        *   "Save" button.
-    *   **Data Fetching:** API endpoint to get calendars for a specific connected account (e.g., `GET /api/integrations/accounts/{accountId}/calendars`).
-    *   **Action:** Clicking "Save" makes an API call to update the sync preferences for that account's calendars (e.g., `PUT /api/integrations/accounts/{accountId}/calendars`).
-    *   **SSR Preference:** If navigating to a new page, this page can be a Server Component, fetching the list of calendars and their current sync state on the server.
+4.  **[ ] Calendar Selection (Future Phase):**
+    *   Navigate to dedicated page or modal for selecting which calendars to sync
+    *   List available calendars with checkboxes
+    *   Save sync preferences
 
-### 5. Frontend Considerations
+## Frontend Implementation Notes
 
-*   [x] **Displaying Sync Status & Errors:**
-    *   **Integrations Page (`/integrations`):**
-        *   List each `ConnectedAccount`.
-        *   Display `syncStatus` clearly (e.g., "Syncing...", "Last synced: 5 minutes ago", "Error: Google Calendar connection failed").
-        *   Provide a visual indicator for the status (e.g., green check for `IDLE`, yellow warning for `ERROR_PARTIAL`, red cross for `ERROR_FULL` or `DISABLED`).
-        *   If `lastSyncErrorDetails` is populated, show a summary or a link/tooltip to view more details of the last error.
-        *   Offer actions based on status:
-            *   `ERROR_FULL` / `DISABLED`: "Reconnect Account" or "Resolve Issue" button.
-            *   `ERROR_PARTIAL`: "Retry Failed Items" or "View Details" button.
-            *   `PENDING_INITIAL_SYNC`: Prompt to complete setup (e.g., select native calendars).
-    *   **Global UI Notification:**
-        *   Consider a subtle global indicator (e.g., in the sidebar or header) if there's an active sync issue with any connected account, prompting the user to visit the Integrations page.
-        *   Toast notifications for critical sync failures that require immediate attention (e.g., account disconnected).
-    *   **Calendar View:**
-        *   If an event or calendar is affected by a sync issue (e.g., a specific native calendar is failing to sync), a visual cue could be shown next to the calendar name or events from that source.
-        *   This requires `syncStatus` or error information to be available at a per-native-calendar granularity and propagated to the frontend when fetching calendar/event data.
+### 1. OAuth Connection Flow
+*   Click handler in `ConnectButtons.tsx`:
+    ```typescript
+    const handleConnect = async (provider: 'google' | 'microsoft') => {
+      try {
+        const { url } = await apiClient.getOAuthUrl(provider);
+        window.location.href = url;
+      } catch (error) {
+        // Show error message
+      }
+    };
+    ```
 
-*   [x] **Triggering Sync Actions:**
-    *   "Refresh All" or "Sync Now" button on the Integrations page (could trigger a poll for all accounts or specific ones).
-    *   "Retry" button for accounts/calendars in an error state.
+### 2. Success/Error Handling
+*   Server Component reads `searchParams` in `page.tsx`:
+    ```typescript
+    export default function IntegrationsPage({ 
+      searchParams 
+    }: { 
+      searchParams: { status?: string; provider?: string; error?: string } 
+    }) {
+      const { status, provider, error } = searchParams;
+      // Display appropriate message based on status
+    }
+    ```
+
+### 3. Sync Status Display
+*   Visual indicators for different account states:
+    *   ✅ Connected & Syncing
+    *   ⚠️ Needs Re-authentication  
+    *   ❌ Sync Error
+    *   🔄 Syncing in Progress
+
+### 4. Manual Sync Action
+*   "Sync Now" button calls `apiClient.manualSync(accountId)`
+*   Show loading state during sync operation
+*   Refresh account list after sync completion
 
 ## Components to Create/Use:
 
 *   [x] `apps/frontend/app/(protected)/integrations/page.tsx` (Main Server Component)
-*   [x] `apps/frontend/components/integrations/ConnectAccountButtons.tsx` (Client Component for the connect buttons, or directly in `page.tsx` if simple links)
-*   [x] `apps/frontend/components/integrations/ConnectedAccountsList.tsx` (Client Component for displaying account info and disconnect action)
-*   [x] `apps/frontend/components/integrations/IntegrationsHeader.tsx` (Component for page header and status messages)
-*   [ ] `apps/frontend/components/integrations/SelectCalendarsModal.tsx` or `apps/frontend/app/(protected)/integrations/[accountId]/calendars/page.tsx` (for FR3.5.4)
+*   [ ] `apps/frontend/components/integrations/ConnectedAccountCard.tsx` (Client Component for account display and actions)
+*   [ ] `apps/frontend/components/integrations/ConnectButtons.tsx` (Client Component for OAuth connection)
 *   [x] `components/ui/Button.tsx`
-*   [ ] `components/ui/Modal.tsx` (for confirmations, selecting calendars)
-*   [ ] `components/ui/Checkbox.tsx`
 *   [x] `components/ui/Card.tsx`
-*   [x] `components/ui/Alert.tsx` (for displaying success/error messages from OAuth callback or API calls)
+*   [x] `components/ui/Alert.tsx` (for success/error messages)
 *   [x] `components/ui/Badge.tsx` (for sync status indicators)
+*   [ ] `components/ui/Modal.tsx` (for disconnect confirmation)
 
 ## API Endpoints (Frontend Perspective - to be consumed):
 
 *   `GET /api/integrations/accounts` (Lists connected accounts with their status)
-*   `GET /api/auth/google/connect` (Initiates Google OAuth - frontend navigates here)
-*   `GET /api/auth/microsoft/connect` (Initiates Microsoft OAuth - frontend navigates here)
-*   `DELETE /api/integrations/accounts/{accountId}` (Disconnects an account)
-*   `GET /api/integrations/accounts/{accountId}/calendars` (Lists calendars for a specific account)
-*   `PUT /api/integrations/accounts/{accountId}/calendars` (Updates sync preferences for calendars)
+*   `GET /api/integrations/oauth-url/:provider` (Gets OAuth authorization URL for provider)
+*   `GET /api/integrations/accounts/:accountId/calendars` (Lists calendars for connected account)
+*   `PUT /api/integrations/accounts/:accountId/calendars` (Updates calendar sync preferences) 
+*   `DELETE /api/integrations/accounts/:accountId` (Disconnects account)
+*   `POST /api/integrations/sync/:accountId` (Manual sync trigger)
 
-## Implementation Notes:
-*   **SSR for Initial Load:** The main `/integrations` page should load existing connected accounts server-side for faster perceived performance and SEO (if applicable).
-*   **Client-Side Interactivity:** Actions like disconnecting, opening modals for calendar selection, and saving calendar selections will involve client-side JavaScript and API calls.
-*   **Optimistic Updates:** For actions like disconnecting or changing sync preferences, consider optimistic UI updates for a smoother experience, then reconciling with the actual API response.
-*   **Error Handling:** Clearly display errors from API calls (e.g., failed to disconnect, failed to save preferences) using Alert components.
-*   **Loading States:** Show loading indicators (`components/ui/Spinner.tsx`) during API calls.
+## Key Changes from Original Plan
+
+### Simplified OAuth Flow
+- **Before:** Direct navigation to backend OAuth URLs
+- **After:** API call to get OAuth URL, then client-side redirect
+- **Benefit:** Better error handling and loading states
+
+### Removed Redundancy
+- Consolidated multiple similar components
+- Removed unnecessary authentication flows
+- Simplified state management
+
+### Cleaner Architecture
+- Clear separation between OAuth and account management
+- Consistent API patterns
+- Better error handling and user feedback

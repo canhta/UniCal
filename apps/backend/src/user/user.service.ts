@@ -174,7 +174,7 @@ export class UserService {
       template: 'email-verification',
       context: {
         name: user.displayName,
-        verificationLink: `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`,
+        verificationLink: `${process.env.FRONTEND_BASE_URL}/verify-email?token=${verificationToken}`,
       },
     });
     */

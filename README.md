@@ -19,7 +19,7 @@ The project uses a clear separation between backend and frontend API endpoints:
 
 ### Backend (`apps/backend/.env`)
 - `BASE_URL`: Base URL for OAuth redirects and webhooks (`http://localhost:3000`)
-- `FRONTEND_URL`: Frontend URL for CORS (`http://localhost:3030`)
+- `FRONTEND_BASE_URL`: Frontend URL for CORS (`http://localhost:3030`)
 - Database, Redis, and OAuth provider configurations
 
 ### Frontend (`apps/frontend/.env.local`)

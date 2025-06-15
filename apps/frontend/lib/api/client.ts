@@ -385,9 +385,9 @@ class ApiClient {
     });
   }
 
-  // Connected Accounts endpoints (new)
+  // Connected Accounts endpoints (using new integrations module)
   async getConnectedAccounts(): Promise<ConnectedAccountResponseDto[]> {
-    return this.request<ConnectedAccountResponseDto[]>('/accounts');
+    return this.request<ConnectedAccountResponseDto[]>('/integrations/accounts');
   }
 
   async getConnectedAccount(accountId: string): Promise<ConnectedAccountResponseDto> {
@@ -397,6 +397,17 @@ class ApiClient {
   async disconnectAccount(accountId: string): Promise<void> {
     return this.request<void>(`/accounts/${accountId}`, {
       method: 'DELETE',
+    });
+  }
+
+  // OAuth integration endpoints
+  async getOAuthUrl(provider: 'google' | 'microsoft'): Promise<{ url: string }> {
+    return this.request<{ url: string }>(`/integrations/oauth-url/${provider}`);
+  }
+
+  async manualSync(accountId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/integrations/sync/${accountId}`, {
+      method: 'POST',
     });
   }
 

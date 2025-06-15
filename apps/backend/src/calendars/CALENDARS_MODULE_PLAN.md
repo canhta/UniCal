@@ -133,7 +133,22 @@
 *   [x] **Error Handling and Retry Logic:** Implemented robust error handling with retry utilities for rate limiting
 *   [x] **Logging and Monitoring:** Comprehensive logging for sync operations and webhook events
 
-## 9. Dependencies
+## 10. OAuth Integration Endpoints (Moved to IntegrationsModule)
+*Goal: OAuth integration is now handled by dedicated IntegrationsModule for better separation.*
+
+*   **Note:** OAuth endpoints have been moved to `IntegrationsModule`:
+    *   `GET /integrations/oauth-url/:provider` - OAuth URL generation
+    *   `GET /integrations/auth/:provider/callback` - OAuth callback handling  
+    *   `POST /integrations/sync/:accountId` - Manual sync trigger
+    *   `DELETE /integrations/accounts/:accountId` - Account disconnection
+
+*   [x] **Platform Service Integration:**
+    *   CalendarsModule provides platform-specific services for token exchange
+    *   `GoogleCalendarService.exchangeCodeForTokens()` used by IntegrationsModule
+    *   `MicrosoftCalendarService.exchangeCodeForTokens()` used by IntegrationsModule
+    *   Existing sync functionality via `GoogleCalendarSyncService`
+
+## 11. Dependencies
 *   `@nestjs/axios`, `ConfigModule`
 *   `googleapis` (for Google), `@microsoft/microsoft-graph-client` (for Microsoft)
 *   `AccountsModule`, `EncryptionModule`

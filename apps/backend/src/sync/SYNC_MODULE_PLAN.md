@@ -7,6 +7,34 @@
 ## 1. Core Infrastructure & Setup
 *Goal: Establish the foundational components for the sync process.*
 
+*   [x] **Module Setup (`sync.module.ts`):**
+    *   Create `SyncService` (main orchestration) ✅
+    *   Create `SyncController` (for webhook ingestion) - Future enhancement
+    *   Create `SyncProcessor` (if using BullMQ for background jobs) - Future enhancement
+    *   Import `PrismaModule` - Via other modules ✅
+    *   Import `forwardRef(() => AccountsModule)` ✅
+    *   Import `forwardRef(() => EventsModule)` - Future enhancement
+    *   Import `forwardRef(() => CalendarsModule)` ✅
+    *   Import `forwardRef(() => NotificationsModule)` - Future enhancement
+    *   Import `ConfigModule` - Global ✅
+    *   **Job Queue (Recommended: BullMQ):** - Future enhancement
+
+*   [x] **SyncService Orchestration (High Priority):**
+    *   `triggerInitialSync(accountId: string): Promise<void>` - Called after OAuth connection ✅
+    *   `triggerManualSync(accountId: string): Promise<void>` - Called from manual sync endpoints ✅
+    *   `schedulePeriodicSync(accountId: string): Promise<void>` - Schedule background sync (Future)
+    *   **Integration with GoogleCalendarSyncService:**
+        *   Delegate actual sync work to existing `GoogleCalendarSyncService` ✅
+        *   Handle provider routing (Google vs Microsoft) ✅
+        *   Manage sync status and error reporting ✅ckend)
+
+**Overall Goal:** Ensure reliable two-way synchronization of calendar events between UniCal and connected third-party calendar platforms. This involves initial sync, real-time updates via webhooks, periodic fallback syncs, and conflict resolution.
+
+**Alignment:** This plan is central to Backend AGENT_PLAN Phase 3 (Core Features - Calendar Sync & Integrations).
+
+## 1. Core Infrastructure & Setup
+*Goal: Establish the foundational components for the sync process.*
+
 *   [ ] **Module Setup (`sync.module.ts`):**
     *   Create `SyncService` (main orchestration).
     *   Create `SyncController` (for webhook ingestion).
@@ -42,13 +70,15 @@
     *   `PERIODIC_FALLBACK_SYNC`: `{ connectedAccountId: string }`
     *   `RENEW_WEBHOOKS`: `{ connectedAccountId: string }`
 
-## 2. Initial Sync
+## 2. Initial Sync (Connected to OAuth Flow)
 *Goal: Fetch all existing events from a newly connected account's selected calendars.*
 
 *   [ ] **`SyncService.triggerInitialSync(connectedAccountId: string): Promise<void>`:**
-    *   Called by `AccountsService` after a user selects native calendars for syncing.
+    *   **Called by IntegrationsController after successful OAuth callback**
     *   Update `ConnectedAccount.syncStatus` to `INITIAL_SYNC_PENDING`.
-    *   Add `INITIAL_SYNC` job to the queue.
+    *   **Delegate to GoogleCalendarSyncService**: `await googleCalendarSyncService.syncAccountCalendars(userId, accountId)`
+    *   Handle errors and update sync status appropriately
+    *   Send notification via `NotificationsService` on completion/error
 *   [ ] **Job Handler: `SyncProcessor.handleInitialSync(job: Job<{ connectedAccountId: string }>): Promise<void>`:**
     *   Fetch `ConnectedAccount` and its selected `nativeCalendarIds` (from `User.preferences` or similar).
     *   Update `ConnectedAccount.syncStatus` to `SYNC_IN_PROGRESS`, `lastSyncAttemptAt`.

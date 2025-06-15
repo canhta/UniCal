@@ -10,6 +10,8 @@ import { AccountsModule } from './accounts/accounts.module';
 import { CalendarsModule } from './calendars/calendars.module';
 import { EventsModule } from './events/events.module';
 import { AdminModule } from './admin/admin.module';
+import { IntegrationsModule } from './integrations/integrations.module';
+import { SyncModule } from './sync/sync.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { AdminModule } from './admin/admin.module';
     CalendarsModule,
     EventsModule,
     AdminModule,
+    IntegrationsModule,
+    SyncModule,
   ],
   controllers: [AppController],
   providers: [EncryptionService],

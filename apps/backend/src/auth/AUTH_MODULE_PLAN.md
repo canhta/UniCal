@@ -38,6 +38,14 @@
 *   [x] **Swagger Documentation:**
     *   Document all auth endpoints and DTOs.
 
+## Phase 3: OAuth Calendar Integration (Moved to IntegrationsModule)
+*Goal: OAuth handling for calendar providers is now handled by dedicated IntegrationsModule.*
+
+*   **Note:** OAuth functionality has been moved to `IntegrationsModule` for better separation of concerns:
+    *   User authentication (login/register) stays in AuthModule
+    *   Calendar provider OAuth integration handled by IntegrationsModule
+    *   This prevents confusion between user auth and calendar integration
+
 ## Implementation Notes
 - Token exchange allows NextAuth sessions to obtain UniCal JWT tokens for API calls
 - Status endpoint enables frontend to verify authentication state
