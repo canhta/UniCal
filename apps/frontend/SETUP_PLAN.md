@@ -18,7 +18,7 @@ This document outlines the initial steps for the UniCal frontend application.
     *   Verify standard Next.js App Router project structure (`app`, `public`, `next.config.ts`, etc.).
 *   [ ] **Environment Variables:**
     *   Create `.env.local` for local development.
-    *   Define initial variables: `NEXT_PUBLIC_API_BASE_URL`.
+    *   Define initial variables: `NEXT_PUBLIC_BACKEND_API_URL`.
 *   [ ] **Next.js Configuration (`next.config.ts`):**
     *   Review and update as needed (e.g., image optimization domains).
 *   [ ] **TypeScript Configuration (`tsconfig.json`):**
@@ -89,7 +89,7 @@ This document outlines the initial steps for the UniCal frontend application.
 
 *   [ ] **API Client/Service:**
     *   Create utility functions for API calls using `fetch`.
-    *   Use `NEXT_PUBLIC_API_BASE_URL`.
+    *   Use `NEXT_PUBLIC_BACKEND_API_URL`.
 *   [ ] **Data Fetching Strategies (App Router):**
     *   Server Components: Fetch data directly for SSR.
     *   Client Components: Use TanStack Query for client-side fetching.

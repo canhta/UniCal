@@ -16,7 +16,7 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 **Goal:** Establish a runnable Next.js project with basic layout, UI component structure, and environment setup.
 
 *   [x] **Project Setup Verification:** Confirm Next.js 15 (App Router), TypeScript, Tailwind CSS, ESLint, Prettier (per `SETUP_PLAN.md`).
-*   [x] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_API_BASE_URL`.
+*   [x] **Environment Variables:** Setup `.env.local`: `NEXT_PUBLIC_BACKEND_API_URL`.
 *   [x] **Basic Layout & Global Styles (`app/layout.tsx`, `app/globals.css`):** Implement main layout (Tailwind), global styles, custom fonts (per `SETUP_PLAN.md`).
 *   [x] **UI Component Library Structure (`/components/ui/UI_COMPONENTS_PLAN.md`):** Plan common UI components. Implement basic Button, Input (Tailwind, @headlessui/react).
 *   [x] **Core Directory Structure:** Establish `/components/`, `/lib/`, `/app/`, `/styles/`, `/contexts/`.
@@ -40,7 +40,7 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
     *   Use `useSession` hook in client components and `auth()` in server components to access session/user info.
     *   Protect routes using session checks in both server and client components. Admin routes will require specific roles.
     *   Update `AUTH_FEATURE_PLAN.md` with detailed steps and code snippets.
-*   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
+*   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_BACKEND_API_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
 *   [x] **Initial Page Structure (`app/`):
     *   `app/page.tsx` (Public landing).
     *   `app/(protected)/dashboard/page.tsx` (Placeholder dashboard - protected).

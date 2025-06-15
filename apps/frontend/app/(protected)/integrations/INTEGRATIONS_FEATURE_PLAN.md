@@ -15,7 +15,7 @@ This page will be a Server Component by default (`apps/frontend/app/(protected)/
 
 ## UI Elements & Functionality
 
-1.  **[ ] Display Connected Accounts Section:**
+1.  **[x] Display Connected Accounts Section:**
     *   **Data Fetching (SSR):** In `page.tsx`, fetch the list of currently connected accounts for the user from the backend API (e.g., `/api/integrations/accounts`).
     *   **UI:**
         *   If no accounts connected: Display a message like "You haven't connected any calendar accounts yet." and prominently show "Connect" buttons.
@@ -27,7 +27,7 @@ This page will be a Server Component by default (`apps/frontend/app/(protected)/
             *   "Manage Calendars" or "Select Calendars to Sync" button/link for each account.
     *   **Component:** `apps/frontend/components/integrations/ConnectedAccountCard.tsx` (Client Component if it has interactive elements like a disconnect button that triggers client-side actions before API call, or if status updates dynamically without full page reload).
 
-2.  **[ ] Connect New Account Section:**
+2.  **[x] Connect New Account Section:**
     *   **UI:**
         *   "Connect Google Calendar" button.
         *   "Connect Microsoft Outlook Calendar" button.
@@ -35,7 +35,7 @@ This page will be a Server Component by default (`apps/frontend/app/(protected)/
         *   Clicking these buttons should navigate the user to the backend OAuth initiation URL (e.g., `/api/auth/google/connect`, `/api/auth/microsoft/connect`). The backend will handle the OAuth dance and redirect back to a predefined callback URL (e.g., `/integrations?status=success_google` or `/integrations?status=error_google`).
     *   **Feedback:** The `/integrations` page should be able to display success or error messages based on query parameters from the OAuth callback. This can be handled in the Server Component (`page.tsx`) by reading `searchParams`.
 
-3.  **[ ] Disconnect Account Functionality:**
+3.  **[x] Disconnect Account Functionality:**
     *   **UI:** "Disconnect" button on each `ConnectedAccountCard`.
     *   **Action (Client-Side initiated, calls API):**
         *   Show a confirmation modal (`components/ui/Modal.tsx`).
@@ -59,7 +59,7 @@ This page will be a Server Component by default (`apps/frontend/app/(protected)/
 
 ### 5. Frontend Considerations
 
-*   [ ] **Displaying Sync Status & Errors:**
+*   [x] **Displaying Sync Status & Errors:**
     *   **Integrations Page (`/integrations`):**
         *   List each `ConnectedAccount`.
         *   Display `syncStatus` clearly (e.g., "Syncing...", "Last synced: 5 minutes ago", "Error: Google Calendar connection failed").
@@ -76,21 +76,23 @@ This page will be a Server Component by default (`apps/frontend/app/(protected)/
         *   If an event or calendar is affected by a sync issue (e.g., a specific native calendar is failing to sync), a visual cue could be shown next to the calendar name or events from that source.
         *   This requires `syncStatus` or error information to be available at a per-native-calendar granularity and propagated to the frontend when fetching calendar/event data.
 
-*   [ ] **Triggering Sync Actions:**
+*   [x] **Triggering Sync Actions:**
     *   "Refresh All" or "Sync Now" button on the Integrations page (could trigger a poll for all accounts or specific ones).
     *   "Retry" button for accounts/calendars in an error state.
 
 ## Components to Create/Use:
 
-*   `apps/frontend/app/(protected)/integrations/page.tsx` (Main Server Component)
-*   `apps/frontend/components/integrations/ConnectAccountButtons.tsx` (Client Component for the connect buttons, or directly in `page.tsx` if simple links)
-*   `apps/frontend/components/integrations/ConnectedAccountCard.tsx` (Client Component for displaying account info and disconnect action)
-*   `apps/frontend/components/integrations/SelectCalendarsModal.tsx` or `apps/frontend/app/(protected)/integrations/[accountId]/calendars/page.tsx` (for FR3.5.4)
-*   `components/ui/Button.tsx`
-*   `components/ui/Modal.tsx` (for confirmations, selecting calendars)
-*   `components/ui/Checkbox.tsx`
-*   `components/ui/Card.tsx`
-*   `components/ui/Alert.tsx` (for displaying success/error messages from OAuth callback or API calls)
+*   [x] `apps/frontend/app/(protected)/integrations/page.tsx` (Main Server Component)
+*   [x] `apps/frontend/components/integrations/ConnectAccountButtons.tsx` (Client Component for the connect buttons, or directly in `page.tsx` if simple links)
+*   [x] `apps/frontend/components/integrations/ConnectedAccountsList.tsx` (Client Component for displaying account info and disconnect action)
+*   [x] `apps/frontend/components/integrations/IntegrationsHeader.tsx` (Component for page header and status messages)
+*   [ ] `apps/frontend/components/integrations/SelectCalendarsModal.tsx` or `apps/frontend/app/(protected)/integrations/[accountId]/calendars/page.tsx` (for FR3.5.4)
+*   [x] `components/ui/Button.tsx`
+*   [ ] `components/ui/Modal.tsx` (for confirmations, selecting calendars)
+*   [ ] `components/ui/Checkbox.tsx`
+*   [x] `components/ui/Card.tsx`
+*   [x] `components/ui/Alert.tsx` (for displaying success/error messages from OAuth callback or API calls)
+*   [x] `components/ui/Badge.tsx` (for sync status indicators)
 
 ## API Endpoints (Frontend Perspective - to be consumed):
 

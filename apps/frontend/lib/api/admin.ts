@@ -1,26 +1,29 @@
 // Admin API client for communicating with the backend admin endpoints
 
 import {
-  AdminUser,
-  ClientUser,
-  AuditLog,
-  Subscription,
-  SearchResult,
-  DashboardStats,
-  ApiResponse,
-  PaginatedResponse,
+  // Response DTOs
+  AdminUserResponseDto,
+  ClientUserResponseDto,
+  AuditLogResponseDto,
+  DashboardStatsDto,
+  SearchResultDto,
+  SubscriptionResponseDto,
+  // Create/Update DTOs
   CreateClientUserDto,
   UpdateClientUserDto,
   CreateAdminUserDto,
   UpdateAdminUserDto,
-} from './admin-types';
+  // API Types
+  ApiResponse,
+  PaginatedResponse,
+} from '@unical/core';
 
 class AdminApiClient {
   private baseUrl: string;
 
   constructor() {
-    // TODO: Get this from environment variables
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    // Use backend API URL for admin operations
+    this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000/api/v1';
   }
 
   private async request<T>(
@@ -63,7 +66,7 @@ class AdminApiClient {
 
   // Dashboard Stats
   async getDashboardStats() {
-    return this.request<DashboardStats>('/admin/dashboard/stats');
+    return this.request<DashboardStatsDto>('/admin/dashboard/stats');
   }
 
   // Client Users
@@ -80,24 +83,24 @@ class AdminApiClient {
       }
     });
 
-    return this.request<PaginatedResponse<ClientUser>>(
+    return this.request<PaginatedResponse<ClientUserResponseDto>>(
       `/admin/users/clients?${queryParams.toString()}`
     );
   }
 
   async getClientUser(id: string) {
-    return this.request<ApiResponse<ClientUser>>(`/admin/users/clients/${id}`);
+    return this.request<ApiResponse<ClientUserResponseDto>>(`/admin/users/clients/${id}`);
   }
 
   async createClientUser(data: CreateClientUserDto) {
-    return this.request<ApiResponse<ClientUser>>('/admin/users/clients', {
+    return this.request<ApiResponse<ClientUserResponseDto>>('/admin/users/clients', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateClientUser(id: string, data: UpdateClientUserDto) {
-    return this.request<ApiResponse<ClientUser>>(`/admin/users/clients/${id}`, {
+    return this.request<ApiResponse<ClientUserResponseDto>>(`/admin/users/clients/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -123,24 +126,24 @@ class AdminApiClient {
       }
     });
 
-    return this.request<PaginatedResponse<AdminUser>>(
+    return this.request<PaginatedResponse<AdminUserResponseDto>>(
       `/admin/users/admins?${queryParams.toString()}`
     );
   }
 
   async getAdminUser(id: string) {
-    return this.request<ApiResponse<AdminUser>>(`/admin/users/admins/${id}`);
+    return this.request<ApiResponse<AdminUserResponseDto>>(`/admin/users/admins/${id}`);
   }
 
   async createAdminUser(data: CreateAdminUserDto) {
-    return this.request<ApiResponse<AdminUser>>('/admin/users/admins', {
+    return this.request<ApiResponse<AdminUserResponseDto>>('/admin/users/admins', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateAdminUser(id: string, data: UpdateAdminUserDto) {
-    return this.request<ApiResponse<AdminUser>>(`/admin/users/admins/${id}`, {
+    return this.request<ApiResponse<AdminUserResponseDto>>(`/admin/users/admins/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -149,7 +152,7 @@ class AdminApiClient {
   // Global Search
   async searchClients(query: string) {
     return this.request<{
-      results: SearchResult[];
+      results: SearchResultDto[];
     }>(`/admin/search/clients?query=${encodeURIComponent(query)}`);
   }
 
@@ -169,7 +172,7 @@ class AdminApiClient {
       }
     });
 
-    return this.request<PaginatedResponse<AuditLog>>(
+    return this.request<PaginatedResponse<AuditLogResponseDto>>(
       `/admin/audit-logs?${queryParams.toString()}`
     );
   }
@@ -188,13 +191,13 @@ class AdminApiClient {
       }
     });
 
-    return this.request<PaginatedResponse<Subscription>>(
+    return this.request<PaginatedResponse<SubscriptionResponseDto>>(
       `/admin/subscriptions?${queryParams.toString()}`
     );
   }
 
   async getSubscription(id: string) {
-    return this.request<ApiResponse<Subscription>>(`/admin/subscriptions/${id}`);
+    return this.request<ApiResponse<SubscriptionResponseDto>>(`/admin/subscriptions/${id}`);
   }
 
   async cancelSubscription(id: string) {

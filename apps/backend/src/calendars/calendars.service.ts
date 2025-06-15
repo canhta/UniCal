@@ -52,7 +52,7 @@ export class CalendarsService {
 
   private getRedirectUri(provider: string): string {
     const baseUrl =
-      this.configService.get<string>('BASE_URL') || 'http://localhost:3001';
+      this.configService.get<string>('BASE_URL') || 'http://localhost:3000';
     return `${baseUrl}/api/accounts/connect/${provider}/callback`;
   }
 
@@ -394,7 +394,7 @@ export class CalendarsService {
 
     const platformService = this.getPlatformService(account.provider);
     const webhookUrl = `${
-      this.configService.get<string>('BASE_URL') || 'http://localhost:3001'
+      this.configService.get<string>('BASE_URL') || 'http://localhost:3000'
     }/api/calendars/webhooks/${account.provider}`;
 
     const subscription = await platformService.createWebhookSubscription(

@@ -1,4 +1,37 @@
-# UniCal - Unified Calendar System
+# UniCal - Unified CalendarThe setup script automatically:
+- 🔧 Creates environment files with secure auto-generated keys
+- 🐳 Sets up and starts Docker services (PostgreSQL & Redis)
+- 📦 Installs all project dependencies
+- 🗄️ Runs database migrations and generates Prisma client
+- ✅ Performs health checks and validates configuration
+- 🚀 Optionally starts development servers
+
+After running the setup script, you'll have:
+- Backend API at `http://localhost:3000` (NestJS API)
+- Frontend at `http://localhost:3030` (Next.js application)
+- API Documentation at `http://localhost:3000/api/docs` (Swagger)
+- PostgreSQL at `localhost:5432`
+- Redis at `localhost:6379`
+
+## Environment Variables
+
+The project uses a clear separation between backend and frontend API endpoints:
+
+### Backend (`apps/backend/.env`)
+- `BASE_URL`: Base URL for OAuth redirects and webhooks (`http://localhost:3000`)
+- `FRONTEND_URL`: Frontend URL for CORS (`http://localhost:3030`)
+- Database, Redis, and OAuth provider configurations
+
+### Frontend (`apps/frontend/.env.local`)
+- `NEXT_PUBLIC_BACKEND_API_URL`: Points to NestJS backend API (`http://localhost:3000/api/v1`)
+- `NEXT_PUBLIC_FRONTEND_API_URL`: Points to Next.js internal API routes (`http://localhost:3030/api/v1`)
+- NextAuth and OAuth provider configurations
+
+For detailed environment variable documentation:
+- [Backend BASE_URL Usage](apps/backend/BASE_URL_EXPLANATION.md)
+- [Frontend Environment Variables](apps/frontend/ENVIRONMENT_VARS_CLARIFICATION.md)
+
+# UniCal - Unified Calendar
 
 UniCal consolidates events from multiple calendar platforms. It's a Yarn monorepo with a NestJS backend and Next.js frontend.
 
@@ -41,16 +74,27 @@ After running the script, you'll have:
 
 ## Manual Configuration (Optional)
 
-After running the setup script, you may want to configure some settings:
+After running the setup script, you may want to configure OAuth providers and other settings:
 
 ### Backend Environment (`apps/backend/.env`)
-Update the following values:
-- `DATABASE_URL`: Connection string for PostgreSQL
-- `REDIS_URL`: Connection string for Redis
+Update OAuth provider credentials:
+```bash
+# OAuth Providers
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+MICROSOFT_CLIENT_ID=your-microsoft-client-id
+MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+```
 
 ### Frontend Environment (`apps/frontend/.env.local`)
-The setup script handles most configuration, but you can customize:
-- `NEXT_PUBLIC_API_URL`: Should point to `http://localhost:3000/api`
+Update OAuth provider credentials to match backend:
+```bash
+# Auth Providers (should match backend)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+Note: The setup script automatically configures all other required variables.
 
 ## Manual Setup (Alternative)
 

@@ -40,68 +40,135 @@ print_step "Working in project directory: $PROJECT_ROOT"
 # Step 1: Copy environment files
 print_step "Setting up environment files..."
 
+# Function to update environment variable
+update_env_var() {
+    local file="$1"
+    local var_name="$2"
+    local var_value="$3"
+    local placeholder="${4:-$var_name=}"
+    
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' "s|${placeholder}|${var_name}=${var_value}|" "$file"
+    else
+        # Linux
+        sed -i "s|${placeholder}|${var_name}=${var_value}|" "$file"
+    fi
+}
+
 # Backend .env file
 if [ -f "apps/backend/.env.example" ]; then
     if [ ! -f "apps/backend/.env" ]; then
         cp "apps/backend/.env.example" "apps/backend/.env"
         
-        # Generate secure random keys for JWT_SECRET and TOKEN_ENCRYPTION_KEY
-        print_step "Generating secure encryption keys..."
+        # Generate secure random keys
+        print_step "Generating secure encryption keys for backend..."
         
-        # Generate a 64-character random JWT secret
+        # Generate encryption keys
         JWT_SECRET=$(openssl rand -hex 32)
-        
-        # Generate a 64-character random token encryption key
+        JWT_REFRESH_SECRET=$(openssl rand -hex 32)
         TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)
         
         # Update the .env file with generated keys
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            # macOS
-            sed -i '' "s/JWT_SECRET=/JWT_SECRET=${JWT_SECRET}/" "apps/backend/.env"
-            sed -i '' "s/TOKEN_ENCRYPTION_KEY=/TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY}/" "apps/backend/.env"
-        else
-            # Linux
-            sed -i "s/JWT_SECRET=/JWT_SECRET=${JWT_SECRET}/" "apps/backend/.env"
-            sed -i "s/TOKEN_ENCRYPTION_KEY=/TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY}/" "apps/backend/.env"
-        fi
+        update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=your-jwt-secret-here"
+        update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=your-jwt-refresh-secret-here"
+        update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key"
+        
+        # Ensure BASE_URL is set correctly
+        update_env_var "apps/backend/.env" "BASE_URL" "http://localhost:3000" "BASE_URL=http://localhost:3000"
         
         print_success "Backend .env file created with generated encryption keys"
     else
         print_warning "Backend .env file already exists, skipping copy"
         
         # Check if keys are missing and offer to generate them
-        if grep -q "JWT_SECRET=$" "apps/backend/.env" || grep -q "TOKEN_ENCRYPTION_KEY=$" "apps/backend/.env"; then
-            print_warning "Empty encryption keys detected in existing .env file"
+        missing_keys=()
+        if grep -q "JWT_SECRET=your-jwt-secret-here\|JWT_SECRET=$" "apps/backend/.env"; then
+            missing_keys+=("JWT_SECRET")
+        fi
+        if grep -q "JWT_REFRESH_SECRET=your-jwt-refresh-secret-here\|JWT_REFRESH_SECRET=$" "apps/backend/.env"; then
+            missing_keys+=("JWT_REFRESH_SECRET")
+        fi
+        if grep -q "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key\|TOKEN_ENCRYPTION_KEY=$" "apps/backend/.env"; then
+            missing_keys+=("TOKEN_ENCRYPTION_KEY")
+        fi
+        
+        if [ ${#missing_keys[@]} -gt 0 ]; then
+            print_warning "Missing or placeholder encryption keys detected: ${missing_keys[*]}"
             read -p "Would you like to generate missing encryption keys? (y/N): " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 print_step "Generating missing encryption keys..."
                 
-                # Generate keys only if they're empty
-                if grep -q "JWT_SECRET=$" "apps/backend/.env"; then
-                    JWT_SECRET=$(openssl rand -hex 32)
-                    if [[ "$OSTYPE" == "darwin"* ]]; then
-                        sed -i '' "s/JWT_SECRET=/JWT_SECRET=${JWT_SECRET}/" "apps/backend/.env"
-                    else
-                        sed -i "s/JWT_SECRET=/JWT_SECRET=${JWT_SECRET}/" "apps/backend/.env"
-                    fi
-                    print_success "Generated JWT_SECRET"
-                fi
-                
-                if grep -q "TOKEN_ENCRYPTION_KEY=$" "apps/backend/.env"; then
-                    TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)
-                    if [[ "$OSTYPE" == "darwin"* ]]; then
-                        sed -i '' "s/TOKEN_ENCRYPTION_KEY=/TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY}/" "apps/backend/.env"
-                    else
-                        sed -i "s/TOKEN_ENCRYPTION_KEY=/TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY}/" "apps/backend/.env"
-                    fi
-                    print_success "Generated TOKEN_ENCRYPTION_KEY"
-                fi
+                for key in "${missing_keys[@]}"; do
+                    case $key in
+                        "JWT_SECRET")
+                            JWT_SECRET=$(openssl rand -hex 32)
+                            update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=your-jwt-secret-here"
+                            update_env_var "apps/backend/.env" "JWT_SECRET" "$JWT_SECRET" "JWT_SECRET=$"
+                            print_success "Generated JWT_SECRET"
+                            ;;
+                        "JWT_REFRESH_SECRET")
+                            JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+                            update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=your-jwt-refresh-secret-here"
+                            update_env_var "apps/backend/.env" "JWT_REFRESH_SECRET" "$JWT_REFRESH_SECRET" "JWT_REFRESH_SECRET=$"
+                            print_success "Generated JWT_REFRESH_SECRET"
+                            ;;
+                        "TOKEN_ENCRYPTION_KEY")
+                            TOKEN_ENCRYPTION_KEY=$(openssl rand -hex 32)
+                            update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=your-32-byte-hex-encryption-key"
+                            update_env_var "apps/backend/.env" "TOKEN_ENCRYPTION_KEY" "$TOKEN_ENCRYPTION_KEY" "TOKEN_ENCRYPTION_KEY=$"
+                            print_success "Generated TOKEN_ENCRYPTION_KEY"
+                            ;;
+                    esac
+                done
             fi
+        fi
+        
+        # Ensure BASE_URL is set properly (add if missing)
+        if ! grep -q "BASE_URL=" "apps/backend/.env"; then
+            echo "BASE_URL=http://localhost:3000" >> "apps/backend/.env"
+            print_success "Added BASE_URL to backend .env"
         fi
     fi
 else
     print_warning "Backend .env.example not found"
+fi
+
+# Frontend .env.local file
+if [ -f "apps/frontend/.env.example" ]; then
+    if [ ! -f "apps/frontend/.env.local" ]; then
+        cp "apps/frontend/.env.example" "apps/frontend/.env.local"
+        
+        # Generate secure random keys for frontend
+        print_step "Generating secure keys for frontend..."
+        
+        # Generate NextAuth secret
+        NEXTAUTH_SECRET=$(openssl rand -hex 32)
+        
+        # Update the .env.local file with generated keys
+        update_env_var "apps/frontend/.env.local" "NEXTAUTH_SECRET" "$NEXTAUTH_SECRET" "NEXTAUTH_SECRET=your-secret-here"
+        
+        print_success "Frontend .env.local file created with generated secrets"
+    else
+        print_warning "Frontend .env.local file already exists, skipping copy"
+        
+        # Check if NEXTAUTH_SECRET is missing
+        if grep -q "NEXTAUTH_SECRET=your-secret-here\|NEXTAUTH_SECRET=$" "apps/frontend/.env.local"; then
+            print_warning "Missing or placeholder NEXTAUTH_SECRET detected"
+            read -p "Would you like to generate a new NEXTAUTH_SECRET? (y/N): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                print_step "Generating NEXTAUTH_SECRET..."
+                NEXTAUTH_SECRET=$(openssl rand -hex 32)
+                update_env_var "apps/frontend/.env.local" "NEXTAUTH_SECRET" "$NEXTAUTH_SECRET" "NEXTAUTH_SECRET=your-secret-here"
+                update_env_var "apps/frontend/.env.local" "NEXTAUTH_SECRET" "$NEXTAUTH_SECRET" "NEXTAUTH_SECRET=$"
+                print_success "Generated NEXTAUTH_SECRET"
+            fi
+        fi
+    fi
+else
+    print_warning "Frontend .env.example not found"
 fi
 
 # Step 2: Clean up existing Docker containers and volumes
@@ -197,8 +264,8 @@ if yarn workspace @unical/backend run --help 2>/dev/null | grep -q "seed"; then
     print_success "Database seeded"
 fi
 
-# Step 7: Health check
-print_step "Running health checks..."
+# Step 7: Health check and validation
+print_step "Running health checks and validation..."
 
 # Check if all services are running
 if docker-compose ps | grep -q "Up"; then
@@ -214,21 +281,76 @@ else
     print_warning "Database connection issue detected"
 fi
 
+# Validate environment files
+print_step "Validating environment configuration..."
+
+# Check backend environment
+if [ -f "apps/backend/.env" ]; then
+    missing_backend_vars=()
+    
+    # Check for required variables
+    if ! grep -q "^BASE_URL=" "apps/backend/.env" || grep -q "BASE_URL=$" "apps/backend/.env"; then
+        missing_backend_vars+=("BASE_URL")
+    fi
+    if ! grep -q "^JWT_SECRET=" "apps/backend/.env" || grep -q "JWT_SECRET=$\|JWT_SECRET=your-jwt-secret-here" "apps/backend/.env"; then
+        missing_backend_vars+=("JWT_SECRET")
+    fi
+    if ! grep -q "^DATABASE_URL=" "apps/backend/.env" || grep -q "DATABASE_URL=$" "apps/backend/.env"; then
+        missing_backend_vars+=("DATABASE_URL")
+    fi
+    
+    if [ ${#missing_backend_vars[@]} -gt 0 ]; then
+        print_warning "Backend missing required variables: ${missing_backend_vars[*]}"
+    else
+        print_success "Backend environment configuration looks good"
+    fi
+fi
+
+# Check frontend environment
+if [ -f "apps/frontend/.env.local" ]; then
+    missing_frontend_vars=()
+    
+    # Check for required variables
+    if ! grep -q "^NEXTAUTH_SECRET=" "apps/frontend/.env.local" || grep -q "NEXTAUTH_SECRET=$\|NEXTAUTH_SECRET=your-secret-here" "apps/frontend/.env.local"; then
+        missing_frontend_vars+=("NEXTAUTH_SECRET")
+    fi
+    if ! grep -q "^NEXT_PUBLIC_BACKEND_API_URL=" "apps/frontend/.env.local"; then
+        missing_frontend_vars+=("NEXT_PUBLIC_BACKEND_API_URL")
+    fi
+    
+    if [ ${#missing_frontend_vars[@]} -gt 0 ]; then
+        print_warning "Frontend missing required variables: ${missing_frontend_vars[*]}"
+    else
+        print_success "Frontend environment configuration looks good"
+    fi
+fi
+
 print_success "Setup completed successfully! 🎉"
 
 echo ""
 echo -e "${BLUE}📋 Environment Setup Summary:${NC}"
 echo "• Backend .env: apps/backend/.env"
+echo "• Frontend .env: apps/frontend/.env.local"
 echo "• Database: PostgreSQL running on localhost:5432"
 echo "• Redis: Running on localhost:6379"
 echo ""
 
-echo -e "${BLUE}🔧 Next steps:${NC}"
-echo "1. Update environment variables in the .env files with your credentials"
+echo -e "${BLUE}🔧 Environment Variables Configured:${NC}"
+echo "• Backend API (NestJS): http://localhost:3000"
+echo "• Frontend (Next.js): http://localhost:3030"
+echo "• BASE_URL (for OAuth/webhooks): http://localhost:3000"
+echo "• Generated secure encryption keys and secrets"
+echo ""
+
+echo -e "${BLUE}📝 Next steps:${NC}"
+echo "1. Update OAuth credentials in environment files:"
+echo "   - apps/backend/.env: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc."
+echo "   - apps/frontend/.env.local: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc."
 echo "2. Run 'yarn dev' to start the development servers"
 echo "3. Frontend will be available at http://localhost:3030"
 echo "4. Backend API will be available at http://localhost:3000"
-echo "5. Use 'docker-compose logs -f' to view container logs"
+echo "5. API docs (Swagger) at http://localhost:3000/api/docs"
+echo "6. Use 'docker-compose logs -f' to view container logs"
 echo ""
 
 # Ask if user wants to start development servers

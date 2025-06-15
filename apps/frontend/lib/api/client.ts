@@ -13,9 +13,10 @@ import {
   SyncCalendarDto,
   UpdateCalendarSettingsDto,
   PlatformCalendarDto,
+  ConnectedAccountResponseDto,
 } from '@unical/core';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
 
 console.log('🔧 API Client initialized with base URL:', API_BASE_URL);
 
@@ -380,6 +381,21 @@ class ApiClient {
 
   async unsyncCalendar(calendarId: string): Promise<void> {
     return this.request<void>(`/calendars/${calendarId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Connected Accounts endpoints (new)
+  async getConnectedAccounts(): Promise<ConnectedAccountResponseDto[]> {
+    return this.request<ConnectedAccountResponseDto[]>('/accounts');
+  }
+
+  async getConnectedAccount(accountId: string): Promise<ConnectedAccountResponseDto> {
+    return this.request<ConnectedAccountResponseDto>(`/accounts/${accountId}`);
+  }
+
+  async disconnectAccount(accountId: string): Promise<void> {
+    return this.request<void>(`/accounts/${accountId}`, {
       method: 'DELETE',
     });
   }

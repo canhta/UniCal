@@ -26,7 +26,7 @@
 *   **[ ] Goal:** Establish directory structure and configuration.
     *   **Action:** AI will create `apps/frontend/lib/api/` with:
         *   `index.ts`: Exports core client functions/instances.
-        *   `config.ts`: Defines `API_BASE_URL` (e.g., `process.env.NEXT_PUBLIC_API_BASE_URL || '/api/proxy'`).
+        *   `config.ts`: Defines `API_BASE_URL` (e.g., `process.env.NEXT_PUBLIC_BACKEND_API_URL || '/api/proxy'`).
         *   `client.ts`: Contains the core fetch wrapper.
         *   `types.ts` (or `dtos.ts`): Central location for API DTOs if not co-located.
 *   **[ ] Goal:** Implement the core `apiClient` fetch wrapper (`apps/frontend/lib/api/client.ts`).

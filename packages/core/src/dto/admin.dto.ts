@@ -297,6 +297,30 @@ export interface DashboardStatsDto {
   userGrowthPercentage: number;
 }
 
+/**
+ * Subscription response DTO
+ * Note: Currently used only on the frontend side.
+ * The backend implementation is pending (marked as TODO in admin.controller.ts).
+ */
+export interface SubscriptionResponseDto {
+  id: string;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  plan: {
+    id: string;
+    name: string;
+    price: number;
+    interval: 'month' | 'year';
+  };
+  status: 'Active' | 'Cancelled' | 'Past Due' | 'Trialing';
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  createdAt: string;
+}
+
 export interface SearchResultDto {
   id: string;
   type: 'client_user' | 'admin_user' | 'lead';
