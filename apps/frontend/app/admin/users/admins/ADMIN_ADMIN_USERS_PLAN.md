@@ -2,7 +2,7 @@
 
 This plan outlines tasks for implementing the Admin Panel User Management UI for the Admin Panel MVP. These features are accessible to **Super Admins only**.
 
-## Admin User List Page (`/app/(admin)/users/admins/page.tsx`)
+## Admin User List Page (`/app/admin/users/admins/page.tsx`)
 - **FR-AUSER-001-MVP: View Admin User List**
     - [ ] Create the main component for displaying the list of Admin Panel administrators.
     - [ ] This page and its functionalities must be protected and accessible only to Super Admins.
@@ -11,7 +11,7 @@ This plan outlines tasks for implementing the Admin Panel User Management UI for
     - [ ] Implement pagination if necessary (API should support it).
     - [ ] Add a "Create Admin User" button navigating to the create admin user form/page.
 
-## Create Admin User Form/Page (e.g., `/app/(admin)/users/admins/new/page.tsx`)
+## Create Admin User Form/Page (e.g., `/app/admin/users/admins/new/page.tsx`)
 - **FR-AUSER-002-MVP: Create Admin User**
     - [ ] Create a form for adding a new Admin Panel administrator.
     - [ ] Fields: Full Name, Email Address.
@@ -21,7 +21,7 @@ This plan outlines tasks for implementing the Admin Panel User Management UI for
         - [ ] Backend handles Auth0 invitation flow.
     - [ ] Display success/error messages. Redirect to admin user list on success.
 
-## Update Admin User Form/Page (e.g., `/app/(admin)/users/admins/[id]/edit/page.tsx`)
+## Update Admin User Form/Page (e.g., `/app/admin/users/admins/[id]/edit/page.tsx`)
 - **FR-AUSER-003-MVP: Update Admin User (Role & Status)**
     - [ ] Create a form/page for editing Admin Panel administrator details.
     - [ ] Pre-fill form with existing admin user data fetched from `GET /admin/users/admins/:id` (or use data from list view if navigating directly).

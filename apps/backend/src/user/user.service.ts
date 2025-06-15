@@ -14,7 +14,6 @@ import {
   AuthResponseDto,
   RegisterDto,
 } from '@unical/core';
-import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';

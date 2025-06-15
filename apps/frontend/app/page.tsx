@@ -6,28 +6,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui";
+import { Navbar, Footer } from "@/components/layout";
 import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <h1 className="mb-6 text-5xl font-bold text-gray-900">
-          Welcome to <span className="text-blue-600">UniCal</span>
-        </h1>
-        <p className="mb-8 text-xl text-gray-600 max-w-2xl mx-auto">
-          Unify your calendars from Google, Outlook, and more in one place.
-          Streamline your scheduling and never miss an important event again.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Link href="/register">
-            <Button size="lg">Get Started Free</Button>
-          </Link>
-          <Link href="/login">
-            <Button variant="outline" size="lg">Sign In</Button>
-          </Link>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100">
+        {/* Hero Section */}
+        <section className="container mx-auto px-4 py-16 text-center">
+          <h1 className="mb-6 text-5xl font-bold text-gray-900">
+            Welcome to <span className="text-blue-600">UniCal</span>
+          </h1>
+          <p className="mb-8 text-xl text-gray-600 max-w-2xl mx-auto">
+            Unify your calendars from Google, Outlook, and more in one place.
+            Streamline your scheduling and never miss an important event again.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/register">
+              <Button size="lg">Get Started Free</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="outline" size="lg">Sign In</Button>
+            </Link>
+          </div>
       </section>
 
       {/* Features Section */}
@@ -100,6 +103,8 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      </main>
+      <Footer />
     </div>
   );
 }

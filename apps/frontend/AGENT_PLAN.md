@@ -26,7 +26,7 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 ## Phase 2: Authentication & Initial Page Structure (Aligns with SETUP_PLAN Phase 3 & 7)
 **Goal:** Implement user authentication using next-auth v5 with username/password, Google, and Microsoft providers, supporting a unified user model and multi-role RBAC. Create basic page structure with protected routes.
 
-*   [ ] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):**
+*   [x] **Authentication Setup (`/lib/auth/AUTH_FEATURE_PLAN.md`):**
     *   Use [next-auth v5](https://authjs.dev/getting-started/installation) for authentication.
     *   Support username/password, Google, and Microsoft providers.
     *   Backend will manage unified user profiles and roles; frontend auth will focus on obtaining tokens and session state.
@@ -41,12 +41,12 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
     *   Protect routes using session checks in both server and client components. Admin routes will require specific roles.
     *   Update `AUTH_FEATURE_PLAN.md` with detailed steps and code snippets.
 *   [x] **API Client Setup (`/lib/api/API_CLIENT_PLAN.md`):** Create API client for backend requests (`NEXT_PUBLIC_API_BASE_URL`). Plan for authenticated requests (Auth0 access token). Update `API_CLIENT_PLAN.md`.
-*   [ ] **Initial Page Structure (`app/`):
+*   [x] **Initial Page Structure (`app/`):
     *   `app/page.tsx` (Public landing).
     *   `app/(protected)/dashboard/page.tsx` (Placeholder dashboard - protected).
     *   `app/(auth)/login/page.tsx` (If dedicated login page for simplified/SSO).
     *   Implement protected route logic (`useUser` or `getSession`). Use `loading.tsx`, `error.tsx`.
-*   [ ] **Layout Components (`/components/layout/LAYOUT_COMPONENTS_PLAN.md`):** Develop Navbar, Footer. Integrate auth status (user info, login/logout). Update `LAYOUT_COMPONENTS_PLAN.md`.
+*   [x] **Layout Components (`/components/layout/LAYOUT_COMPONENTS_PLAN.md`):** Develop Navbar, Footer. Integrate auth status (user info, login/logout). Update `LAYOUT_COMPONENTS_PLAN.md`.
 
 ## Phase 3: Core Calendar Functionality (Aligns with SETUP_PLAN Phase 4 & FRD Core Features)
 **Goal:** Implement UI for connecting calendar accounts, viewing aggregated calendars, and managing events.
@@ -88,30 +88,161 @@ This plan guides frontend development, aligning with backend phases, FRD.md, BRD
 
 **Goal:** Implement the user interface for the Admin Panel MVP, enabling administrators to manage all system users (unified table, multi-role) and leads, and view system information as per the updated `docs/Admin_FRD.md`.
 
-*   [ ] **Admin Panel Layout & Navigation (`/app/(admin)/layout.tsx`, `/components/admin/layout/ADMIN_LAYOUT_PLAN.md`):
-    *   [ ] Create a distinct layout for the Admin Panel.
-    *   [ ] Implement navigation (sidebar/topbar) for Admin Panel sections (Dashboard, User Management, Lead Management, Audit Logs, etc.) based on user role(s) (Admin/Super Admin).
-    *   [ ] Ensure secure access to admin routes, redirecting if not authenticated or authorized with appropriate role(s).
-*   [ ] **Admin Authentication (`/app/(admin)/login/page.tsx`, `/lib/auth/ADMIN_AUTH_PLAN.md`):
-    *   [ ] Implement login page for Admin Panel users, integrating with Auth0 (FR-GEN-001-MVP).
-    *   [ ] Handle session management specifically for admin-roled users.
-*   [ ] **Admin Dashboard (`/app/(admin)/dashboard/ADMIN_DASHBOARD_PLAN.md`):
-    *   [ ] Display KPIs: Total users (by type/role if possible), new registrations, active subscriptions (FR-GEN-002-MVP).
-    *   [ ] Provide quick links to user and lead management sections.
-*   [ ] **Global Search (`/components/admin/layout/ADMIN_LAYOUT_PLAN.md` - part of header):
-    *   [ ] Implement UI for global search of users (all types) and leads by name/email (FR-GEN-003-MVP).
-    *   [ ] Display search results and allow navigation to user/lead details.
-*   [ ] **Audit Logs (`/app/(admin)/audit-logs/ADMIN_AUDIT_LOGS_PLAN.md`):
-    *   [ ] Display audit logs with filtering options (date range, performing admin, entity type: User/Lead) (FR-GEN-004-MVP).
-*   [ ] **Unified User Management UI (`/app/(admin)/users/ADMIN_USERS_PLAN.md`):
-    *   [ ] View list of all system users with pagination, sorting, filtering (by role(s), status) (FR-USER-001-MVP).
+*   [x] **Admin Panel Layout & Navigation (`/app/admin/layout.tsx`, `/components/admin/layout/ADMIN_LAYOUT_PLAN.md`):
+    *   [x] Create a distinct layout for the Admin Panel with `/admin` URL prefix.
+    *   [x] Implement navigation (sidebar/topbar) for Admin Panel sections (Dashboard, User Management, Lead Management, Audit Logs, etc.) based on user role(s) (Admin/Super Admin).
+    *   [x] Ensure secure access to admin routes, redirecting if not authenticated or authorized with appropriate role(s).
+*   [x] **Admin Authentication (`/app/admin/login/page.tsx`, `/lib/auth/ADMIN_AUTH_PLAN.md`):
+    *   [x] Implement login page for Admin Panel users at `/admin/login`, integrating with next-auth (FR-GEN-001-MVP).
+    *   [x] Handle session management specifically for admin-roled users.
+*   [x] **Admin Dashboard (`/app/admin/dashboard/ADMIN_DASHBOARD_PLAN.md`):
+    *   [x] Display KPIs: Total users (by type/role if possible), new registrations, active subscriptions (FR-GEN-002-MVP).
+    *   [x] Provide quick links to user and lead management sections.
+*   [x] **Global Search (`/components/admin/layout/ADMIN_LAYOUT_PLAN.md` - part of header):
+    *   [x] Implement UI for global search of users (all types) and leads by name/email (FR-GEN-003-MVP).
+    *   [ ] Display search results and allow navigation to user/lead details. (Backend integration needed)
+*   [x] **Audit Logs (`/app/admin/audit-logs/ADMIN_AUDIT_LOGS_PLAN.md`):
+    *   [x] Display audit logs with filtering options (date range, performing admin, entity type: User/Lead) (FR-GEN-004-MVP).
+*   [x] **Unified User Management UI (`/app/admin/users/ADMIN_USERS_PLAN.md`):
+    *   [x] View list of all system users with pagination, sorting, filtering (by role(s), status) (FR-USER-001-MVP).
     *   [ ] View user details (profile, assigned role(s), subscription status if applicable, contact info, basic interaction log) (FR-USER-002-MVP, FR-CRM-001-MVP, FR-CRM-002-MVP).
     *   [ ] Form to create users manually, assign role(s) (FR-USER-003-MVP).
     *   [ ] Form to update user basic info, status, and manage assigned role(s) (FR-USER-004-MVP).
-    *   [ ] Functionality to (soft) delete users (Super Admin role only) (FR-USER-005-MVP).
-*   [ ] **Lead Management UI (`/app/(admin)/leads/ADMIN_LEADS_PLAN.md`):
+    *   [x] Functionality to (soft) delete users (Super Admin role only) (FR-USER-005-MVP).
+*   [ ] **Lead Management UI (`/app/admin/leads/ADMIN_LEADS_PLAN.md`):
     *   [ ] View list of leads with pagination, sorting, filtering (FR-LEAD-002-MVP).
     *   [ ] Form to create leads manually (FR-LEAD-001-MVP).
     *   [ ] View lead details (FR-LEAD-003-MVP).
     *   [ ] Form to update lead info and status (FR-LEAD-004-MVP).
-    *   [ ] Functionality to convert lead to a user (pre-fills user creation form, assigns default role) (FR-LEAD-005
+    *   [ ] Functionality to convert lead to a user (pre-fills user creation form, assigns default role) (FR-LEAD-005-MVP).
+*   [x] **Subscription Management UI (Basic View/Cancellation) (`/app/admin/subscriptions/ADMIN_SUBSCRIPTIONS_PLAN.md`):
+    *   [x] View subscription plans (FR-SUB-001-MVP).
+    *   [x] View user subscriptions with admin-initiated cancellation (FR-SUB-002-MVP).
+*   [x] **API Integration (`/lib/api/admin.ts`, `/lib/api/admin-types.ts`):
+    *   [x] Create typed API client for admin endpoints.
+    *   [x] Implement functions for all admin operations (CRUD users, audit logs, subscriptions, etc.).
+    *   [ ] Add authentication headers and error handling.
+
+**Admin Panel Status:** Core admin panel layout, navigation, and main pages implemented with mock data. Backend integration needed for real functionality.
+
+## Phase 6: Layout Refactoring & Route Separation (COMPLETED)
+**Goal:** Properly separate admin and user pages with different layouts and auth checks.
+
+*   [x] **Middleware Implementation (`middleware.ts`):**
+    *   Created Next.js middleware for route protection using NextAuth.
+    *   Implemented separate auth checks for admin vs regular user routes.
+    *   Added proper redirects for authenticated/unauthenticated users.
+*   [x] **Auth Utilities (`/lib/auth/roles.ts`):**
+    *   Created role-based auth utilities with TypeScript enums.
+    *   Added functions for role checking: `isAdmin()`, `isSuperAdmin()`, `hasRole()`.
+    *   Created route type detection utilities: `getRouteType()`, `isAdminRoute()`, `isProtectedRoute()`.
+*   [x] **Protected Layout (`/app/(protected)/layout.tsx`):**
+    *   Created dedicated layout for user-facing protected routes.
+    *   Implemented server-side auth checks with proper redirects.
+    *   Added UserNavbar specific to authenticated user pages.
+*   [x] **User Navigation (`/components/layout/UserNavbar.tsx`):**
+    *   Created separate navigation component for authenticated users.
+    *   Added navigation to Dashboard, Calendar, Integrations, Settings.
+    *   Implemented responsive design with mobile menu support.
+*   [x] **Conditional Layout (`/components/layout/ConditionalLayout.tsx`):**
+    *   Created smart layout component that conditionally shows navbar/footer.
+    *   Only shows public navbar/footer on public routes (landing, auth pages).
+    *   Prevents layout duplication on admin and protected routes.
+*   [x] **Admin Layout Fix:**
+    *   Fixed admin layout to not create duplicate HTML structure.
+    *   Removed nested `<html>` and `<body>` tags from admin layout.
+    *   Maintained proper admin-specific UI structure.
+*   [x] **Public Navbar Enhancement:**
+    *   Updated public navbar to hide on protected/admin routes.
+    *   Added Dashboard link for authenticated users on public pages.
+    *   Improved mobile navigation experience.
+*   [x] **Admin Login Enhancement:**
+    *   Created reusable AdminLoginForm component.
+    *   Maintained existing admin login functionality with improved structure.
+
+**Route Structure After Refactoring:**
+- **Public Routes** (`/`, `/login`, `/register`): Use main navbar + footer
+- **Protected User Routes** (`/dashboard`, `/calendar`, etc.): Use UserNavbar + protected layout
+- **Admin Routes** (`/admin/**`): Use AdminLayout with complete admin UI
+
+**Benefits Achieved:**
+- Clear separation between admin and user interfaces
+- Proper auth checks at middleware level
+- No duplicate HTML structure or conflicting layouts
+- Type-safe role-based access control utilities
+- Responsive design maintained across all route types
+
+## Phase 7: Frontend Cleanup & Refactoring (COMPLETED)
+**Goal:** Remove redundant files, layouts, and code to create a cleaner, more maintainable frontend structure.
+
+*   [x] **Removed ConditionalLayout Component:**
+    *   Eliminated unnecessary complexity in layout chain
+    *   Simplified root layout to just provide SessionProvider
+    *   Each route group now handles its own layout directly
+
+*   [x] **Simplified Route Protection:**
+    *   Removed redundant auth checks from layout components
+    *   Middleware now handles all route protection logic
+    *   Eliminated duplication between middleware and layouts
+
+*   [x] **Created BaseNavbar Component:**
+    *   Extracted common navbar logic into reusable component
+    *   Reduced code duplication between public and user navbars
+    *   Improved maintainability of navigation components
+
+*   [x] **Improved Layout Structure:**
+    *   Created dedicated layout for auth routes (`(auth)/layout.tsx`)
+    *   Simplified protected layout (removed redundant auth checks)
+    *   Simplified admin layout (removed redundant auth checks)
+    *   Added proper layout to landing page
+
+*   [x] **Removed Redundant Components:**
+    *   Deleted `ConditionalLayout.tsx` (unnecessary complexity)
+    *   Deleted `ProtectedRoute.tsx` (middleware handles protection)
+    *   Updated barrel exports to remove deleted components
+
+*   [x] **Refactored Navigation Components:**
+    *   Navbar and UserNavbar now extend BaseNavbar
+    *   Removed route-based hiding logic from public navbar
+    *   Consolidated mobile menu logic in BaseNavbar
+
+*   [x] **Optimized Auth Flow:**
+    *   Middleware handles all route protection
+    *   No duplicate auth checks in layouts
+    *   Cleaner separation of concerns
+
+**Final Optimized Structure:**
+```
+app/
+├── layout.tsx                    # Root layout (minimal, just SessionProvider)
+├── page.tsx                      # Landing page (includes Navbar + Footer)
+├── (auth)/
+│   ├── layout.tsx                # Auth layout (Navbar + Footer wrapper)
+│   ├── login/page.tsx            # Login page
+│   └── register/page.tsx         # Register page
+├── (protected)/
+│   ├── layout.tsx                # Protected layout (UserNavbar wrapper)
+│   ├── dashboard/page.tsx        # User dashboard
+│   ├── calendar/page.tsx         # Calendar view
+│   └── ...
+└── admin/
+    ├── layout.tsx                # Admin layout (AdminLayout wrapper)
+    ├── login/page.tsx            # Admin login
+    └── ...
+
+components/layout/
+├── BaseNavbar.tsx                # Shared navbar component
+├── Navbar.tsx                    # Public navbar (extends BaseNavbar)
+├── UserNavbar.tsx               # User navbar (extends BaseNavbar)
+├── Footer.tsx                    # Footer component
+└── index.ts                     # Barrel exports
+
+middleware.ts                     # Centralized route protection
+```
+
+**Code Reduction Achieved:**
+- Removed 2 redundant components (ConditionalLayout, ProtectedRoute)
+- Eliminated ~150 lines of duplicate navbar code
+- Simplified 3 layout components
+- Centralized all auth logic in middleware
+- Improved maintainability and readability

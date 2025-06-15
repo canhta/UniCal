@@ -2,7 +2,7 @@
 
 This plan outlines tasks for creating the UI to view subscription plans within the Admin Panel MVP.
 
-## Subscription Plan List Page (`/app/(admin)/subscriptions/plans/page.tsx`)
+## Subscription Plan List Page (`/app/admin/subscriptions/plans/page.tsx`)
 - **FR-SUB-001-MVP: View Subscription Plan List**
     - [ ] Create the main component for displaying the list of available subscription plans.
     - [ ] Fetch subscription plan data from the backend API endpoint (`GET /admin/subscriptions/plans`).

@@ -893,10 +893,7 @@ export class AdminService {
     };
   }
 
-  async deleteLead(
-    leadId: string,
-    performingUserId: string,
-  ): Promise<void> {
+  async deleteLead(leadId: string, performingUserId: string): Promise<void> {
     const lead = await this.prisma.lead.findUnique({
       where: { id: leadId },
     });
@@ -1015,8 +1012,8 @@ export class AdminService {
             newRegistrationsLastMonth) *
           100
         : newRegistrationsThisMonth > 0
-        ? 100
-        : 0;
+          ? 100
+          : 0;
 
     return {
       totalClientUsers,
@@ -1030,7 +1027,6 @@ export class AdminService {
   }
 
   async searchUsers(query: string): Promise<SearchResultDto[]> {
-
     const [clientUsers, adminUsers, leads] = await Promise.all([
       this.prisma.user.findMany({
         where: {

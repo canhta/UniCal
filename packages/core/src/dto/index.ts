@@ -8,3 +8,4 @@ export * from './calendar.dto';
 export * from './event.dto';
 export * from './account.dto';
 export * from './admin.dto';
+export * from './oauth-user.dto';

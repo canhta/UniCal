@@ -2,9 +2,9 @@
 
 This plan outlines tasks for implementing authentication for the Admin Panel MVP, integrating with Auth0.
 
-## Admin Login Page (`/app/(admin)/login/page.tsx`)
+## Admin Login Page (`/app/admin/login/page.tsx`)
 - **FR-GEN-001-MVP: Admin Login**
-    - [ ] Create the login page UI for the Admin Panel.
+    - [ ] Create the login page UI for the Admin Panel at `/admin/login`.
         - [ ] Form with Email and Password fields (though Auth0 might handle this via its Universal Login).
         - [ ] "Login" button.
     - [ ] Integrate with Auth0 for authentication.
@@ -26,7 +26,7 @@ This plan outlines tasks for implementing authentication for the Admin Panel MVP
     - [ ] Call Auth0 logout endpoint if necessary to terminate Auth0 session.
 
 ## Route Protection
-- [ ] Ensure all pages under `/app/(admin)/` (except the login page itself) are protected.
+- [ ] Ensure all pages under `/app/admin/` (except the login page itself) are protected.
 - [ ] If using `next-auth`, leverage its middleware or session checks in `getServerSideProps` / React Server Components / Client Components.
 - [ ] Unauthenticated users attempting to access protected admin pages should be redirected to `/admin/login`.
 

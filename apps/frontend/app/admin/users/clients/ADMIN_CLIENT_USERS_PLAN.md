@@ -2,7 +2,7 @@
 
 This plan outlines tasks for implementing the Client Application User Management UI for the Admin Panel MVP.
 
-## Client User List Page (`/app/(admin)/users/clients/page.tsx`)
+## Client User List Page (`/app/admin/users/clients/page.tsx`)
 - **FR-CUSER-001-MVP: View Client User List**
     - [ ] Create the main component for displaying the list of client users.
     - [ ] Fetch client user data from `GET /admin/users/clients`.
@@ -12,7 +12,7 @@ This plan outlines tasks for implementing the Client Application User Management
     - [ ] Implement basic filtering by Status (Active/Inactive).
     - [ ] Add a "Create User" button navigating to the create user form/page.
 
-## Client User Detail View (e.g., `/app/(admin)/users/clients/[id]/page.tsx`)
+## Client User Detail View (e.g., `/app/admin/users/clients/[id]/page.tsx`)
 - **FR-CUSER-002-MVP: View Client User Details**
     - [ ] Create a page/component to display detailed information for a specific client user.
     - [ ] Fetch data from `GET /admin/users/clients/:id`.
@@ -31,7 +31,7 @@ This plan outlines tasks for implementing the Client Application User Management
         - [ ] "Delete User" (Super Admin only, triggers FR-CUSER-005-MVP).
         - [ ] "Cancel Subscription" (if active subscription exists, triggers FR-SUB-003-MVP).
 
-## Create Client User Form/Page (e.g., `/app/(admin)/users/clients/new/page.tsx`)
+## Create Client User Form/Page (e.g., `/app/admin/users/clients/new/page.tsx`)
 - **FR-CUSER-003-MVP: Create Client User (Manual)**
     - [ ] Create a form for manually adding a new client user.
     - [ ] Fields: Full Name, Email Address, Initial Password (consider system-generated vs. admin-set with change on first login requirement).
@@ -39,7 +39,7 @@ This plan outlines tasks for implementing the Client Application User Management
     - [ ] On submit, call `POST /admin/users/clients`.
     - [ ] Display success/error messages. Redirect to user list or detail view on success.
 
-## Update Client User Form/Page (e.g., `/app/(admin)/users/clients/[id]/edit/page.tsx`)
+## Update Client User Form/Page (e.g., `/app/admin/users/clients/[id]/edit/page.tsx`)
 - **FR-CUSER-004-MVP: Update Client User (Basic Info & Status)**
     - [ ] Create a form for editing client user details.
     - [ ] Pre-fill form with existing user data fetched from `GET /admin/users/clients/:id`.

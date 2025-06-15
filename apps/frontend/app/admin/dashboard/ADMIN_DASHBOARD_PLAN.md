@@ -2,7 +2,7 @@
 
 This plan outlines tasks for creating the Admin Dashboard UI for the Admin Panel MVP.
 
-## Dashboard Page (`/app/(admin)/dashboard/page.tsx`)
+## Dashboard Page (`/app/admin/dashboard/page.tsx`)
 - **FR-GEN-002-MVP: Admin Dashboard (Simplified)**
     - [ ] Create the main component for the Admin Dashboard page.
     - [ ] Fetch dashboard data from the backend API endpoint (`GET /admin/dashboard/stats`).

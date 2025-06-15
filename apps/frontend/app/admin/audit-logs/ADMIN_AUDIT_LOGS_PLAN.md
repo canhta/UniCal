@@ -2,7 +2,7 @@
 
 This plan outlines tasks for creating the Audit Logs viewing interface for the Admin Panel MVP.
 
-## Audit Logs Page (`/app/(admin)/audit-logs/page.tsx`)
+## Audit Logs Page (`/app/admin/audit-logs/page.tsx`)
 - **FR-GEN-004-MVP: Audit Logs (Core User Actions)**
     - [ ] Create the main component for the Audit Logs page.
     - [ ] Fetch audit log data from the backend API endpoint (`GET /admin/audit-logs`).
