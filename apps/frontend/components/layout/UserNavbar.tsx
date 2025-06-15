@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { CalendarIcon, Cog6ToothIcon, CubeIcon } from "@heroicons/react/24/outline";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui";
 import BaseNavbar from "./BaseNavbar";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function UserNavbar() {
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: CubeIcon },
@@ -44,7 +45,7 @@ export default function UserNavbar() {
   const desktopActions = (
     <div className="flex items-center space-x-4">
       <span className="text-sm text-gray-600">
-        Welcome, {session?.user?.name || session?.user?.email}!
+        Welcome, {user?.name || user?.email}!
       </span>
       <Button onClick={() => signOut()} variant="outline">
         Sign Out
@@ -73,7 +74,7 @@ export default function UserNavbar() {
   const mobileActions = (
     <div className="flex flex-col space-y-2">
       <span className="text-sm text-gray-600 px-2">
-        Welcome, {session?.user?.name || session?.user?.email}!
+        Welcome, {user?.name || user?.email}!
       </span>
       <Button onClick={() => signOut()} variant="outline" className="w-full">
         Sign Out

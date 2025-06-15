@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../api/client';
+import { useAuth } from './useAuth';
 import { CalendarResponseDto, PlatformCalendarDto, SyncCalendarDto, UpdateCalendarSettingsDto } from '@unical/core';
 
 interface UseCalendarsResult {
@@ -17,19 +18,30 @@ export function useCalendars(includeHidden = false): UseCalendarsResult {
   const [calendars, setCalendars] = useState<CalendarResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const authState = useAuth();
 
   const fetchCalendars = useCallback(async () => {
+    // Don't fetch if auth is not ready or doesn't have tokens
+    if (authState.isLoading || !authState.hasUniCalTokens) {
+      console.log(`useCalendars: Skipping fetch - loading: ${authState.isLoading}, hasTokens: ${authState.hasUniCalTokens}`);
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('useCalendars: Fetching calendars, includeHidden:', includeHidden);
       setLoading(true);
       setError(null);
       const data = await apiClient.getUserCalendars(includeHidden);
+      console.log(`useCalendars: Fetched ${data.length} calendars`);
       setCalendars(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch calendars');
+      console.warn('Failed to fetch calendars:', err);
     } finally {
       setLoading(false);
     }
-  }, [includeHidden]);
+  }, [authState.isLoading, authState.hasUniCalTokens, includeHidden]);
 
   useEffect(() => {
     fetchCalendars();

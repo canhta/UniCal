@@ -29,14 +29,20 @@ export const {
             email: credentials.email as string,
             password: credentials.password as string,
           };
+          
+          // Login and get tokens
           const response = await apiClient.login(loginData);
+          
+          console.log("✅ Credentials login successful, tokens stored");
+          
           return {
             id: response.user.id,
             email: response.user.email,
             name: response.user.name,
             image: response.user.avatarUrl,
           };
-        } catch {
+        } catch (error) {
+          console.error("❌ Credentials login failed:", error);
           return null;
         }
       },
@@ -82,34 +88,37 @@ export const {
       return token;
     },
     async session({ session, token }) {
-      // Handle OAuth user creation in session callback
-      if (token.provider === "google" || token.provider === "github") {
+      console.log("🔐 Session callback triggered");
+      
+      // For credentials login, tokens are already handled in authorize
+      // For OAuth providers, we need to exchange tokens
+      if ((token.provider === "google" || token.provider === "github") && session?.user?.email) {
         try {
-          // Create or update user in our database
-          const result = await apiClient.createOAuthUser({
-            email: token.userEmail as string,
-            name: (token.userName as string) || (token.userEmail as string),
-            image: (token.userImage as string) || undefined,
+          console.log("🔄 Exchanging OAuth session for UniCal tokens...");
+          
+          // Exchange NextAuth session for UniCal JWT tokens
+          await apiClient.exchangeTokens({
+            email: session.user.email,
+            name: session.user.name || session.user.email,
+            image: session.user.image || undefined,
             provider: token.provider as string,
           });
-        } catch (error) {
-          if (error instanceof Error) {
-            console.error("Error details:", {
-              message: error.message,
-              stack: error.stack,
-            });
-          }
 
-          // Continue with session even if user creation fails
-          console.log("⚠️ Continuing session despite API error");
+          console.log("✅ OAuth token exchange successful");
+        } catch (error) {
+          console.error("❌ OAuth token exchange failed:", error);
+          // Continue with session even if token exchange fails
         }
       }
 
       // Extend session with additional properties
       const extendedSession = session as typeof session & {
         accessToken?: string;
+        hasUniCalTokens?: boolean;
       };
+      
       extendedSession.accessToken = token.accessToken as string;
+      extendedSession.hasUniCalTokens = apiClient.hasValidTokens();
 
       console.log("✅ Session callback completed successfully");
       return extendedSession;

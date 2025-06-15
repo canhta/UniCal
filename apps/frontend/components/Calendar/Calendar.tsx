@@ -16,12 +16,13 @@ import { CalendarToolbar } from './Toolbar';
 
 type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
 
-interface CalendarEvent extends EventCalendar.EventInput {
-    extendedProps?: {
-        description?: string;
-        location?: string;
-    };
-}
+// TODO: Uncomment when event details modal is implemented
+// interface CalendarEvent extends EventCalendar.EventInput {
+//     extendedProps?: {
+//         description?: string;
+//         location?: string;
+//     };
+// }
 
 interface CalendarProps {
     events?: EventCalendar.EventInput[];
@@ -63,8 +64,9 @@ export const Calendar = ({
     const calendarRef = useRef<HTMLDivElement>(null);
     const [calendar, setCalendar] = useState<EventCalendar | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showEventModal, setShowEventModal] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+    // TODO: Uncomment when event modal is implemented
+    // const [showEventModal, setShowEventModal] = useState(false);
+    // const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [currentView, setCurrentView] = useState<CalendarView>(initialView);
 
     useEffect(() => {
@@ -180,20 +182,21 @@ export const Calendar = ({
         }
     };
 
-    const handleEventClick = (info: EventCalendar.EventClickInfo) => {
-        const eventData: CalendarEvent = {
-            id: info.event.id,
-            title: info.event.title,
-            start: info.event.start,
-            end: info.event.end,
-            allDay: info.event.allDay,
-            backgroundColor: info.event.backgroundColor,
-            textColor: info.event.textColor,
-            extendedProps: info.event.extendedProps as CalendarEvent['extendedProps'],
-        };
-        setSelectedEvent(eventData);
-        setShowEventModal(true);
-    };
+    // TODO: Implement event click handling
+    // const handleEventClick = (info: EventCalendar.EventClickInfo) => {
+    //     const eventData: CalendarEvent = {
+    //         id: info.event.id,
+    //         title: info.event.title,
+    //         start: info.event.start,
+    //         end: info.event.end,
+    //         allDay: info.event.allDay,
+    //         backgroundColor: info.event.backgroundColor,
+    //         textColor: info.event.textColor,
+    //         extendedProps: info.event.extendedProps as CalendarEvent['extendedProps'],
+    //     };
+    //     setSelectedEvent(eventData);
+    //     setShowEventModal(true);
+    // };
 
     return (
         <div className="flex h-screen w-full bg-white overflow-hidden">
@@ -210,7 +213,7 @@ export const Calendar = ({
                 <div className="flex-1 w-full h-full bg-white overflow-hidden flex flex-col min-h-0 min-w-0">
                     <div ref={calendarRef} className="flex-1 w-full min-h-0 min-w-0" />
                 </div>
-                {/* Event Details Modal */}
+                {/* TODO: Uncomment when event details modal is implemented
                 {showEventModal && selectedEvent && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
                         <div className="bg-white rounded-lg shadow-2xl p-6 min-w-[400px] max-w-[500px] mx-4">
@@ -276,6 +279,7 @@ export const Calendar = ({
                         </div>
                     </div>
                 )}
+                */}
                 {/* Enhanced Create Event Modal */}
                 {showCreateModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">

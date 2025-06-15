@@ -2,8 +2,6 @@ import {
   UserResponseDto,
   UpdateUserDto,
   ChangePasswordDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
   LoginDto,
   RegisterDto,
   AuthResponseDto,
@@ -46,6 +44,48 @@ class ApiClient {
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
+    this.loadTokensFromStorage();
+  }
+
+  // Token management methods
+  public setTokens(tokens: UniCalTokens): void {
+    this.uniCalTokens = tokens;
+    this.saveTokensToStorage();
+  }
+
+  public getTokens(): UniCalTokens | null {
+    return this.uniCalTokens;
+  }
+
+  public clearTokens(): void {
+    this.uniCalTokens = null;
+    this.clearTokensFromStorage();
+  }
+
+  private saveTokensToStorage(): void {
+    if (typeof window !== 'undefined' && this.uniCalTokens) {
+      localStorage.setItem('unical_tokens', JSON.stringify(this.uniCalTokens));
+    }
+  }
+
+  private loadTokensFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('unical_tokens');
+      if (stored) {
+        try {
+          this.uniCalTokens = JSON.parse(stored);
+        } catch (error) {
+          console.warn('Failed to parse stored tokens:', error);
+          this.clearTokensFromStorage();
+        }
+      }
+    }
+  }
+
+  private clearTokensFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('unical_tokens');
+    }
   }
 
   // Refresh UniCal tokens
@@ -69,10 +109,19 @@ class ApiClient {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
         };
+        // Save refreshed tokens to storage
+        this.saveTokensToStorage();
+        console.log('✅ Tokens refreshed successfully');
         return this.uniCalTokens;
+      } else {
+        console.warn('Token refresh failed:', response.status);
+        // Clear invalid tokens
+        this.clearTokens();
       }
     } catch (error) {
       console.warn('Failed to refresh UniCal tokens:', error);
+      // Clear tokens on error
+      this.clearTokens();
     }
     return null;
   }
@@ -97,15 +146,34 @@ class ApiClient {
     includeAuth: boolean = true
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const headers = await this.getHeaders(includeAuth);
-
-    const response = await fetch(url, {
+    
+    // First attempt with current tokens
+    let headers = await this.getHeaders(includeAuth);
+    let response = await fetch(url, {
       ...options,
       headers: {
         ...headers,
         ...options.headers,
       },
     });
+
+    // If we get 401 and have tokens, try to refresh
+    if (response.status === 401 && includeAuth && this.uniCalTokens?.refreshToken) {
+      console.log('Access token expired, attempting refresh...');
+      const newTokens = await this.refreshUniCalTokens();
+      
+      if (newTokens) {
+        // Retry with new tokens
+        headers = await this.getHeaders(includeAuth);
+        response = await fetch(url, {
+          ...options,
+          headers: {
+            ...headers,
+            ...options.headers,
+          },
+        });
+      }
+    }
 
     if (!response.ok) {
       const error: ApiError = {
@@ -118,6 +186,12 @@ class ApiClient {
         error.message = errorData.message || error.message;
       } catch {
         // Use the default error message if JSON parsing fails
+      }
+
+      // Clear tokens if unauthorized even after refresh
+      if (response.status === 401 && includeAuth) {
+        console.log('Authentication failed, clearing tokens');
+        this.clearTokens();
       }
 
       throw error;
@@ -136,78 +210,88 @@ class ApiClient {
 
     console.log('ApiClient:login called with data:', data);
 
-    return this.request<AuthResponseDto>('/auth/login', {
+    const result = await this.request<AuthResponseDto>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     });
+
+    // Store tokens after successful login
+    if (result.accessToken && result.refreshToken) {
+      this.setTokens({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+    }
+
+    return result;
   }
 
   async register(data: RegisterDto): Promise<AuthResponseDto> {
-    return this.request<AuthResponseDto>('/auth/register', {
+    const result = await this.request<AuthResponseDto>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  }
 
-  // OAuth user creation (creates user from OAuth provider data)
-  async createOAuthUser(data: {
-    email: string;
-    name: string;
-    image?: string;
-    provider: string;
-  }): Promise<AuthResponseDto> {
-    console.log('🚀 API Client: Creating OAuth user with data:', data);
-    console.log('🔗 API Client: Using base URL:', this.baseUrl);
-    
-    const payload = {
-      email: data.email,
-      displayName: data.name,
-      avatarUrl: data.image,
-      provider: data.provider,
-    };
-    
-    console.log('📦 API Client: Request payload:', payload);
-    
-    try {
-      const result = await this.request<AuthResponseDto>('/auth/register-oauth', {
-        method: 'POST',
-        body: JSON.stringify(payload),
+    // Store tokens after successful registration
+    if (result.accessToken && result.refreshToken) {
+      this.setTokens({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
       });
-      
-      console.log('✅ API Client: OAuth user creation successful:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ API Client: OAuth user creation failed:', error);
-      
-      // Log more details about the error
-      if (error instanceof Error) {
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-      }
-      
-      throw error;
     }
+
+    return result;
   }
 
-  async forgotPassword(data: ForgotPasswordDto): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/forgot-password', {
+  // Exchange NextAuth session for UniCal JWT tokens
+  async exchangeTokens(userData: {
+    email: string;
+    name?: string;
+    image?: string;
+    provider?: string;
+  }): Promise<AuthResponseDto> {
+    const result = await this.request<AuthResponseDto>('/auth/exchange-token', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(userData),
+    }, false); // Don't include auth header for token exchange
+
+    // Store tokens after successful exchange
+    if (result.accessToken && result.refreshToken) {
+      this.setTokens({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+    }
+
+    return result;
+  }
+
+  // Check authentication status
+  async getAuthStatus(): Promise<UserResponseDto> {
+    return this.request<UserResponseDto>('/auth/status', {
+      method: 'GET',
     });
   }
 
-  async resetPassword(data: ResetPasswordDto): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
+  // Verify email with token
   async verifyEmail(token: string): Promise<{ message: string }> {
     return this.request<{ message: string }>('/auth/verify-email', {
       method: 'POST',
       body: JSON.stringify({ token }),
-    });
+    }, false); // Don't include auth header for email verification
+  }
+
+  // Logout and clear tokens
+  async logout(): Promise<{ message: string }> {
+    try {
+      const result = await this.request<{ message: string }>('/auth/logout', {
+        method: 'POST',
+      });
+      return result;
+    } finally {
+      // Always clear tokens even if logout request fails
+      this.clearTokens();
+    }
   }
 
   // User endpoints
@@ -298,6 +382,25 @@ class ApiClient {
     return this.request<void>(`/calendars/${calendarId}`, {
       method: 'DELETE',
     });
+  }
+
+  // Check if tokens are available and valid
+  public hasValidTokens(): boolean {
+    return !!(this.uniCalTokens?.accessToken && this.uniCalTokens?.refreshToken);
+  }
+
+  // Get current authentication status
+  public async verifyAuth(): Promise<boolean> {
+    if (!this.hasValidTokens()) {
+      return false;
+    }
+
+    try {
+      await this.getAuthStatus();
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 

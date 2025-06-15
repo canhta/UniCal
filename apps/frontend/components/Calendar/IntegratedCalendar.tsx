@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Calendar } from './Calendar';
 import { useEvents } from '@/lib/hooks/useEvents';
 import { useCalendars } from '@/lib/hooks/useCalendars';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { convertEventsToCalendarEvents, createCalendarColorMap } from '@/lib/utils/eventUtils';
 import { Calendar as EventCalendar } from '@event-calendar/core';
 import { UpdateEventRequestDto } from '@unical/core';
@@ -15,7 +16,9 @@ export const IntegratedCalendar = () => {
     end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
   });
 
-  // Fetch calendars and events
+  const authState = useAuth();
+
+  // Fetch calendars and events - these hooks now check auth state internally
   const { calendars, loading: calendarsLoading, error: calendarsError } = useCalendars();
   const { 
     events, 
@@ -37,6 +40,30 @@ export const IntegratedCalendar = () => {
       setSelectedCalendars(visibleCalendarIds);
     }
   }, [calendars, selectedCalendars.length]);
+
+  // Show loading state if auth is not ready
+  if (authState.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if auth failed
+  if (!authState.hasUniCalTokens) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Authentication required</p>
+          <p className="text-gray-600">Please log in to view your calendar</p>
+        </div>
+      </div>
+    );
+  }
 
   // Create color map for calendars
   const colorMap = createCalendarColorMap(calendars.map(cal => cal.id));

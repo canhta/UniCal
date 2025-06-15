@@ -178,4 +178,33 @@ export class AuthService {
     this.passwordResetTokens.delete(token);
     return { message: 'Password reset successfully' };
   }
+
+  async exchangeForTokens(userData: {
+    email: string;
+    name?: string;
+    image?: string;
+    provider?: string;
+  }): Promise<AuthResponseDto> {
+    // Find or create user based on email
+    let user = await this.userService.findByEmail(userData.email);
+
+    if (!user) {
+      // Create new user from OAuth data
+      user = await this.userService.findOrCreateUserFromProvider({
+        email: userData.email,
+        name: userData.name,
+        emailVerified: true, // OAuth emails are typically pre-verified
+      });
+
+      // Update with avatar if provided
+      if (userData.image) {
+        await this.userService.updateUser(user.id, {
+          avatarUrl: userData.image,
+        });
+      }
+    }
+
+    const userDto = await this.userService.getCurrentUser(user.id);
+    return this.generateTokens(userDto);
+  }
 }

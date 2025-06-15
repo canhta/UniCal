@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { createCalendar, destroyCalendar, DayGrid, TimeGrid, List, Calendar } from '@event-calendar/core';
 import '@event-calendar/core/index.css';
 import { useQuery } from '@tanstack/react-query';
@@ -28,7 +28,9 @@ const CoreCalendar: React.FC = () => {
   });
 
   // Convert backend events to calendar events
-  const events = Array.isArray(data) ? data.map(mapEvent) : [];
+  const events = useMemo(() => {
+    return Array.isArray(data) ? data.map(mapEvent) : [];
+  }, [data]);
 
   useEffect(() => {
     if (calendarRef.current && !isLoading && !error) {

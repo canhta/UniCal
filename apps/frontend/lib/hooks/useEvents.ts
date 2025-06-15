@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '../api/client';
+import { useAuth } from './useAuth';
 import { EventResponseDto, CreateEventRequestDto, UpdateEventRequestDto, GetEventsQueryDto } from '@unical/core';
 
 interface UseEventsResult {
@@ -18,19 +19,32 @@ export function useEvents(query?: GetEventsQueryDto): UseEventsResult {
   const [events, setEvents] = useState<EventResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const authState = useAuth();
+  const queryRef = useRef(query);
+  queryRef.current = query;
 
   const fetchEvents = useCallback(async () => {
+    // Don't fetch if auth is not ready or doesn't have tokens
+    if (authState.isLoading || !authState.hasUniCalTokens) {
+      console.log(`useEvents: Skipping fetch - loading: ${authState.isLoading}, hasTokens: ${authState.hasUniCalTokens}`);
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('useEvents: Fetching events with query:', queryRef.current);
       setLoading(true);
       setError(null);
-      const data = await apiClient.getEvents(query);
+      const data = await apiClient.getEvents(queryRef.current);
+      console.log(`useEvents: Fetched ${data.length} events`);
       setEvents(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
+      console.warn('Failed to fetch events:', err);
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [authState.isLoading, authState.hasUniCalTokens]);
 
   useEffect(() => {
     fetchEvents();

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { MagnifyingGlassIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface SearchResult {
   id: string;
@@ -16,7 +17,7 @@ export function AdminHeader() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -104,7 +105,7 @@ export function AdminHeader() {
             <UserCircleIcon className="h-8 w-8 text-gray-400" />
             <div className="hidden md:block">
               <div className="text-sm font-medium text-gray-900">
-                {session?.user?.name || session?.user?.email || 'Admin User'}
+                {user?.name || user?.email || 'Admin User'}
               </div>
               <div className="text-xs text-gray-500">
                 {/* TODO: Show admin role */}

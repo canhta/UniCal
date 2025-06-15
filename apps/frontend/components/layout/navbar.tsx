@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui";
 import BaseNavbar from "./BaseNavbar";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function Navbar() {
-  const { data: session, status } = useSession();
-  const isAuthenticated = status === "authenticated";
+  const authState = useAuth();
+  const isAuthenticated = authState.isAuthenticated;
 
   const publicNavItems = [
     { href: "/", label: "Home" },
@@ -37,10 +38,18 @@ export default function Navbar() {
   );
 
   const desktopActions = isAuthenticated ? (
-    <div className="flex items-center space-x-4">
-      <span className="text-sm text-gray-600">
-        Welcome, {session.user?.name || session.user?.email}!
-      </span>
+    <div className="flex items-center space-x-4">        <div className="flex flex-col text-right">
+          <span className="text-sm text-gray-600">
+            Welcome, {authState.user?.name || authState.user?.email}!
+          </span>
+          {authState.isLoading ? (
+            <span className="text-xs text-yellow-600">Connecting...</span>
+          ) : authState.hasUniCalTokens ? (
+            <span className="text-xs text-green-600">✓ UniCal Connected</span>
+          ) : (
+            <span className="text-xs text-red-600">⚠ Connection Failed</span>
+          )}
+        </div>
       <Link href="/dashboard">
         <Button variant="outline">Dashboard</Button>
       </Link>
@@ -76,7 +85,7 @@ export default function Navbar() {
   const mobileActions = isAuthenticated ? (
     <div className="flex flex-col space-y-2">
       <span className="text-sm text-gray-600 px-2">
-        Welcome, {session.user?.name || session.user?.email}!
+        Welcome, {authState.user?.name || authState.user?.email}!
       </span>
       <Link href="/dashboard">
         <Button variant="outline" className="w-full">Dashboard</Button>

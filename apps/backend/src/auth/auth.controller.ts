@@ -6,6 +6,7 @@ import {
   HttpStatus,
   UseGuards,
   Request,
+  Get,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,6 +23,7 @@ import {
   LoginDto,
   AuthResponseDto,
   OAuthUserDto,
+  UserResponseDto,
 } from '@unical/core';
 import { UserService } from '../user/user.service';
 
@@ -127,5 +129,42 @@ export class AuthController {
     @Body() oauthDto: OAuthUserDto,
   ): Promise<AuthResponseDto> {
     return await this.authService.registerOrGetOAuthUser(oauthDto);
+  }
+
+  @Get('status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check authentication status and get current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'User authentication status',
+    type: UserResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getStatus(
+    @Request() req: { user: { id: string } },
+  ): Promise<UserResponseDto> {
+    return await this.userService.getCurrentUser(req.user.id);
+  }
+
+  @Post('exchange-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Exchange user info for UniCal JWT tokens' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token exchange successful',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Invalid user data' })
+  async exchangeToken(
+    @Body()
+    userData: {
+      email: string;
+      name?: string;
+      image?: string;
+      provider?: string;
+    },
+  ): Promise<AuthResponseDto> {
+    return await this.authService.exchangeForTokens(userData);
   }
 }
