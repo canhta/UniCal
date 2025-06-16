@@ -1,0 +1,36 @@
+{
+  "name": "@unical/e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for UniCal application",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:install": "playwright install",
+    "test:install-deps": "playwright install-deps",
+    "test:codegen": "playwright codegen localhost:3030",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:ci": "playwright test --reporter=github,html,junit",
+
+    "test:global-scripts": "./test-global-scripts.sh",
+    "setup": "./setup.sh"
+  },
+  "keywords": [
+    "e2e",
+    "testing",
+    "playwright",
+    "unical",
+    "calendar"
+  ],
+  "author": "UniCal Team",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@types/node": "^24.0.3",
+    "dotenv": "^16.5.0"
+  }
+}

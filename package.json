@@ -19,6 +19,7 @@
     "env:copy": "cp apps/backend/.env.example apps/backend/.env && cp apps/frontend/.env.example apps/frontend/.env.local",
     "env:copy:backend": "cp apps/backend/.env.example apps/backend/.env",
     "env:copy:frontend": "cp apps/frontend/.env.example apps/frontend/.env.local",
+    "env:copy:e2e": "cp apps/e2e-tests/.env.example apps/e2e-tests/.env",
     "dev": "concurrently \"yarn backend:dev\" \"yarn frontend:dev\"",
     "frontend:dev": "yarn workspace @unical/frontend dev",
     "frontend:build": "yarn workspace @unical/frontend build",
@@ -41,12 +42,22 @@
     "docker:down": "docker-compose down",
     "docker:clean": "docker-compose down -v --remove-orphans",
     "docker:logs": "docker-compose logs -f",
-    "test": "yarn workspace @unical/frontend test && yarn workspace @unical/backend test",
-    "test:watch": "yarn workspace @unical/frontend test:watch",
-    "test:e2e": "yarn workspace @unical/backend test:e2e"
+    "e2e": "yarn workspace @unical/e2e-tests test",
+    "e2e:headed": "yarn workspace @unical/e2e-tests test:headed",
+    "e2e:debug": "yarn workspace @unical/e2e-tests test:debug",
+    "e2e:ui": "yarn workspace @unical/e2e-tests test:ui",
+    "e2e:report": "yarn workspace @unical/e2e-tests test:report",
+    "e2e:install": "yarn workspace @unical/e2e-tests test:install",
+    "e2e:smoke": "yarn workspace @unical/e2e-tests test:smoke",
+    "e2e:regression": "yarn workspace @unical/e2e-tests test:regression",
+    "e2e:ci": "yarn workspace @unical/e2e-tests test:ci",
+    "e2e:setup": "yarn workspace @unical/e2e-tests setup",
+    "e2e:test-globals": "yarn workspace @unical/e2e-tests test:global-scripts",
+    "e2e:watch": "yarn workspace @unical/e2e-tests test --ui"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "@types/node": "^24.0.3"
   },
   "keywords": [
     "calendar",
@@ -56,7 +67,11 @@
     "nextjs",
     "nestjs",
     "unified-calendar",
-    "calendar-aggregation"
+    "calendar-aggregation",
+    "e2e-testing",
+    "playwright",
+    "typescript",
+    "monorepo"
   ],
   "repository": {
     "type": "git",

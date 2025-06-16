@@ -138,10 +138,101 @@ If you prefer manual setup or need to troubleshoot:
 
 *   `apps/backend`: NestJS API server
 *   `apps/frontend`: Next.js frontend application
+*   `apps/e2e-tests`: Playwright end-to-end testing suite
 *   `packages/core`: Shared types and utilities
 *   `docs/`: Project documentation
 *   `scripts/`: Development and deployment scripts
 *   `docker-compose.yml`: Local development services
+
+## End-to-End Testing
+
+UniCal includes a comprehensive E2E testing suite using Playwright for automated testing of the application's features.
+
+### Quick Start with E2E Testing
+
+```bash
+# Setup E2E testing environment (first time only)
+yarn e2e:setup
+
+# Start applications for testing
+yarn dev
+
+# Run smoke tests (quick verification)
+yarn e2e:smoke
+
+# Run all E2E tests
+yarn e2e
+```
+
+### E2E Testing Features
+
+- **Cross-browser Support**: Chrome, Firefox, Safari (desktop and mobile)
+- **CI/CD Integration**: GitHub Actions workflows for automated testing
+- **Page Object Model**: Maintainable test structure with reusable components
+- **Test Data Management**: Automated setup and cleanup of test data
+- **Rich Reporting**: HTML reports, screenshots, videos, and execution traces
+- **Development Tools**: Debug mode, UI mode, and real-time test watching
+
+### E2E Test Organization
+
+```
+apps/e2e-tests/
+├── src/
+│   ├── pages/             # Page object models
+│   └── utils/             # Test utilities and helpers
+├── global-setup.ts        # Global test environment setup
+├── global-teardown.ts     # Global test cleanup
+└── playwright.config.ts   # Playwright configuration
+```
+
+### E2E Development Workflow
+
+1. **Set up testing environment:**
+   ```bash
+   yarn e2e:setup
+   ```
+
+2. **Start applications:**
+   ```bash
+   yarn dev
+   ```
+
+3. **Run tests during development:**
+   ```bash
+   # Quick verification
+   yarn e2e:smoke
+   
+   # Debug mode
+   yarn e2e:debug
+   
+   # Interactive UI mode
+   yarn e2e:ui
+   ```
+
+4. **Before committing:**
+   ```bash
+   yarn e2e:smoke
+   ```
+
+### E2E Configuration
+
+E2E tests use separate environment configuration:
+
+```bash
+# Copy E2E environment template
+yarn env:copy:e2e
+
+# Edit configuration
+# apps/e2e-tests/.env
+```
+
+Key E2E environment variables:
+- `FRONTEND_URL`: Frontend application URL (default: http://localhost:3030)
+- `BACKEND_URL`: Backend API URL (default: http://localhost:3000)
+- `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`: Test user credentials
+- `TEST_ADMIN_EMAIL`/`TEST_ADMIN_PASSWORD`: Admin user credentials
+
+For detailed E2E testing documentation, see [apps/e2e-tests/README.md](apps/e2e-tests/README.md) and [apps/e2e-tests/E2E_TESTING_PLAN.md](apps/e2e-tests/E2E_TESTING_PLAN.md).
 
 ## Development Commands
 
@@ -193,10 +284,28 @@ yarn lint:fix             # Fix linting issues automatically
 yarn format               # Format code with Prettier
 yarn type-check           # Run TypeScript type checking
 
-# Testing
-yarn test                 # Run all tests
+# Unit & Integration Testing
+yarn test                 # Run unit tests for frontend and backend
 yarn test:watch           # Run tests in watch mode
-yarn test:e2e             # Run end-to-end tests
+yarn test:e2e             # Run backend e2e tests (NestJS)
+
+# End-to-End Testing (Playwright)
+yarn e2e:setup            # Set up E2E testing environment
+yarn e2e                  # Run all E2E tests
+yarn e2e:headed           # Run E2E tests with browser UI
+yarn e2e:debug            # Run E2E tests with debugger
+yarn e2e:ui               # Run E2E tests with Playwright UI
+yarn e2e:smoke            # Run critical smoke tests only
+
+# E2E Testing Utilities
+yarn e2e:install          # Install Playwright browsers
+yarn e2e:report           # Show E2E test report
+yarn e2e:test-globals     # Test global setup/teardown scripts
+
+# Comprehensive Testing
+yarn test:all             # Run unit tests + smoke E2E tests
+yarn test:full            # Run all tests (unit + full E2E suite)
+yarn ci:test              # Run tests in CI mode
 ```
 
 ### Build & Production
@@ -217,6 +326,7 @@ yarn start:backend        # Start only backend in production
 **First-time setup:**
 ```bash
 yarn setup                # Automated complete setup
+yarn e2e:setup            # Setup E2E testing environment
 yarn dev                  # Start development
 ```
 
@@ -225,20 +335,37 @@ yarn dev                  # Start development
 yarn docker:up            # Start services
 yarn dev                  # Start development servers
 # ... develop ...
+yarn e2e:smoke            # Quick verification before committing
 yarn docker:down          # Stop services when done
+```
+
+**Feature development with E2E testing:**
+```bash
+yarn dev                  # Start applications
+yarn e2e:ui               # Interactive test development
+# ... write tests and features ...
+yarn e2e:smoke            # Quick verification
 ```
 
 **Before committing:**
 ```bash
 yarn lint:fix             # Fix linting issues
-yarn test                 # Run tests
+yarn test                 # Run unit tests
+yarn e2e:smoke            # Run critical E2E tests
 yarn type-check           # Verify types
+```
+
+**Full testing before release:**
+```bash
+yarn test:full            # Run all tests (unit + E2E)
+yarn build                # Verify build works
 ```
 
 **Database changes:**
 ```bash
 yarn db:reset             # Reset if needed
 yarn db:setup             # Apply migrations
+yarn db:seed              # Seed test data for E2E tests
 ```
 
 ## Docker Services
@@ -266,13 +393,34 @@ docker-compose down        # Stop all services
 - Check database logs: `docker-compose logs postgres`
 - Regenerate Prisma client: `yarn workspace @unical/backend prisma generate`
 
+### E2E Testing Issues
+
+**Tests failing to start:**
+- Ensure applications are running: `yarn dev`
+- Verify URLs in `apps/e2e-tests/.env` match your running services
+- Install browsers: `yarn e2e:install`
+
+**Authentication tests failing:**
+- Check test user credentials in `apps/e2e-tests/.env`
+- Verify users exist in database: `yarn db:seed`
+- Clear browser state: `yarn e2e:test-globals`
+
+**Flaky tests:**
+- Run in headed mode to observe: `yarn e2e:headed`
+- Use debug mode: `yarn e2e:debug`
+- Check test reports: `yarn e2e:report`
+
+**Browser installation issues:**
+- Manual installation: `yarn workspace @unical/e2e-tests test:install-deps`
+- System dependencies: `yarn workspace @unical/e2e-tests test:install`
+
 ### Port Conflicts
 - Backend default: `http://localhost:3000`
 - Frontend default: `http://localhost:3030`
 - Database: `localhost:5432`
 - Redis: `localhost:6379`
 
-If ports are occupied, update the respective configuration files.
+If ports are occupied, update the respective configuration files and E2E environment variables.
 
 ## Stopping Development
 
