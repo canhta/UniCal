@@ -83,6 +83,13 @@ export class GoogleCalendarSyncService {
   ): Promise<SyncResult> {
     this.logger.log(`Syncing calendar ${calendarId} for account ${accountId}`);
 
+    // Ensure calendar exists in our database first
+    const internalCalendarId = await this.ensureCalendarExists(
+      userId,
+      accountId,
+      calendarId,
+    );
+
     const result: SyncResult = {
       accountId,
       calendarId,
@@ -115,6 +122,15 @@ export class GoogleCalendarSyncService {
         delete query.syncToken;
       }
 
+      this.logger.debug(
+        `Fetching events for calendar ${calendarId} with query:`,
+        {
+          timeMin: query.timeMin,
+          timeMax: query.timeMax,
+          syncToken: query.syncToken,
+        },
+      );
+
       // Fetch events from Google Calendar
       const response = await this.calendarsService.getEventsForCalendar(
         userId,
@@ -128,7 +144,7 @@ export class GoogleCalendarSyncService {
       // Process each event
       for (const event of response.events) {
         try {
-          await this.processEvent(userId, calendarId, event);
+          await this.processEvent(userId, internalCalendarId, event);
 
           if (event.status === 'cancelled') {
             result.eventsDeleted++;
@@ -165,14 +181,14 @@ export class GoogleCalendarSyncService {
    */
   private async processEvent(
     userId: string,
-    calendarId: string,
+    internalCalendarId: string,
     event: PlatformEventDto,
   ): Promise<void> {
     // Check if event already exists in our database
     const existingEvent = await this.prisma.event.findFirst({
       where: {
         externalId: event.id,
-        calendarId,
+        calendarId: internalCalendarId,
         userId,
       },
     });
@@ -203,7 +219,7 @@ export class GoogleCalendarSyncService {
       recurrenceId: event.recurringEventId,
       lastSyncedAt: new Date(),
       syncStatus: 'synced',
-      calendarId,
+      calendarId: internalCalendarId,
       userId,
     };
 
@@ -226,10 +242,7 @@ export class GoogleCalendarSyncService {
   /**
    * Set up webhooks for Google Calendar account (simplified)
    */
-  async setupWebhookForAccount(
-    userId: string,
-    accountId: string,
-  ): Promise<void> {
+  setupWebhookForAccount(userId: string, accountId: string): void {
     this.logger.log(`Setting up webhooks for account ${accountId}`);
     // For now, just log that we would set up webhooks
     // TODO: Implement webhook setup once database models are working
@@ -241,10 +254,7 @@ export class GoogleCalendarSyncService {
   /**
    * Handle incoming webhook notifications (simplified)
    */
-  async handleWebhookNotification(
-    channelId: string,
-    _resourceId?: string,
-  ): Promise<void> {
+  handleWebhookNotification(channelId: string, _resourceId?: string): void {
     this.logger.log(`Received webhook notification for channel ${channelId}`);
     // For now, just log that we received a notification
     // TODO: Implement notification handling once database models are working
@@ -291,7 +301,7 @@ export class GoogleCalendarSyncService {
    * Renew expiring webhooks (simplified)
    */
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
-  async renewExpiringWebhooks(): Promise<void> {
+  renewExpiringWebhooks(): void {
     this.logger.log('Checking for expiring webhooks to renew');
     // For now, just log that we would renew webhooks
     // TODO: Implement webhook renewal once database models are working
@@ -301,31 +311,153 @@ export class GoogleCalendarSyncService {
   }
 
   /**
-   * Get the last sync token for a calendar (simplified - in-memory for now)
+   * Get the last sync token for a calendar
    */
   private async getLastSyncToken(
     accountId: string,
     calendarId: string,
   ): Promise<string | null> {
-    // TODO: Get from database once calendarSyncState model is available
-    // For now, return null to force full sync
-    this.logger.debug(
-      `Getting sync token for account ${accountId}, calendar ${calendarId} - returning null for now`,
-    );
-    return null;
+    try {
+      const syncState = await this.prisma.calendarSyncState.findUnique({
+        where: {
+          connectedAccountId_platformCalendarId: {
+            connectedAccountId: accountId,
+            platformCalendarId: calendarId,
+          },
+        },
+      });
+
+      this.logger.debug(
+        `Retrieved sync token for account ${accountId}, calendar ${calendarId}: ${syncState?.syncToken ? 'found' : 'not found'}`,
+      );
+
+      return syncState?.syncToken || null;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get sync token for account ${accountId}, calendar ${calendarId}`,
+        error,
+      );
+      return null;
+    }
   }
 
   /**
-   * Save sync token for a calendar (simplified - in-memory for now)
+   * Save sync token for a calendar
    */
   private async saveSyncToken(
     accountId: string,
     calendarId: string,
     syncToken: string,
   ): Promise<void> {
-    // TODO: Save to database once calendarSyncState model is available
-    this.logger.debug(
-      `Would save sync token ${syncToken} for account ${accountId}, calendar ${calendarId}`,
+    try {
+      await this.prisma.calendarSyncState.upsert({
+        where: {
+          connectedAccountId_platformCalendarId: {
+            connectedAccountId: accountId,
+            platformCalendarId: calendarId,
+          },
+        },
+        update: {
+          syncToken,
+          lastSyncedAt: new Date(),
+        },
+        create: {
+          connectedAccountId: accountId,
+          platformCalendarId: calendarId,
+          syncToken,
+          lastSyncedAt: new Date(),
+        },
+      });
+
+      this.logger.debug(
+        `Saved sync token for account ${accountId}, calendar ${calendarId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to save sync token for account ${accountId}, calendar ${calendarId}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Ensure calendar exists in database, create if not found
+   */
+  private async ensureCalendarExists(
+    userId: string,
+    accountId: string,
+    googleCalendarId: string,
+    calendarData?: {
+      name?: string;
+      summary?: string;
+      description?: string;
+      timeZone?: string;
+    },
+  ): Promise<string> {
+    // Check if calendar already exists
+    const existingCalendar = await this.prisma.calendar.findFirst({
+      where: {
+        externalId: googleCalendarId,
+        connectedAccountId: accountId,
+      },
+    });
+
+    if (existingCalendar) {
+      return existingCalendar.id;
+    }
+
+    // Get calendar details from Google Calendar API if not provided
+    let name = googleCalendarId;
+    let description: string | undefined;
+    let timeZone: string | undefined;
+
+    if (calendarData) {
+      name = calendarData.name || calendarData.summary || googleCalendarId;
+      description = calendarData.description;
+      timeZone = calendarData.timeZone;
+    } else {
+      // Fetch calendar details from Google Calendar API
+      try {
+        const calendars = await this.calendarsService.getCalendarsForAccount(
+          userId,
+          accountId,
+        );
+        const foundCalendar = calendars.find(
+          (cal) => cal.id === googleCalendarId,
+        );
+        if (foundCalendar) {
+          name = foundCalendar.name;
+          description = foundCalendar.description;
+          timeZone = foundCalendar.timeZone;
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to fetch calendar details for ${googleCalendarId}:`,
+          error,
+        );
+      }
+    }
+
+    // Create new calendar record
+    const newCalendar = await this.prisma.calendar.create({
+      data: {
+        externalId: googleCalendarId,
+        name,
+        description,
+        timeZone,
+        isDefault:
+          googleCalendarId === 'primary' ||
+          googleCalendarId.includes('@gmail.com'),
+        isVisible: true,
+        connectedAccountId: accountId,
+        userId,
+      },
+    });
+
+    this.logger.log(
+      `Created calendar record for ${googleCalendarId} with ID ${newCalendar.id}`,
     );
+    return newCalendar.id;
   }
 }

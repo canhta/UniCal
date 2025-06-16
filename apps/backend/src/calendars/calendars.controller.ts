@@ -226,11 +226,11 @@ export class CalendarsController {
     description: 'Webhooks set up successfully',
   })
   @ApiBearerAuth()
-  async setupWebhooks(
+  setupWebhooks(
     @Request() req: AuthenticatedRequest,
     @Param('accountId') accountId: string,
-  ): Promise<{ message: string }> {
-    await this.googleSyncService.setupWebhookForAccount(req.user.id, accountId);
+  ): { message: string } {
+    this.googleSyncService.setupWebhookForAccount(req.user.id, accountId);
     return { message: 'Webhooks setup initiated' };
   }
 
@@ -240,11 +240,11 @@ export class CalendarsController {
     status: 200,
     description: 'Webhook notification processed',
   })
-  async handleGoogleWebhook(
+  handleGoogleWebhook(
     @Query('channelId') channelId: string,
-    @Body() payload: any,
-  ): Promise<{ message: string }> {
-    await this.googleSyncService.handleWebhookNotification(
+    @Body() payload: { resourceId?: string },
+  ): { message: string } {
+    this.googleSyncService.handleWebhookNotification(
       channelId,
       payload?.resourceId,
     );
