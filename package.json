@@ -19,7 +19,7 @@
     "env:copy": "cp apps/backend/.env.example apps/backend/.env && cp apps/frontend/.env.example apps/frontend/.env.local",
     "env:copy:backend": "cp apps/backend/.env.example apps/backend/.env",
     "env:copy:frontend": "cp apps/frontend/.env.example apps/frontend/.env.local",
-    "dev": "concurrently \"yarn backend dev\" \"yarn frontend dev\"",
+    "dev": "concurrently \"yarn backend:dev\" \"yarn frontend:dev\"",
     "frontend:dev": "yarn workspace @unical/frontend dev",
     "frontend:build": "yarn workspace @unical/frontend build",
     "frontend:lint": "yarn workspace @unical/frontend lint",
