@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { AppConfigService } from '../../config/app-config.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export interface OAuthUrlResponse {
   url: string;
@@ -16,16 +17,15 @@ interface StateData {
 @Injectable()
 export class OAuthUrlService {
   private readonly logger = new Logger(OAuthUrlService.name);
-  private readonly stateTokens = new Map<
-    string,
-    { userId: string; expires: number }
-  >();
 
-  constructor(private appConfig: AppConfigService) {}
+  constructor(
+    private appConfig: AppConfigService,
+    private prisma: PrismaService,
+  ) {}
 
-  generateGoogleOAuthUrl(userId: string): OAuthUrlResponse {
+  async generateGoogleOAuthUrl(userId: string): Promise<OAuthUrlResponse> {
     const state = this.generateStateToken(userId);
-    this.storeState(state, userId);
+    await this.storeState(state, userId, 'google');
 
     const clientId = this.appConfig.oauth.google.clientId;
     const redirectUri = `${this.appConfig.oauth.redirectBaseUrl}/integrations/auth/google/callback`;
@@ -47,9 +47,9 @@ export class OAuthUrlService {
     return { url, state };
   }
 
-  generateMicrosoftOAuthUrl(userId: string): OAuthUrlResponse {
+  async generateMicrosoftOAuthUrl(userId: string): Promise<OAuthUrlResponse> {
     const state = this.generateStateToken(userId);
-    this.storeState(state, userId);
+    await this.storeState(state, userId, 'microsoft');
 
     const clientId = this.appConfig.oauth.microsoft.clientId;
     const redirectUri = `${this.appConfig.oauth.redirectBaseUrl}/integrations/auth/microsoft/callback`;
@@ -79,28 +79,57 @@ export class OAuthUrlService {
     return Buffer.from(JSON.stringify(stateData)).toString('base64url');
   }
 
-  private storeState(state: string, userId: string): void {
+  private async storeState(
+    state: string,
+    userId: string,
+    provider: string,
+  ): Promise<void> {
     // Store state token for 10 minutes
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    this.stateTokens.set(state, { userId, expires });
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    this.logger.debug(
+      `Storing state for userId: ${userId}, provider: ${provider}, state: ${state}`,
+    );
+
+    if (!userId) {
+      throw new Error('userId is required for storing OAuth state');
+    }
+
+    await this.prisma.oAuthState.create({
+      data: {
+        state,
+        userId,
+        provider,
+        expiresAt,
+      },
+    });
+
     this.logger.debug(`Stored OAuth state token for user ${userId}`);
 
     // Clean up expired tokens
-    this.cleanupExpiredTokens();
+    await this.cleanupExpiredTokens();
   }
 
-  validateState(state: string): string | null {
+  async validateState(state: string): Promise<string | null> {
     try {
-      const storedData = this.stateTokens.get(state);
+      this.logger.debug(`Validating state token: ${state}`);
 
-      if (!storedData) {
-        this.logger.warn(`Invalid OAuth state token: ${state}`);
+      const storedState = await this.prisma.oAuthState.findUnique({
+        where: { state },
+      });
+
+      if (!storedState) {
+        this.logger.warn(
+          `Invalid OAuth state token: ${state} - not found in storage`,
+        );
         return null;
       }
 
-      if (storedData.expires < Date.now()) {
+      if (storedState.expiresAt < new Date()) {
         this.logger.warn(`Expired OAuth state token: ${state}`);
-        this.stateTokens.delete(state);
+        await this.prisma.oAuthState.delete({
+          where: { id: storedState.id },
+        });
         return null;
       }
 
@@ -109,18 +138,23 @@ export class OAuthUrlService {
         Buffer.from(state, 'base64url').toString(),
       ) as StateData;
 
-      if (stateData.userId !== storedData.userId) {
+      this.logger.debug(`State data from token: ${JSON.stringify(stateData)}`);
+      this.logger.debug(`Stored data: ${JSON.stringify(storedState)}`);
+
+      if (stateData.userId !== storedState.userId) {
         this.logger.warn(`OAuth state userId mismatch for token: ${state}`);
         return null;
       }
 
       // Remove state token (single use)
-      this.stateTokens.delete(state);
+      await this.prisma.oAuthState.delete({
+        where: { id: storedState.id },
+      });
 
       this.logger.log(
-        `Validated OAuth state token for user ${storedData.userId}`,
+        `Validated OAuth state token for user ${storedState.userId}`,
       );
-      return storedData.userId;
+      return storedState.userId;
     } catch (error) {
       this.logger.error(
         `Error validating OAuth state token: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -129,12 +163,14 @@ export class OAuthUrlService {
     }
   }
 
-  private cleanupExpiredTokens(): void {
-    const now = Date.now();
-    for (const [state, data] of this.stateTokens.entries()) {
-      if (data.expires < now) {
-        this.stateTokens.delete(state);
-      }
-    }
+  private async cleanupExpiredTokens(): Promise<void> {
+    const now = new Date();
+    await this.prisma.oAuthState.deleteMany({
+      where: {
+        expiresAt: {
+          lt: now,
+        },
+      },
+    });
   }
 }

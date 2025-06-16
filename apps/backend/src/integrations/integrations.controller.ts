@@ -3,9 +3,7 @@ import {
   Get,
   Post,
   Param,
-  Query,
   Req,
-  Res,
   UseGuards,
   Logger,
   BadRequestException,
@@ -16,22 +14,17 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AppConfigService } from '../config/app-config.service';
 import {
   OAuthUrlService,
   OAuthUrlResponse,
 } from './services/oauth-url.service';
-import {
-  OAuthCallbackService,
-  OAuthCallbackResult,
-} from './services/oauth-callback.service';
 import { SyncService } from '../sync/sync.service';
 import { AccountsService } from '../accounts/accounts.service';
 import {
   OAuthUrlResponseDto,
-  OAuthCallbackQueryDto,
   ProviderParamDto,
   SyncTriggerResponseDto,
 } from './dto/integration.dto';
@@ -39,8 +32,9 @@ import { ConnectedAccountResponseDto } from '@unical/core';
 
 interface AuthenticatedRequest extends Request {
   user: {
-    sub: string;
+    id: string;
     email: string;
+    displayName: string | null;
   };
 }
 
@@ -53,7 +47,6 @@ export class IntegrationsController {
 
   constructor(
     private oauthUrlService: OAuthUrlService,
-    private oauthCallbackService: OAuthCallbackService,
     private syncService: SyncService,
     private accountsService: AccountsService,
     private appConfig: AppConfigService,
@@ -67,22 +60,27 @@ export class IntegrationsController {
     type: OAuthUrlResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Invalid provider' })
-  getOAuthUrl(
+  async getOAuthUrl(
     @Param() params: ProviderParamDto,
     @Req() req: AuthenticatedRequest,
-  ): OAuthUrlResponseDto {
-    const userId = req.user.sub;
+  ): Promise<OAuthUrlResponseDto> {
+    const userId = req.user.id;
     const { provider } = params;
 
     this.logger.log(
       `Generating OAuth URL for provider ${provider} and user ${userId}`,
     );
 
+    if (!userId) {
+      this.logger.error('No userId found in request');
+      throw new BadRequestException('User not authenticated');
+    }
+
     let result: OAuthUrlResponse;
     if (provider === 'google') {
-      result = this.oauthUrlService.generateGoogleOAuthUrl(userId);
+      result = await this.oauthUrlService.generateGoogleOAuthUrl(userId);
     } else if (provider === 'microsoft') {
-      result = this.oauthUrlService.generateMicrosoftOAuthUrl(userId);
+      result = await this.oauthUrlService.generateMicrosoftOAuthUrl(userId);
     } else {
       throw new BadRequestException('Invalid provider');
     }
@@ -92,88 +90,6 @@ export class IntegrationsController {
       // Don't expose state in production for security
       state: this.appConfig.isDevelopment ? result.state : undefined,
     };
-  }
-
-  @Get('auth/google/callback')
-  @ApiOperation({ summary: 'Handle Google OAuth callback' })
-  @ApiResponse({ status: 302, description: 'Redirect to frontend with status' })
-  async handleGoogleCallback(
-    @Query() query: OAuthCallbackQueryDto,
-    @Res() res: Response,
-  ) {
-    return this.handleOAuthCallback('google', query, res);
-  }
-
-  @Get('auth/microsoft/callback')
-  @ApiOperation({ summary: 'Handle Microsoft OAuth callback' })
-  @ApiResponse({ status: 302, description: 'Redirect to frontend with status' })
-  async handleMicrosoftCallback(
-    @Query() query: OAuthCallbackQueryDto,
-    @Res() res: Response,
-  ) {
-    return this.handleOAuthCallback('microsoft', query, res);
-  }
-
-  private async handleOAuthCallback(
-    provider: string,
-    query: OAuthCallbackQueryDto,
-    res: Response,
-  ) {
-    const frontendUrl = this.appConfig.server.frontendBaseUrl;
-
-    try {
-      // Handle OAuth errors
-      if (query.error) {
-        this.logger.warn(`OAuth error for ${provider}: ${query.error}`);
-        return res.redirect(
-          `${frontendUrl}/integrations?status=error&provider=${provider}&error=${query.error}`,
-        );
-      }
-
-      // Process OAuth callback
-      let result: OAuthCallbackResult;
-      if (provider === 'google') {
-        result = await this.oauthCallbackService.handleGoogleCallback(
-          query.code,
-          query.state,
-        );
-      } else if (provider === 'microsoft') {
-        result = await this.oauthCallbackService.handleMicrosoftCallback(
-          query.code,
-          query.state,
-        );
-      } else {
-        throw new Error('Invalid provider');
-      }
-
-      // Extract userId from validated state for initial sync
-      const userId = this.oauthUrlService.validateState(query.state);
-      if (!userId) {
-        throw new Error('Unable to determine user for sync');
-      }
-
-      // Trigger initial sync in background (don't wait for completion)
-      this.syncService
-        .triggerInitialSync(userId, result.connectedAccount.id)
-        .catch((error) => {
-          this.logger.error(
-            `Initial sync failed for account ${result.connectedAccount.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          );
-        });
-
-      // Redirect to frontend with success
-      return res.redirect(
-        `${frontendUrl}/integrations?status=success&provider=${provider}&accountId=${result.connectedAccount.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `OAuth callback failed for ${provider}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-
-      return res.redirect(
-        `${frontendUrl}/integrations?status=error&provider=${provider}&error=callback_failed`,
-      );
-    }
   }
 
   @Get('accounts')
@@ -186,7 +102,7 @@ export class IntegrationsController {
   getConnectedAccounts(
     @Req() req: AuthenticatedRequest,
   ): Promise<ConnectedAccountResponseDto[]> {
-    const userId = req.user.sub;
+    const userId = req.user.id;
     return this.accountsService.getConnectedAccountsForUser(userId);
   }
 
@@ -202,7 +118,7 @@ export class IntegrationsController {
     @Param('accountId') accountId: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SyncTriggerResponseDto> {
-    const userId = req.user.sub;
+    const userId = req.user.id;
 
     this.logger.log(
       `Manual sync requested for account ${accountId} by user ${userId}`,

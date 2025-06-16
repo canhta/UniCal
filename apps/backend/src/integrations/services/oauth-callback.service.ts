@@ -12,6 +12,7 @@ import {
 export interface OAuthCallbackResult {
   connectedAccount: ConnectedAccount;
   isNewAccount: boolean;
+  userId: string;
 }
 
 @Injectable()
@@ -32,7 +33,7 @@ export class OAuthCallbackService {
     this.logger.log('Handling Google OAuth callback');
 
     // Validate state and extract user ID
-    const userId = this.oauthUrlService.validateState(state);
+    const userId = await this.oauthUrlService.validateState(state);
     if (!userId) {
       throw new BadRequestException('Invalid or expired OAuth state token');
     }
@@ -56,6 +57,7 @@ export class OAuthCallbackService {
     return {
       connectedAccount,
       isNewAccount: true,
+      userId,
     };
   }
 
@@ -66,7 +68,7 @@ export class OAuthCallbackService {
     this.logger.log('Handling Microsoft OAuth callback');
 
     // Validate state and extract user ID
-    const userId = this.oauthUrlService.validateState(state);
+    const userId = await this.oauthUrlService.validateState(state);
     if (!userId) {
       throw new BadRequestException('Invalid or expired OAuth state token');
     }
@@ -92,6 +94,7 @@ export class OAuthCallbackService {
     return {
       connectedAccount,
       isNewAccount: true,
+      userId,
     };
   }
 

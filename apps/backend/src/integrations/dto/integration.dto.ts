@@ -51,6 +51,15 @@ export class OAuthCallbackQueryDto {
   @IsOptional()
   @IsString()
   error_description?: string;
+
+  @ApiProperty({
+    description: 'Scope granted by the OAuth provider',
+    example: 'https://www.googleapis.com/auth/calendar',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  scope?: string;
 }
 
 export class ProviderParamDto {

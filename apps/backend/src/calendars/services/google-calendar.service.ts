@@ -55,26 +55,110 @@ export class GoogleCalendarService implements ICalendarPlatformService {
         redirectUri,
       );
 
+      this.logger.log('Exchanging authorization code for tokens');
       const { tokens } = await oauth2Client.getToken(code);
+
+      this.logger.log('Token exchange successful, received tokens');
+      this.logger.debug(`Access token present: ${!!tokens.access_token}`);
+      this.logger.debug(`Refresh token present: ${!!tokens.refresh_token}`);
+      this.logger.debug(`Token scope: ${tokens.scope}`);
+
+      if (!tokens.access_token) {
+        throw new Error('No access token received from Google');
+      }
 
       // Get user info to extract email and user ID
       oauth2Client.setCredentials(tokens);
-      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
-      const userInfo = await oauth2.userinfo.get();
+      this.logger.log('Credentials set on OAuth client, fetching user info');
+
+      let userInfo = await this.fetchUserInfo(oauth2Client);
+
+      // If userinfo API failed and we have an ID token, try extracting from it
+      if ((!userInfo.id || !userInfo.email) && tokens.id_token) {
+        this.logger.log(
+          'Trying to extract user info from ID token as fallback',
+        );
+        const idTokenUserInfo = this.extractUserInfoFromIdToken(
+          tokens.id_token,
+        );
+        userInfo = {
+          id: userInfo.id || idTokenUserInfo.id,
+          email: userInfo.email || idTokenUserInfo.email,
+        };
+      }
+
+      this.logger.log('User info fetched successfully');
 
       return {
-        accessToken: tokens.access_token!,
+        accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token || undefined,
         expiresInSeconds: tokens.expiry_date
           ? Math.floor((tokens.expiry_date - Date.now()) / 1000)
           : undefined,
         scope: tokens.scope || undefined,
         idToken: tokens.id_token || undefined,
-        platformUserId: userInfo.data.id || undefined,
-        email: userInfo.data.email || undefined,
+        platformUserId: userInfo.id,
+        email: userInfo.email,
       };
     } catch (error) {
       this.logger.error('Failed to exchange code for tokens', error);
+
+      // If the error is a 401 or userinfo related, try without userinfo
+      const errorString = String(error);
+      const isAuthError =
+        errorString.includes('401') || errorString.includes('userinfo');
+
+      if (isAuthError) {
+        this.logger.warn('Retrying token exchange without userinfo fetch');
+        try {
+          const oauth2Client = new google.auth.OAuth2(
+            this.clientId,
+            this.clientSecret,
+            redirectUri,
+          );
+
+          const { tokens } = await oauth2Client.getToken(code);
+
+          if (!tokens.access_token) {
+            throw new Error('No access token received from Google');
+          }
+
+          // Try to extract user info from ID token if available
+          let userInfo: { id?: string; email?: string } = {
+            id: undefined,
+            email: undefined,
+          };
+          if (tokens.id_token) {
+            this.logger.log(
+              'Trying to extract user info from ID token in fallback',
+            );
+            userInfo = this.extractUserInfoFromIdToken(tokens.id_token);
+          }
+
+          // Return tokens with whatever user info we could extract
+          this.logger.warn(
+            `Returning tokens with ${userInfo.id ? 'partial' : 'no'} user info due to userinfo API error`,
+          );
+          return {
+            accessToken: tokens.access_token,
+            refreshToken: tokens.refresh_token || undefined,
+            expiresInSeconds: tokens.expiry_date
+              ? Math.floor((tokens.expiry_date - Date.now()) / 1000)
+              : undefined,
+            scope: tokens.scope || undefined,
+            idToken: tokens.id_token || undefined,
+            platformUserId: userInfo.id,
+            email: userInfo.email,
+          };
+        } catch (retryError) {
+          this.logger.error('Retry also failed', retryError);
+          throw new HttpException(
+            'Failed to exchange authorization code',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
       throw new HttpException(
         'Failed to exchange authorization code',
         HttpStatus.BAD_REQUEST,
@@ -487,5 +571,59 @@ export class GoogleCalendarService implements ICalendarPlatformService {
       `Google Calendar API error: ${context}`,
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
+  }
+
+  /**
+   * Fetch user info with proper error handling
+   */
+  private async fetchUserInfo(
+    oauth2Client: InstanceType<typeof google.auth.OAuth2>,
+  ): Promise<{ id?: string; email?: string }> {
+    try {
+      const oauth2Service = google.oauth2({
+        version: 'v2',
+        auth: oauth2Client,
+      });
+      const userInfo = await oauth2Service.userinfo.get();
+      return {
+        id: userInfo.data.id || undefined,
+        email: userInfo.data.email || undefined,
+      };
+    } catch (error) {
+      this.logger.warn(
+        'Failed to fetch user info, continuing without it',
+        error,
+      );
+      return { id: undefined, email: undefined };
+    }
+  }
+
+  /**
+   * Extract user info from ID token as fallback
+   */
+  private extractUserInfoFromIdToken(idToken: string): {
+    id?: string;
+    email?: string;
+  } {
+    try {
+      // ID tokens are JWT tokens with base64 encoded payload
+      const parts = idToken.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid ID token format');
+      }
+
+      // Decode the payload (second part)
+      const payload = JSON.parse(
+        Buffer.from(parts[1], 'base64url').toString('utf8'),
+      ) as { sub?: string; email?: string };
+
+      return {
+        id: payload.sub || undefined,
+        email: payload.email || undefined,
+      };
+    } catch (error) {
+      this.logger.warn('Failed to extract user info from ID token', error);
+      return { id: undefined, email: undefined };
+    }
   }
 }

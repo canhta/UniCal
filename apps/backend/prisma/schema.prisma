@@ -273,6 +273,17 @@ model CalendarSyncState {
   @@map("calendar_sync_states")
 }
 
+model OAuthState {
+  id        String   @id @default(uuid())
+  state     String   @unique
+  userId    String
+  provider  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("oauth_states")
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE
